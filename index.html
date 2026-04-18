@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nature's Heal: Leaves & Fruits Encyclopedia</title>
+    <meta name="description" content="Explore medicinal leaves and fruits, their health benefits, and natural remedies.">
+    <meta name="keywords" content="Ayurveda, leaves, fruits, herbal, natural health, botanical">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .card-gradient { 
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+        }
+
+        .nature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+
+        .nature-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .modal-animate {
+            animation: modalFadeIn 0.3s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <div class="bg-emerald-600 p-2 rounded-lg">
+                    <i class="fas fa-leaf text-white text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold tracking-tight text-slate-900">Nature's <span class="text-emerald-600">Heal</span></span>
+            </div>
+            
+            <nav class="hidden md:flex space-x-8 font-medium">
+                <button onclick="filterItems('all')" class="filter-btn text-emerald-600 border-b-2 border-emerald-600 pb-1">All Catalog</button>
+                <button onclick="filterItems('leaf')" class="filter-btn text-slate-500 hover:text-emerald-600 transition-colors pb-1">Leaves</button>
+                <button onclick="filterItems('fruit')" class="filter-btn text-slate-500 hover:text-emerald-600 transition-colors pb-1">Fruits</button>
+            </nav>
+
+            <!-- Mobile Filter Selector -->
+            <div class="md:hidden">
+                <select id="mobileFilter" onchange="filterItems(this.value)" class="bg-slate-100 border-none rounded-lg py-2 px-3 text-sm font-semibold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="all">View All</option>
+                    <option value="leaf">Leaves</option>
+                    <option value="fruit">Fruits</option>
+                </select>
+            </div>
+
+            <div class="relative flex-grow md:flex-grow-0">
+                <input type="text" id="searchInput" placeholder="Search plants, uses, or scientific names..." 
+                    class="bg-slate-100 border-none rounded-full py-2 px-4 pl-10 focus:ring-2 focus:ring-emerald-500 w-full md:w-64 lg:w-80 transition-all">
+                <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div class="bg-emerald-900 rounded-3xl p-8 md:p-16 text-white relative overflow-hidden shadow-2xl">
+            <div class="relative z-10 max-w-2xl">
+                <h1 class="text-3xl md:text-6xl font-extrabold mb-6 leading-tight">Discover the Power of Nature's Elements</h1>
+                <p class="text-emerald-100 text-base md:text-xl mb-8 leading-relaxed">
+                    Explore the medicinal uses, nutritional values, and fascinating facts about the world's most vital leaves and fruits.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="#catalog" class="bg-white text-emerald-900 px-6 md:px-8 py-3 rounded-full font-bold hover:bg-emerald-50 transition-colors text-sm md:text-base shadow-lg">Start Exploring</a>
+                </div>
+            </div>
+            <!-- Decorative SVG circles -->
+            <div class="absolute -right-20 -top-20 w-80 h-80 bg-emerald-800 rounded-full opacity-50"></div>
+            <div class="absolute right-20 -bottom-20 w-40 h-40 bg-emerald-700 rounded-full opacity-30"></div>
+        </div>
+    </section>
+
+    <!-- Main Grid Content -->
+    <main id="catalog" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+            <div>
+                <h2 class="text-2xl md:text-3xl font-bold text-slate-900">Botanical Catalog</h2>
+                <p class="text-slate-500">Showing <span id="itemCount" class="font-semibold text-emerald-600">0</span> unique species</p>
+            </div>
+        </div>
+
+        <!-- Grid -->
+        <div id="gridContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <!-- Items injected by JavaScript -->
+        </div>
+    </main>
+
+    <!-- Modal Backdrop -->
+    <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl modal-animate">
+            <div id="modalContent">
+                <!-- Modal details injected by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <div class="flex items-center justify-center space-x-2 mb-6">
+                <div class="bg-emerald-600 p-2 rounded-lg">
+                    <i class="fas fa-leaf text-white text-sm"></i>
+                </div>
+                <span class="text-xl font-bold tracking-tight">Nature's <span class="text-emerald-600">Heal</span></span>
+            </div>
+            <p class="text-slate-400 mb-6 max-w-md mx-auto">Your companion for exploring the healing power of the natural world.</p>
+            <div class="flex justify-center space-x-6 mb-8">
+                <a href="https://www.instagram.com/hari_krishna_ak/" class="text-slate-400 hover:text-white transition-colors text-xl"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-slate-400 hover:text-white transition-colors text-xl"><i class="fab fa-twitter"></i></a>
+                <a href="https://www.facebook.com/hari.krishna.arvapalli/" class="text-slate-400 hover:text-white transition-colors text-xl"><i class="fab fa-facebook"></i></a>
+            </div>
+            <p class="text-slate-500 text-xs uppercase tracking-widest">&copy; 2024 Nature's Heal Encyclopedia</p>
+        </div>
+    </footer>
+
+    <script>
+        const catalogData = [
+            {
+                id: 1,
+                name: "Aloe Vera",
+                type: "leaf",
+                scientific: "Aloe barbadensis miller",
+                uses: "Soothing burns, skin hydration, digestive health",
+                description: "A succulent plant species of the genus Aloe. It grows wild in tropical, semi-tropical, and arid climates around the world and is widely used for its medicinal gel.",
+                image: "https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?auto=format&fit=crop&q=80&w=400"
+            },
+            {
+                id: 2,
+                name: "Pomegranate",
+                type: "fruit",
+                scientific: "Punica granatum",
+                uses: "High in antioxidants, heart health, anti-inflammatory",
+                description: "A fruit-bearing deciduous shrub. Pomegranates are known for their vibrant red arils and have been symbols of health and fertility for millennia.",
+                image: "https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&q=80&w=400"
+            },
+            {
+                id: 3,
+                name: "Peppermint",
+                type: "leaf",
+                scientific: "Mentha × piperita",
+                uses: "Relieving headaches, digestive aid, respiratory relief",
+                description: "A hybrid mint, a cross between watermint and spearmint. Its high menthol content makes it a staple for soothing teas and cooling treatments.",
+                image: "https://images.unsplash.com/photo-1626509653295-ff4f7a75932c?auto=format&fit=crop&q=80&w=400"
+            },
+            {
+                id: 4,
+                name: "Avocado",
+                type: "fruit",
+                scientific: "Persea americana",
+                uses: "Healthy fats, vitamin E source, skin nourishment",
+                description: "A medium-sized, evergreen tree native to the Americas. Often called a 'superfood', it is botanically a large berry containing a single seed.",
+                image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&q=80&w=400"
+            },
+            {
+                id: 5,
+                name: "Neem",
+                type: "leaf",
+                scientific: "Azadirachta indica",
+                uses: "Antibacterial properties, dental care, pest repellent",
+                description: "Native to the Indian subcontinent, almost every part of the neem tree has medicinal value. It is widely used in organic farming and traditional skin treatments.",
+                image: "https://images.unsplash.com/photo-1598514982841-3e7a7f3e9c3e?auto=format&fit=crop&w=400&q=80"
+            },
+            {
+                id: 6,
+                name: "Blueberry",
+                type: "fruit",
+                scientific: "Cyanococcus",
+                uses: "Brain function support, high vitamin C, eye health",
+                description: "Small blue or purple berries that are powerhouses of antioxidants called anthocyanins. They are one of the few foods naturally blue in color.",
+                image: "https://www.instagram.com/hari_krishna_ak/p/DXHPkgFE0VR/"
+            },
+            {
+                id: 7,
+                name: "Spinach",
+                type: "leaf",
+                scientific: "Spinacia oleracea",
+                uses: "Iron supplement, bone health, energy boost",
+                description: "A leafy green native to central and western Asia. It is extremely nutrient-dense and high in vitamins A, C, K, and folate.",
+                image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=400"
+            },
+            {
+                id: 8,
+                name: "Dragon Fruit",
+                type: "fruit",
+                scientific: "Selenicereus undatus",
+                uses: "Rich in fiber, immune system support, iron boost",
+                description: "Also known as Pitaya, this striking cactus fruit is low in calories and high in essential minerals and vitamins.",
+                image: "https://images.unsplash.com/photo-1527325672341-318158359046?auto=format&fit=crop&q=80&w=400"
+            }
+        ];
+
+        const gridContainer = document.getElementById('gridContainer');
+        const itemCount = document.getElementById('itemCount');
+        const modal = document.getElementById('modal');
+        const modalContent = document.getElementById('modalContent');
+        const searchInput = document.getElementById('searchInput');
+        const mobileFilter = document.getElementById('mobileFilter');
+
+        let currentFilter = 'all';
+
+        function renderItems(items) {
+            gridContainer.innerHTML = '';
+            itemCount.textContent = items.length;
+            
+            if (items.length === 0) {
+                gridContainer.innerHTML = `
+                    <div class="col-span-full text-center py-20 px-4 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                        <div class="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-search text-slate-300 text-3xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-700">No botanical matches found</h3>
+                        <p class="text-slate-500 mt-2">Try a different name, plant type, or health benefit. 🌿</p>
+                        <button onclick="resetSearch()" class="mt-6 text-emerald-600 font-bold hover:underline">Clear all filters</button>
+                    </div>
+                `;
+                return;
+            }
+
+            items.forEach(item => {
+                const badgeColor = item.type === 'leaf' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700';
+                
+                const card = document.createElement('div');
+                card.className = "nature-card card-gradient rounded-3xl overflow-hidden border border-slate-200 cursor-pointer group";
+                card.onclick = () => openModal(item);
+                
+                card.innerHTML = `
+                    <div class="h-56 overflow-hidden relative">
+                        <img loading="lazy" src="${item.image}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 ${badgeColor} backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm">
+                            ${item.type}
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold text-slate-900">${item.name}</h3>
+                            <div class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fas fa-chevron-right text-emerald-600 text-xs"></i>
+                            </div>
+                        </div>
+                        <p class="text-xs italic text-slate-400 mb-4 tracking-wide">${item.scientific}</p>
+                        <div class="flex items-center text-sm text-slate-600">
+                            <i class="fas fa-hand-holding-heart mr-2 text-emerald-600/60"></i>
+                            <span class="line-clamp-1">${item.uses}</span>
+                        </div>
+                    </div>
+                `;
+                gridContainer.appendChild(card);
+            });
+        }
+
+        function filterItems(type) {
+            currentFilter = type;
+            localStorage.setItem("selectedFilter", type);
+            
+            // Update Desktop UI buttons
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('text-emerald-600', 'border-emerald-600', 'border-b-2');
+                btn.classList.add('text-slate-500');
+                if(btn.textContent.toLowerCase().includes(type) || (type === 'all' && btn.textContent.includes('Catalog'))) {
+                    btn.classList.add('text-emerald-600', 'border-emerald-600', 'border-b-2');
+                    btn.classList.remove('text-slate-500');
+                }
+            });
+
+            // Update Mobile Selector
+            mobileFilter.value = type;
+
+            applyCombinedFilters();
+        }
+
+        function applyCombinedFilters() {
+            const term = searchInput.value.toLowerCase();
+            
+            const filtered = catalogData.filter(item => {
+                const matchesType = currentFilter === 'all' || item.type === currentFilter;
+                const matchesSearch = item.name.toLowerCase().includes(term) || 
+                                     item.scientific.toLowerCase().includes(term) ||
+                                     item.uses.toLowerCase().includes(term) ||
+                                     item.type.toLowerCase().includes(term) ||
+                                     item.description.toLowerCase().includes(term);
+                return matchesType && matchesSearch;
+            });
+
+            renderItems(filtered);
+        }
+
+        function resetSearch() {
+            searchInput.value = '';
+            localStorage.removeItem("lastSearch");
+            filterItems('all');
+        }
+
+        function openModal(item) {
+            const badgeColor = item.type === 'leaf' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700';
+            
+            modalContent.innerHTML = `
+                <div class="relative">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 z-10 bg-slate-900/40 hover:bg-slate-900/60 text-white w-10 h-10 rounded-full backdrop-blur-md transition-all flex items-center justify-center">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="h-64 sm:h-96 w-full overflow-hidden">
+                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-6 md:p-10">
+                        <div class="flex items-center space-x-3 mb-2">
+                            <span class="px-3 py-1 rounded-full ${badgeColor} text-[10px] font-bold uppercase tracking-wider">${item.type}</span>
+                            <h2 class="text-3xl font-extrabold text-slate-900">${item.name}</h2>
+                        </div>
+                        <p class="text-lg italic text-slate-400 mb-8">${item.scientific}</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                            <div>
+                                <h4 class="font-bold text-slate-900 mb-3 flex items-center uppercase text-xs tracking-widest">
+                                    <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span> Description
+                                </h4>
+                                <p class="text-slate-600 leading-relaxed text-sm">${item.description}</p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 mb-3 flex items-center uppercase text-xs tracking-widest">
+                                    <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span> Medicinal & Health Uses
+                                </h4>
+                                <ul class="space-y-3">
+                                    ${item.uses.split(',').map(use => `
+                                        <li class="flex items-start text-sm text-slate-600">
+                                            <div class="bg-emerald-50 text-emerald-600 rounded-md p-1 mr-3 mt-0.5">
+                                                <i class="fas fa-check text-[10px]"></i>
+                                            </div>
+                                            ${use.trim()}
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mt-10 pt-8 border-t border-slate-100">
+                            <button onclick="closeModal()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl hover:shadow-2xl">
+                                Close Encyclopedia
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Search Input Handler
+        searchInput.oninput = (e) => {
+            const term = e.target.value;
+            localStorage.setItem("lastSearch", term);
+            applyCombinedFilters();
+        };
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Close modal when clicking backdrop
+        modal.onclick = (e) => {
+            if (e.target === modal) closeModal();
+        };
+
+        // Initialize App
+        window.onload = () => {
+            // Restore Search
+            const savedSearch = localStorage.getItem("lastSearch");
+            if (savedSearch) {
+                searchInput.value = savedSearch;
+            }
+
+            // Restore Filter
+            const savedFilter = localStorage.getItem("selectedFilter") || 'all';
+            filterItems(savedFilter);
+        };
+    </script>
+</body>
+</html>
