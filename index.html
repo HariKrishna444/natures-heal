@@ -52,6 +52,13 @@
             from { opacity: 0; transform: scale(0.95) translateY(10px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
+
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;  
+            overflow: hidden;
+        }
     </style>
 </head>
 <body class="text-slate-800">
@@ -142,9 +149,9 @@
             </div>
             <p class="text-slate-400 mb-6 max-w-md mx-auto">Your companion for exploring the healing power of the natural world.</p>
             <div class="flex justify-center space-x-6 mb-8">
-                <a href="https://www.instagram.com/hari_krishna_ak/" class="text-slate-400 hover:text-white transition-colors text-xl"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="text-slate-400 hover:text-white transition-colors text-xl"><i class="fab fa-instagram"></i></a>
                 <a href="#" class="text-slate-400 hover:text-white transition-colors text-xl"><i class="fab fa-twitter"></i></a>
-                <a href="https://www.facebook.com/hari.krishna.arvapalli/" class="text-slate-400 hover:text-white transition-colors text-xl"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="text-slate-400 hover:text-white transition-colors text-xl"><i class="fab fa-facebook"></i></a>
             </div>
             <p class="text-slate-500 text-xs uppercase tracking-widest">&copy; 2024 Nature's Heal Encyclopedia</p>
         </div>
@@ -152,59 +159,33 @@
 
     <script>
         const catalogData = [
+            // LEAVES (Existing)
             {
                 id: 1,
                 name: "Aloe Vera",
                 type: "leaf",
                 scientific: "Aloe barbadensis miller",
-                uses: "Skin healing, burns treatment, digestive support (gel inside the leaf)",
-                description: "A succulent plant species of the genus Aloe. It grows wild in tropical, semi-tropical, and arid climates around the world and is widely used for its soothing medicinal gel.",
-                image: "https://images.unsplash.com/photo-1672128550038-c21875e68bed?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            },
-            {
-                id: 2,
-                name: "Pomegranate",
-                type: "fruit",
-                scientific: "Punica granatum",
-                uses: "High in antioxidants, heart health, anti-inflammatory",
-                description: "A fruit-bearing deciduous shrub. Pomegranates are known for their vibrant red arils and have been symbols of health and fertility for millennia.",
-                image: "https://images.unsplash.com/photo-1615484477778-ca3b77940c25?auto=format&fit=crop&q=80&w=400"
+                uses: "Skin healing, burns treatment, digestive support",
+                description: "A succulent plant species known for its soothing gel, widely used in traditional medicine and skincare.",
+                image: "https://images.unsplash.com/photo-1672128550038-c21875e68bed?q=80&w=1025&auto=format&fit=crop"
             },
             {
                 id: 3,
                 name: "Peppermint",
                 type: "leaf",
                 scientific: "Mentha × piperita",
-                uses: "Relieving headaches, digestive aid, respiratory relief",
-                description: "A hybrid mint, a cross between watermint and spearmint. Its high menthol content makes it a staple for soothing teas and cooling treatments.",
-                image: "https://images.unsplash.com/photo-1681506346841-82ffe71e8e22?q=80&w=736&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            },
-            {
-                id: 4,
-                name: "Avocado",
-                type: "fruit",
-                scientific: "Persea americana",
-                uses: "Healthy fats, vitamin E source, skin nourishment",
-                description: "A medium-sized, evergreen tree native to the Americas. Often called a 'superfood', it is botanically a large berry containing a single seed.",
-                image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&q=80&w=400"
+                uses: "Headaches relief, digestive aid, respiratory relief",
+                description: "A hybrid mint with high menthol content, ideal for cooling treatments and soothing digestive issues.",
+                image: "https://images.unsplash.com/photo-1681506346841-82ffe71e8e22?q=80&w=736&auto=format&fit=crop"
             },
             {
                 id: 5,
                 name: "Neem",
                 type: "leaf",
                 scientific: "Azadirachta indica",
-                uses: "Skin health, detoxification, antimicrobial properties",
-                description: "Native to the Indian subcontinent, almost every part of the neem tree has medicinal value. It is widely used in organic farming and traditional skin treatments.",
-                image: "https://images.unsplash.com/photo-1748839635226-0c9efbf18720?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            },
-            {
-                id: 6,
-                name: "Blueberry",
-                type: "fruit",
-                scientific: "Cyanococcus",
-                uses: "Brain function support, high vitamin C, eye health",
-                description: "Small blue or purple berries that are powerhouses of antioxidants called anthocyanins. They are one of the few foods naturally blue in color.",
-                image: "https://images.unsplash.com/photo-1425934398893-310a009a77f9?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3"
+                uses: "Skin health, detoxification, antimicrobial",
+                description: "Known as the village pharmacy in India, neem is a powerful antifungal and antibacterial botanical.",
+                image: "https://images.unsplash.com/photo-1748839635226-0c9efbf18720?q=80&w=687&auto=format&fit=crop"
             },
             {
                 id: 7,
@@ -212,89 +193,199 @@
                 type: "leaf",
                 scientific: "Spinacia oleracea",
                 uses: "Iron supplement, bone health, energy boost",
-                description: "A leafy green native to central and western Asia. It is extremely nutrient-dense and high in vitamins A, C, K, and folate.",
+                description: "A nutrient-dense leafy green essential for cardiovascular health and strong bones.",
                 image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=400"
             },
             {
-                id: 8,
-                name: "Dragon Fruit",
-                type: "fruit",
-                scientific: "Selenicereus undatus",
-                uses: "Rich in fiber, immune system support, iron boost",
-                description: "Also known as Pitaya, this striking cactus fruit is low in calories and high in essential minerals and vitamins.",
-                image: "https://images.unsplash.com/photo-1698546690393-45482eb06942?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            },
-            {
                 id: 9,
-                name: "Moringa (Drumstick leaves)",
+                name: "Moringa",
                 type: "leaf",
                 scientific: "Moringa oleifera",
-                uses: "Boosting immunity, improving digestion, supporting overall nutrition (Rich in Vitamins A, C, and iron)",
-                description: "Often referred to as the 'miracle tree', Moringa leaves are packed with incredible nutrition. They are widely used in traditional medicine for their powerful anti-inflammatory and antioxidant properties.",
-                image: "https://images.unsplash.com/photo-1771643033515-0028fd03b708?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            },
-            {
-                id: 10,
-                name: "Guava Leaves",
-                type: "leaf",
-                scientific: "Psidium guajava",
-                uses: "Digestion help, diarrhea relief, blood sugar control",
-                description: "While the fruit is popular, guava leaves hold immense medicinal value. They are often brewed into a tea to treat gastrointestinal issues and naturally regulate blood glucose levels.",
-                image: "https://images.unsplash.com/photo-1552895455-983b18d2eefe?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                uses: "Boosting immunity, improving digestion, nutrition boost",
+                description: "The 'miracle tree' leaves are packed with proteins, vitamins, and minerals.",
+                image: "https://images.unsplash.com/photo-1771643033515-0028fd03b708?q=80&w=1170&auto=format&fit=crop"
             },
             {
                 id: 11,
                 name: "Tulsi (Holy Basil)",
                 type: "leaf",
                 scientific: "Ocimum tenuiflorum",
-                uses: "Respiratory health support, stress reduction, immunity boost",
-                description: "Highly revered in Ayurveda, Tulsi is considered an adaptogen, helping the body adapt to stress while offering powerful antimicrobial and anti-inflammatory benefits.",
-                image: "https://images.unsplash.com/photo-1665479754958-1a8bdc47cc0d?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            },
-            {
-                id: 12,
-                name: "Mint leaves (Pudina)",
-                type: "leaf",
-                scientific: "Mentha",
-                uses: "Digestion aid, nausea relief, cooling the body",
-                description: "A fragrant herb famous for its cooling sensation. It is widely used in culinary and medicinal preparations to soothe upset stomachs, clear congestion, and freshen breath.",
-                image: "https://plus.unsplash.com/premium_photo-1725549578976-2aa34e0f3d01?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                uses: "Respiratory support, stress reduction, immunity",
+                description: "An adaptogenic herb revered in Ayurvedic medicine for its life-extending properties.",
+                image: "https://images.unsplash.com/photo-1665479754958-1a8bdc47cc0d?q=80&w=735&auto=format&fit=crop"
             },
             {
                 id: 13,
                 name: "Curry leaves",
                 type: "leaf",
                 scientific: "Murraya koenigii",
-                uses: "Hair health, digestion, managing blood sugar",
-                description: "A staple in Indian cooking, curry leaves are rich in antioxidants and are known to support hair growth, improve digestion, and naturally help manage cholesterol levels.",
-                image: "https://images.unsplash.com/photo-1711550815689-64ab57f32ead?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            },
-            {
-                id: 14,
-                name: "Betel leaves (Paan)",
-                type: "leaf",
-                scientific: "Piper betle",
-                uses: "Traditional digestion aid, oral health, mild stimulant effects",
-                description: "Traditionally chewed after meals in many Asian cultures, betel leaves act as an excellent digestive aid and mouth freshener with natural, mild psychoactive properties.",
-                image: "https://images.unsplash.com/photo-1649667221325-d3ce96d456f0?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                uses: "Hair health, digestion, blood sugar management",
+                description: "Highly aromatic leaves used to treat gastrointestinal issues and promote thick hair growth.",
+                image: "https://images.unsplash.com/photo-1711550815689-64ab57f32ead?q=80&w=735&auto=format&fit=crop"
             },
             {
                 id: 15,
                 name: "Papaya leaves",
                 type: "leaf",
                 scientific: "Carica papaya",
-                uses: "Supporting platelet count, digestion support",
-                description: "Known for their distinct bitter taste, papaya leaves contain active enzymes like papain that aid digestion. They are famously used in traditional remedies to combat dengue fever by boosting platelets.",
-                image: "https://images.unsplash.com/photo-1642565571978-23d9f162ee21?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                uses: "Platelet count support, digestion aid",
+                description: "Famous for increasing platelet count during viral infections and aiding in protein digestion.",
+                image: "https://images.unsplash.com/photo-1642565571978-23d9f162ee21?q=80&w=1170&auto=format&fit=crop"
+            },
+
+            // FRUITS (Updated & Expanded)
+            {
+                id: 101,
+                name: "Blueberry",
+                type: "fruit",
+                scientific: "Vaccinium corymbosum",
+                uses: "Brain health, anti-aging, inflammation reduction",
+                description: "Extremely high in antioxidants. Blueberries are considered one of the best foods for cognitive function and cellular protection.",
+                image: "https://images.unsplash.com/photo-1425934398893-310a009a77f9?q=80&w=1171&auto=format&fit=crop"
             },
             {
-                id: 16,
-                name: "Fenugreek leaves (Methi)",
-                type: "leaf",
-                scientific: "Trigonella foenum-graecum",
-                uses: "Regulating blood sugar, improving digestion, lactation support",
-                description: "Both the seeds and leaves of the fenugreek plant are highly nutritious. The leaves have a slightly bitter profile and are prized for their metabolic, hormonal, and digestive benefits.",
-                image: "https://plus.unsplash.com/premium_photo-1674999950942-3c4581efc338?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                id: 102,
+                name: "Pomegranate",
+                type: "fruit",
+                scientific: "Punica granatum",
+                uses: "Heart health, anti-inflammatory, antioxidant boost",
+                description: "Known for its unique arils, pomegranates contain punicalagins which are potent antioxidants for cardiovascular protection.",
+                image: "https://plus.unsplash.com/premium_photo-1668076515507-c5bc223c99a4?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            },
+            {
+                id: 103,
+                name: "Guava",
+                type: "fruit",
+                scientific: "Psidium guajava",
+                uses: "Immunity booster, digestion, vitamin C source",
+                description: "Contains four times the vitamin C of an orange. Excellent for skin health and boosting the immune system.",
+                image: "https://images.unsplash.com/photo-1689996647099-a7a0b67fd2f6?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            },
+            {
+                id: 104,
+                name: "Lemon",
+                type: "fruit",
+                scientific: "Citrus limon",
+                uses: "Detox support, digestion, immunity aid",
+                description: "A citrus staple for alkaline-acid balance in the body. Great for vitamin C and stimulating liver function.",
+                image: "https://images.unsplash.com/photo-1590502593747-42a996133562?q=80&w=1170&auto=format&fit=crop"
+            },
+            {
+                id: 105,
+                name: "Papaya",
+                type: "fruit",
+                scientific: "Carica papaya",
+                uses: "Strong digestive aid, enzyme source, skin glow",
+                description: "Contains papain, an enzyme that helps digest proteins. It's rich in fiber and vitamins A and C.",
+                image: "https://plus.unsplash.com/premium_photo-1723126209077-f298ec1aa178?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            },
+            {
+                id: 106,
+                name: "Strawberry",
+                type: "fruit",
+                scientific: "Fragaria × ananassa",
+                uses: "Skin health, heart protection, antioxidant power",
+                description: "Low glycemic index fruit rich in folate and manganese. Excellent for maintaining healthy skin and heart.",
+                image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=1170&auto=format&fit=crop"
+            },
+            {
+                id: 107,
+                name: "Grapes",
+                type: "fruit",
+                scientific: "Vitis vinifera",
+                uses: "Longevity support, heart health, resveratrol source",
+                description: "Grapes, especially dark varieties, contain resveratrol which is linked to cellular repair and heart longevity.",
+                image: "https://images.unsplash.com/photo-1537640538966-79f369143f8f?q=80&w=1170&auto=format&fit=crop"
+            },
+            {
+                id: 108,
+                name: "Orange",
+                type: "fruit",
+                scientific: "Citrus × sinensis",
+                uses: "Immunity, collagen production, vitamin C",
+                description: "The classic source of vitamin C. Oranges are essential for immune defense and skin repair through collagen.",
+                image: "https://images.unsplash.com/photo-1547514701-42782101795e?q=80&w=687&auto=format&fit=crop"
+            },
+            {
+                id: 109,
+                name: "Kiwi",
+                type: "fruit",
+                scientific: "Actinidia deliciosa",
+                uses: "Digestion aid, high vitamin C, sleep quality",
+                description: "Dense in fiber and actinidin enzyme. Just two kiwis can significantly improve digestion and vitamin C intake.",
+                image: "https://images.unsplash.com/photo-1616684000067-36952fde56ec?q=80&w=1228&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            },
+            {
+                id: 110,
+                name: "Apple",
+                type: "fruit",
+                scientific: "Malus domestica",
+                uses: "Gut health, heart benefits, fiber source",
+                description: "Contains pectin, a prebiotic fiber that feeds good gut bacteria. Helps in maintaining cholesterol levels.",
+                image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=1074&auto=format&fit=crop"
+            },
+            {
+                id: 111,
+                name: "Pineapple",
+                type: "fruit",
+                scientific: "Ananas comosus",
+                uses: "Anti-inflammatory, digestion, bromelain source",
+                description: "The only major food source of bromelain, an enzyme complex that helps reduce inflammation and heal tissues.",
+                image: "https://plus.unsplash.com/premium_photo-1724255994628-dceb76a829e8?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            },
+            {
+                id: 112,
+                name: "Cherry",
+                type: "fruit",
+                scientific: "Prunus avium",
+                uses: "Sleep improvement, muscle recovery, joint health",
+                description: "One of the few natural sources of melatonin. Excellent for post-workout recovery and improving sleep cycles.",
+                image: "https://images.unsplash.com/photo-1528821128474-27f963b062bf?q=80&w=1170&auto=format&fit=crop"
+            },
+            {
+                id: 113,
+                name: "Mango",
+                type: "fruit",
+                scientific: "Mangifera indica",
+                uses: "Eye health, immunity, rich in Vitamin A",
+                description: "The 'King of Fruits' is high in Vitamin A and Zeaxanthin, making it perfect for maintaining vision and immunity.",
+                image: "https://images.unsplash.com/photo-1553279768-865429fa0078?q=80&w=1074&auto=format&fit=crop"
+            },
+            {
+                id: 114,
+                name: "Watermelon",
+                type: "fruit",
+                scientific: "Citrullus lanatus",
+                uses: "Hydration, lycopene source, heart health",
+                description: "Over 90% water. Rich in Lycopene, which protects cells from damage and supports heart health.",
+                image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=688&auto=format&fit=crop"
+            },
+            {
+                id: 115,
+                name: "Banana",
+                type: "fruit",
+                scientific: "Musa acuminata",
+                uses: "Energy boost, potassium, muscle function",
+                description: "An excellent source of quick energy and potassium, crucial for nerve and muscle communication.",
+                image: "https://images.unsplash.com/photo-1603833665858-e61d17a86224?q=80&w=627&auto=format&fit=crop"
+            },
+            {
+                id: 116,
+                name: "Dragon Fruit",
+                type: "fruit",
+                scientific: "Selenicereus undatus",
+                uses: "Fiber rich, immune support, iron boost",
+                description: "A striking cactus fruit that helps balance gut flora and provides a healthy dose of magnesium.",
+                image: "https://images.unsplash.com/photo-1698546690393-45482eb06942?q=80&w=687&auto=format&fit=crop"
+            },
+            {
+                id: 117,
+                name: "Avocado",
+                type: "fruit",
+                scientific: "Persea americana",
+                uses: "Healthy fats, vitamin E, skin nourishment",
+                description: "Unique for being high in monounsaturated fats rather than sugar. Essential for brain and skin health.",
+                image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&q=80&w=400"
             }
         ];
 
@@ -347,9 +438,9 @@
                             </div>
                         </div>
                         <p class="text-xs italic text-slate-400 mb-4 tracking-wide">${item.scientific}</p>
-                        <div class="flex items-center text-sm text-slate-600">
-                            <i class="fas fa-hand-holding-heart mr-2 text-emerald-600/60 min-w-[16px]"></i>
-                            <span class="line-clamp-1">${item.uses}</span>
+                        <div class="flex items-start text-sm text-slate-600 h-10">
+                            <i class="fas fa-hand-holding-heart mr-2 text-emerald-600/60 mt-1"></i>
+                            <span class="line-clamp-2 leading-snug">${item.uses}</span>
                         </div>
                     </div>
                 `;
@@ -386,7 +477,6 @@
                 const matchesSearch = item.name.toLowerCase().includes(term) || 
                                      item.scientific.toLowerCase().includes(term) ||
                                      item.uses.toLowerCase().includes(term) ||
-                                     item.type.toLowerCase().includes(term) ||
                                      item.description.toLowerCase().includes(term);
                 return matchesType && matchesSearch;
             });
@@ -427,7 +517,7 @@
                             </div>
                             <div>
                                 <h4 class="font-bold text-slate-900 mb-3 flex items-center uppercase text-xs tracking-widest">
-                                    <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span> Medicinal & Health Uses
+                                    <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span> Benefits & Uses
                                 </h4>
                                 <ul class="space-y-3">
                                     ${item.uses.split(',').map(use => `
@@ -459,32 +549,23 @@
             document.body.style.overflow = 'auto';
         }
 
-        // Search Input Handler
         searchInput.oninput = (e) => {
-            const term = e.target.value;
-            localStorage.setItem("lastSearch", term);
+            localStorage.setItem("lastSearch", e.target.value);
             applyCombinedFilters();
         };
 
-        // Close modal on escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeModal();
         });
 
-        // Close modal when clicking backdrop
         modal.onclick = (e) => {
             if (e.target === modal) closeModal();
         };
 
-        // Initialize App
         window.onload = () => {
-            // Restore Search
             const savedSearch = localStorage.getItem("lastSearch");
-            if (savedSearch) {
-                searchInput.value = savedSearch;
-            }
+            if (savedSearch) searchInput.value = savedSearch;
 
-            // Restore Filter
             const savedFilter = localStorage.getItem("selectedFilter") || 'all';
             filterItems(savedFilter);
         };
