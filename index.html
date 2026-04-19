@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nature's Heal: Leaves & Fruits Encyclopedia</title>
-    <meta name="description" content="Explore medicinal leaves and fruits, their health benefits, and natural remedies.">
-    <meta name="keywords" content="Ayurveda, leaves, fruits, herbal, natural health, botanical">
+    <meta name="description" content="Explore medicinal leaves, fruits, and wild fruits, their health benefits, and natural remedies.">
+    <meta name="keywords" content="Ayurveda, leaves, fruits, wild fruits, herbal, natural health, botanical">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -74,9 +74,10 @@
             </div>
             
             <nav class="hidden md:flex space-x-8 font-medium">
-                <button onclick="filterItems('all')" class="filter-btn text-emerald-600 border-b-2 border-emerald-600 pb-1">All Catalog</button>
-                <button onclick="filterItems('leaf')" class="filter-btn text-slate-500 hover:text-emerald-600 transition-colors pb-1">Leaves</button>
-                <button onclick="filterItems('fruit')" class="filter-btn text-slate-500 hover:text-emerald-600 transition-colors pb-1">Fruits</button>
+                <button data-filter="all" onclick="filterItems('all')" class="filter-btn text-emerald-600 border-b-2 border-emerald-600 pb-1">All Catalog</button>
+                <button data-filter="leaf" onclick="filterItems('leaf')" class="filter-btn text-slate-500 hover:text-emerald-600 transition-colors pb-1">Leaves</button>
+                <button data-filter="fruit" onclick="filterItems('fruit')" class="filter-btn text-slate-500 hover:text-emerald-600 transition-colors pb-1">Fruits</button>
+                <button data-filter="wild_fruit" onclick="filterItems('wild_fruit')" class="filter-btn text-slate-500 hover:text-emerald-600 transition-colors pb-1">Wild Fruits</button>
             </nav>
 
             <!-- Mobile Filter Selector -->
@@ -85,6 +86,7 @@
                     <option value="all">View All</option>
                     <option value="leaf">Leaves</option>
                     <option value="fruit">Fruits</option>
+                    <option value="wild_fruit">Wild Fruits</option>
                 </select>
             </div>
 
@@ -102,7 +104,7 @@
             <div class="relative z-10 max-w-2xl">
                 <h1 class="text-3xl md:text-6xl font-extrabold mb-6 leading-tight">Discover the Power of Nature's Elements</h1>
                 <p class="text-emerald-100 text-base md:text-xl mb-8 leading-relaxed">
-                    Explore the medicinal uses, nutritional values, and fascinating facts about the world's most vital leaves and fruits.
+                    Explore the medicinal uses, nutritional values, and fascinating facts about the world's most vital leaves, fruits, and wild botanical treasures.
                 </p>
                 <div class="flex space-x-4">
                     <a href="#catalog" class="bg-white text-emerald-900 px-6 md:px-8 py-3 rounded-full font-bold hover:bg-emerald-50 transition-colors text-sm md:text-base shadow-lg">Start Exploring</a>
@@ -159,7 +161,7 @@
 
     <script>
         const catalogData = [
-            // LEAVES (Existing)
+            // LEAVES 
             {
                 id: 1,
                 name: "Aloe Vera",
@@ -233,7 +235,7 @@
                 image: "https://images.unsplash.com/photo-1642565571978-23d9f162ee21?q=80&w=1170&auto=format&fit=crop"
             },
 
-            // FRUITS (Updated & Expanded)
+            // FRUITS 
             {
                 id: 101,
                 name: "Blueberry",
@@ -250,7 +252,7 @@
                 scientific: "Punica granatum",
                 uses: "Heart health, anti-inflammatory, antioxidant boost",
                 description: "Known for its unique arils, pomegranates contain punicalagins which are potent antioxidants for cardiovascular protection.",
-                image: "https://plus.unsplash.com/premium_photo-1668076515507-c5bc223c99a4?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                image: "https://plus.unsplash.com/premium_photo-1668076515507-c5bc223c99a4?q=80&w=1074&auto=format&fit=crop"
             },
             {
                 id: 103,
@@ -259,7 +261,7 @@
                 scientific: "Psidium guajava",
                 uses: "Immunity booster, digestion, vitamin C source",
                 description: "Contains four times the vitamin C of an orange. Excellent for skin health and boosting the immune system.",
-                image: "https://images.unsplash.com/photo-1689996647099-a7a0b67fd2f6?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                image: "https://images.unsplash.com/photo-1689996647099-a7a0b67fd2f6?q=80&w=735&auto=format&fit=crop"
             },
             {
                 id: 104,
@@ -277,7 +279,7 @@
                 scientific: "Carica papaya",
                 uses: "Strong digestive aid, enzyme source, skin glow",
                 description: "Contains papain, an enzyme that helps digest proteins. It's rich in fiber and vitamins A and C.",
-                image: "https://plus.unsplash.com/premium_photo-1723126209077-f298ec1aa178?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                image: "https://plus.unsplash.com/premium_photo-1723126209077-f298ec1aa178?q=80&w=687&auto=format&fit=crop"
             },
             {
                 id: 106,
@@ -313,7 +315,7 @@
                 scientific: "Actinidia deliciosa",
                 uses: "Digestion aid, high vitamin C, sleep quality",
                 description: "Dense in fiber and actinidin enzyme. Just two kiwis can significantly improve digestion and vitamin C intake.",
-                image: "https://images.unsplash.com/photo-1616684000067-36952fde56ec?q=80&w=1228&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                image: "https://images.unsplash.com/photo-1616684000067-36952fde56ec?q=80&w=1228&auto=format&fit=crop"
             },
             {
                 id: 110,
@@ -331,7 +333,7 @@
                 scientific: "Ananas comosus",
                 uses: "Anti-inflammatory, digestion, bromelain source",
                 description: "The only major food source of bromelain, an enzyme complex that helps reduce inflammation and heal tissues.",
-                image: "https://plus.unsplash.com/premium_photo-1724255994628-dceb76a829e8?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                image: "https://plus.unsplash.com/premium_photo-1724255994628-dceb76a829e8?q=80&w=687&auto=format&fit=crop"
             },
             {
                 id: 112,
@@ -386,6 +388,116 @@
                 uses: "Healthy fats, vitamin E, skin nourishment",
                 description: "Unique for being high in monounsaturated fats rather than sugar. Essential for brain and skin health.",
                 image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&q=80&w=400"
+            },
+            
+            // WILD FRUITS
+            {
+                id: 201,
+                name: "Amla (Vusiri)",
+                type: "wild_fruit",
+                scientific: "Phyllanthus emblica",
+                uses: "Powerful immunity booster, supports digestion, skin, and hair",
+                description: "Also known as Indian Gooseberry, it is highly revered in Ayurveda for its extremely high Vitamin C content and rejuvenating properties.",
+                image: "https://images.unsplash.com/photo-1676043967557-2b70d9facd71?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            },
+            {
+                id: 202,
+                name: "Bael (Maredu)",
+                type: "wild_fruit",
+                scientific: "Aegle marmelos",
+                uses: "Excellent for gut health, helps treat diarrhea and ulcers",
+                description: "A sacred tree fruit with a hard woody shell, its pulp is highly therapeutic and traditionally used to treat various gastrointestinal disorders.",
+                image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/935dee8e1b7dc960e5886d0e8107c463259c9a1b/maredu.png"
+            },
+            {
+                id: 203,
+                name: "Jamun (Neredu)",
+                type: "wild_fruit",
+                scientific: "Syzygium cumini",
+                uses: "Helps regulate blood sugar, good for digestion",
+                description: "A dark purple, astringent wild berry known for its profound anti-diabetic properties and high iron content.",
+                image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jamun.png"
+            },
+            {
+                id: 204,
+                name: "Wood apple (Velaga Pandu)",
+                type: "wild_fruit",
+                scientific: "Limonia acidissima",
+                uses: "Supports liver health, aids digestion",
+                description: "With a rugged exterior resembling wood, the sticky pulp inside is sour-sweet and acts as a potent detoxifier and liver tonic.",
+                image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/woodapple.png"
+            },
+            {
+                id: 205,
+                name: "Karonda (Vaakkaya)",
+                type: "wild_fruit",
+                scientific: "Carissa carandas",
+                uses: "Rich in iron, helps with anemia",
+                description: "A sour, pink-and-white wild berry used commonly in pickles. It is incredibly rich in iron and vitamin C, making it excellent for anemia.",
+                image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/vaakkaya.png"
+            },
+            {
+                id: 206,
+                name: "Haritaki (Karakkaya)",
+                type: "wild_fruit",
+                scientific: "Terminalia chebula",
+                uses: "Known for detoxification, improves gut health",
+                description: "One of the three fruits in the famous Ayurvedic 'Triphala' blend. It is known as the 'king of medicines' for its balancing and detoxifying nature.",
+                image:"https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/karakkaya.png"
+            },
+            {
+                id: 207,
+                name: "Mulberry",
+                type: "wild_fruit",
+                scientific: "Morus alba / nigra",
+                uses: "Rich in antioxidants and iron, supports blood health",
+                description: "Sweet wild berries that grow on trees. They are an exceptional source of iron, Vitamin C, and plant compounds beneficial for blood circulation.",
+                image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/mulberry.png"
+            },
+            {
+                id: 208,
+                name: "Indian jujube (Rekkaya)",
+                type: "wild_fruit",
+                scientific: "Ziziphus mauritiana",
+                uses: "Helps improve sleep, supports digestion",
+                description: "Also known as Ber, this small wild fruit is packed with Vitamin C and compounds that have a calming effect on the nervous system.",
+                image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jujube.png"
+            },
+            {
+                id: 209,
+                name: "Mahua (Vippa Puvvu)",
+                type: "wild_fruit",
+                scientific: "Madhuca longifolia",
+                uses: "Provides energy, used in traditional remedies",
+                description: "The sweet, fleshy flowers and fruits of the Mahua tree are highly nutritious and historically relied upon by forest communities for energy and medicine.",
+                image: "https://www.yesearth.org/wp-content/uploads/2025/07/mahuwa.jpg"
+            },
+            {
+                id: 210,
+                name: "Tendu (Thunikkaya)",
+                type: "wild_fruit",
+                scientific: "Diospyros melanoxylon",
+                uses: "Aids digestion, supports gut health",
+                description: "An exotic wild fruit of the ebony family. Its sweet, astringent taste makes it a popular wild snack that naturally regulates digestion.",
+                image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/thunikkaya.png"
+            },
+            {
+                id: 211,
+                name: "Wild Almond",
+                type: "wild_fruit",
+                scientific: "Prunus amygdalus var. amara",
+                uses:"Historically used for bitter almond oil and extracts. (Note: Raw wild almonds contain amygdalin and can be toxic if unprocessed).",
+                description: "The wild, bitter relative of the cultivated sweet almond. It produces a green, fuzzy hull that splits open to reveal a hard shell containing the seed.",
+                image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/wildbadam.png"
+            },
+            {
+                id: 212,
+                name: "Lasoda",
+                type: "wild_fruit",
+                scientific: "Cordia dichotoma",
+                uses: "Helps digestion, supports joint health",
+                description: "Also called Indian Cherry, this sticky wild fruit is famously used in traditional anti-inflammatory remedies and digestive tonics.",
+                image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/irikkaya.png"
             }
         ];
 
@@ -397,6 +509,18 @@
         const mobileFilter = document.getElementById('mobileFilter');
 
         let currentFilter = 'all';
+
+        // Helper to format the type for UI displaying
+        function formatTypeLabel(type) {
+            return type.replace('_', ' ');
+        }
+
+        function getBadgeColor(type) {
+            if (type === 'leaf') return 'bg-emerald-100 text-emerald-700';
+            if (type === 'fruit') return 'bg-rose-100 text-rose-700';
+            if (type === 'wild_fruit') return 'bg-amber-100 text-amber-800';
+            return 'bg-slate-100 text-slate-700';
+        }
 
         function renderItems(items) {
             gridContainer.innerHTML = '';
@@ -417,7 +541,8 @@
             }
 
             items.forEach(item => {
-                const badgeColor = item.type === 'leaf' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700';
+                const badgeColor = getBadgeColor(item.type);
+                const displayType = formatTypeLabel(item.type);
                 
                 const card = document.createElement('div');
                 card.className = "nature-card card-gradient rounded-3xl overflow-hidden border border-slate-200 cursor-pointer group";
@@ -427,7 +552,7 @@
                     <div class="h-56 overflow-hidden relative">
                         <img loading="lazy" src="${item.image}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                         <div class="absolute top-4 left-4 ${badgeColor} backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm">
-                            ${item.type}
+                            ${displayType}
                         </div>
                     </div>
                     <div class="p-6">
@@ -457,7 +582,9 @@
             buttons.forEach(btn => {
                 btn.classList.remove('text-emerald-600', 'border-emerald-600', 'border-b-2');
                 btn.classList.add('text-slate-500');
-                if(btn.textContent.toLowerCase().includes(type) || (type === 'all' && btn.textContent.includes('Catalog'))) {
+                
+                // Match the exact filter type based on the data attribute
+                if(btn.getAttribute('data-filter') === type) {
                     btn.classList.add('text-emerald-600', 'border-emerald-600', 'border-b-2');
                     btn.classList.remove('text-slate-500');
                 }
@@ -491,7 +618,8 @@
         }
 
         function openModal(item) {
-            const badgeColor = item.type === 'leaf' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700';
+            const badgeColor = getBadgeColor(item.type);
+            const displayType = formatTypeLabel(item.type);
             
             modalContent.innerHTML = `
                 <div class="relative">
@@ -503,7 +631,7 @@
                     </div>
                     <div class="p-6 md:p-10">
                         <div class="flex items-center space-x-3 mb-2">
-                            <span class="px-3 py-1 rounded-full ${badgeColor} text-[10px] font-bold uppercase tracking-wider">${item.type}</span>
+                            <span class="px-3 py-1 rounded-full ${badgeColor} text-[10px] font-bold uppercase tracking-wider">${displayType}</span>
                             <h2 class="text-3xl font-extrabold text-slate-900">${item.name}</h2>
                         </div>
                         <p class="text-lg italic text-slate-400 mb-8">${item.scientific}</p>
