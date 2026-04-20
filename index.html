@@ -4,31 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nature's Heal: Leaves & Fruits Encyclopedia</title>
-    <meta name="description" content="Explore medicinal leaves, fruits, and wild fruits, their health benefits, and natural remedies.">
-    <meta name="keywords" content="Ayurveda, leaves, fruits, wild fruits, herbal, natural health, botanical">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
         
-        /* Night Mode Variables */
         :root {
             --bg-body: #f8fafc;
-            --bg-card: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --header-bg: rgba(255, 255, 255, 0.8);
+            --bg-card: #ffffff;
+            --text-main: #0f172a;    /* Deep navy for high readability in light mode */
+            --text-muted: #475569;  /* Balanced slate for descriptions */
+            --header-bg: rgba(255, 255, 255, 0.9);
             --border-color: #e2e8f0;
-            --input-bg: #f1f5f9;
+            --input-bg: #ffffff;
+            --footer-bg: #0f172a;
+            --hero-bg: #064e3b;
         }
 
         .dark {
-            --bg-body: #0f172a;
-            --bg-card: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --header-bg: rgba(15, 23, 42, 0.8);
-            --border-color: #334155;
+            --bg-body: #020617;     /* Darker midnight blue */
+            --bg-card: #0f172a;
+            --text-main: #f1f5f9;   /* Clean white/grey for dark mode */
+            --text-muted: #94a3b8;  /* Light slate for descriptions */
+            --header-bg: rgba(2, 6, 23, 0.9);
+            --border-color: #1e293b;
             --input-bg: #1e293b;
         }
 
@@ -37,389 +36,385 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        .hero-banner {
+            background-color: var(--hero-bg);
+            border-radius: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-banner::after {
+            content: '';
+            position: absolute;
+            right: -5%;
+            top: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
         }
 
         .card-gradient { 
-            background: var(--bg-card);
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color);
         }
 
-        header {
-            background-color: var(--header-bg) !important;
-            border-color: var(--border-color) !important;
+        header { 
+            background-color: var(--header-bg) !important; 
+            border-bottom: 1px solid var(--border-color);
         }
-
+        
         .nature-card {
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            border-color: var(--border-color) !important;
         }
 
         .nature-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        input#searchInput {
-            background-color: var(--input-bg);
-            color: var(--text-main);
+        .text-muted-custom {
+            color: var(--text-muted);
         }
 
-        .text-slate-900, .text-slate-800 { color: var(--text-main) !important; }
-        .text-slate-500, .text-slate-400 { color: var(--text-muted) !important; }
-        .bg-white { background-color: var(--bg-body) !important; }
+        #cartSidebar {
+            position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px; height: 100vh;
+            background: var(--bg-card); z-index: 100; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.1); border-left: 1px solid var(--border-color);
+        }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-body); }
-        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        #cartSidebar.active { right: 0; }
+
+        #cartOverlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+            z-index: 90; display: none;
+        }
+
+        footer { background-color: var(--footer-bg); }
+
+        #themeToggle {
+            position: fixed; bottom: 2rem; right: 2rem; z-index: 50; width: 50px; height: 50px;
+            border-radius: 50%; background: #10b981; color: white; display: flex; align-items: center;
+            justify-content: center; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
 
         .modal-animate {
-            animation: modalFadeIn 0.3s ease-out;
-            background-color: var(--bg-body) !important;
-            color: var(--text-main);
+            animation: modalIn 0.3s ease-out;
         }
 
-        @keyframes modalFadeIn {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+        @keyframes modalIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
-
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;  
-            overflow: hidden;
-        }
-
-        /* Floating Toggle Button */
-        #themeToggle {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            z-index: 50;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #10b981;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s;
-        }
-        #themeToggle:hover { transform: scale(1.1); }
     </style>
 </head>
-<body class="text-slate-800">
+<body>
 
     <button id="themeToggle" onclick="toggleTheme()" title="Toggle Night Mode">
         <i class="fas fa-moon" id="themeIcon"></i>
     </button>
 
-    <header class="sticky top-0 z-40 backdrop-blur-md border-b">
+    <div id="cartOverlay" onclick="closeCart()"></div>
+    
+    <div id="cartSidebar">
+        <div class="flex flex-col h-full p-6">
+            <div class="flex justify-between items-center mb-8 border-b border-slate-100 dark:border-slate-800 pb-4">
+                <h2 class="text-2xl font-bold">Shopping Cart</h2>
+                <button onclick="closeCart()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="cartItemsList" class="flex-grow overflow-y-auto space-y-4 pr-2"></div>
+            <div class="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                <button onclick="alert('Order Placed Successfully!')" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-colors">Place Order</button>
+            </div>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-40 backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center space-x-2">
-                <div class="bg-emerald-600 p-2 rounded-lg">
-                    <i class="fas fa-leaf text-white text-xl"></i>
-                </div>
+                <div class="bg-emerald-600 p-2 rounded-lg"><i class="fas fa-leaf text-white text-xl"></i></div>
                 <span class="text-2xl font-bold tracking-tight">Nature's <span class="text-emerald-600">Heal</span></span>
             </div>
             
-            <nav class="hidden md:flex space-x-8 font-medium">
+            <nav class="hidden md:flex space-x-8 font-semibold">
                 <button data-filter="all" onclick="filterItems('all')" class="filter-btn text-emerald-600 border-b-2 border-emerald-600 pb-1">All Catalog</button>
-                <button data-filter="leaf" onclick="filterItems('leaf')" class="filter-btn text-slate-500 hover:text-emerald-600 transition-colors pb-1">Leaves</button>
-                <button data-filter="fruit" onclick="filterItems('fruit')" class="filter-btn text-slate-500 hover:text-emerald-600 transition-colors pb-1">Fruits</button>
-                <button data-filter="wild_fruit" onclick="filterItems('wild_fruit')" class="filter-btn text-slate-500 hover:text-emerald-600 transition-colors pb-1">Wild Fruits</button>
-                <button data-filter="favorites" onclick="filterItems('favorites')" class="filter-btn text-slate-500 hover:text-emerald-600 transition-colors pb-1">My Collection ⭐</button>
+                <button data-filter="leaf" onclick="filterItems('leaf')" class="filter-btn text-muted-custom hover:text-emerald-600 pb-1">Leaves</button>
+                <button data-filter="fruit" onclick="filterItems('fruit')" class="filter-btn text-muted-custom hover:text-emerald-600 pb-1">Fruits</button>
+                <button data-filter="wild_fruit" onclick="filterItems('wild_fruit')" class="filter-btn text-muted-custom hover:text-emerald-600 pb-1">Wild Fruits</button>
+                <button data-filter="favorites" onclick="filterItems('favorites')" class="filter-btn text-muted-custom hover:text-emerald-600 pb-1">Collection ⭐</button>
             </nav>
 
-            <div class="md:hidden">
-                <select id="mobileFilter" onchange="filterItems(this.value)" class="bg-slate-100 dark:bg-slate-800 border-none rounded-lg py-2 px-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-emerald-500">
-                    <option value="all">View All</option>
-                    <option value="leaf">Leaves</option>
-                    <option value="fruit">Fruits</option>
-                    <option value="wild_fruit">Wild Fruits</option>
-                    <option value="favorites">My Collection ⭐</option>
-                </select>
-            </div>
-
-            <div class="relative flex-grow md:flex-grow-0">
-                <input type="text" id="searchInput" placeholder="Search plants..." 
-                    class="border-none rounded-full py-2 px-4 pl-10 focus:ring-2 focus:ring-emerald-500 w-full md:w-64 lg:w-80 transition-all">
-                <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
+            <div class="relative flex items-center gap-3">
+                <button onclick="toggleCartSidebar()" class="relative p-2 text-muted-custom hover:text-emerald-600">
+                    <i class="fas fa-shopping-cart text-xl"></i>
+                    <span id="cartBadge" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+                </button>
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="Search plants..." class="bg-slate-100 dark:bg-slate-800 text-main border-none rounded-full py-2 px-4 pl-10 focus:ring-2 focus:ring-emerald-500 w-full md:w-64 transition-all">
+                    <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
+                </div>
             </div>
         </div>
     </header>
 
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <div class="bg-emerald-900 rounded-3xl p-8 md:p-16 text-white relative overflow-hidden shadow-2xl">
-            <div class="relative z-10 max-w-2xl">
-                <h1 class="text-3xl md:text-6xl font-extrabold mb-6 leading-tight">Discover the Power of Nature's Elements</h1>
-                <p class="text-emerald-100 text-base md:text-xl mb-8 leading-relaxed">
-                    Explore the medicinal uses, nutritional values, and fascinating facts about the world's most vital leaves, fruits, and wild botanical treasures.
-                </p>
-                <div class="flex space-x-4">
-                    <a href="#catalog" class="bg-white text-emerald-900 px-6 md:px-8 py-3 rounded-full font-bold hover:bg-emerald-50 transition-colors text-sm md:text-base shadow-lg">Start Exploring</a>
-                </div>
+    <main id="catalog" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <section class="hero-banner p-8 md:p-16 mb-16 text-white shadow-xl">
+            <div class="max-w-2xl relative z-10">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">Discover the Power of Nature's Elements</h1>
+                <p class="text-emerald-50 text-lg mb-10 leading-relaxed opacity-90">Explore the medicinal uses, nutritional values, and fascinating facts about the world's most vital leaves, fruits, and wild botanical treasures.</p>
+                <button onclick="document.getElementById('gridContainer').scrollIntoView({behavior: 'smooth'})" class="bg-white text-emerald-900 px-8 py-3 rounded-full font-bold hover:bg-emerald-50 transition-all transform hover:scale-105">Start Exploring</button>
             </div>
-            <div class="absolute -right-20 -top-20 w-80 h-80 bg-emerald-800 rounded-full opacity-50"></div>
-            <div class="absolute right-20 -bottom-20 w-40 h-40 bg-emerald-700 rounded-full opacity-30"></div>
-        </div>
-    </section>
+        </section>
 
-    <main id="catalog" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-            <div>
-                <h2 class="text-2xl md:text-3xl font-bold">Botanical Catalog</h2>
-                <p class="text-slate-500">Showing <span id="itemCount" class="font-semibold text-emerald-600">0</span> unique species</p>
-            </div>
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold mb-1">Botanical Catalog</h2>
+            <p class="text-muted-custom font-medium">Showing <span id="itemCount" class="font-bold text-emerald-600">0</span> unique species</p>
         </div>
-
+        
         <div id="gridContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
     </main>
 
-    <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
-        <div class="rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl modal-animate">
-            <div id="modalContent"></div>
-        </div>
-    </div>
+    <footer class="py-16 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="flex items-center justify-center space-x-3 mb-6">
+                <div class="bg-emerald-600 p-2 rounded-lg"><i class="fas fa-leaf text-white text-lg"></i></div>
+                <span class="text-2xl font-bold text-white">Nature's <span class="text-emerald-500">Heal</span></span>
+            </div>
+            <p class="text-slate-400 mb-8 max-w-md mx-auto">Your companion for exploring the healing power of the natural world.</p>
+            
+            <div class="flex justify-center space-x-6 mb-12 text-slate-400">
+                <a href="#" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-facebook"></i></a>
+            </div>
 
-    <footer class="bg-slate-900 text-white py-12">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <div class="flex items-center justify-center space-x-2 mb-6">
-                <div class="bg-emerald-600 p-2 rounded-lg">
-                    <i class="fas fa-leaf text-white text-sm"></i>
-                </div>
-                <span class="text-xl font-bold tracking-tight">Nature's <span class="text-emerald-600">Heal</span></span>
+            <div class="text-slate-500 text-xs font-bold tracking-widest uppercase">
+                © 2024 NATURE'S HEAL ENCYCLOPEDIA
             </div>
-            <p class="text-slate-400 mb-6 max-w-md mx-auto">Your companion for exploring the healing power of the natural world.</p>
-            <div class="flex justify-center space-x-6 mb-8">
-                <a href="https://www.instagram.com/hari_krishna_ak" class="text-slate-400 hover:text-white transition-colors text-xl"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="text-slate-400 hover:text-white transition-colors text-xl"><i class="fab fa-twitter"></i></a>
-                <a href="https://www.facebook.com/hari.krishna.arvapalli/" class="text-slate-400 hover:text-white transition-colors text-xl"><i class="fab fa-facebook"></i></a>
-            </div>
-            <p class="text-slate-500 text-xs uppercase tracking-widest">&copy; 2024 Nature's Heal Encyclopedia</p>
         </div>
     </footer>
 
+    <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm hidden">
+        <div id="modalContent" class="bg-white dark:bg-slate-900 rounded-[2rem] max-w-2xl w-full overflow-hidden shadow-2xl modal-animate border dark:border-slate-800"></div>
+    </div>
+
     <script>
-        // --- THEME LOGIC ---
-        function toggleTheme() {
-            const body = document.body;
-            const icon = document.getElementById('themeIcon');
-            body.classList.toggle('dark');
-            
-            if (body.classList.contains('dark')) {
-                icon.classList.replace('fa-moon', 'fa-sun');
-                localStorage.setItem('theme', 'dark');
-            } else {
-                icon.classList.replace('fa-sun', 'fa-moon');
-                localStorage.setItem('theme', 'light');
-            }
-        }
-
-        // Apply saved theme on load
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark');
-            document.getElementById('themeIcon').classList.replace('fa-moon', 'fa-sun');
-        }
-
-        // --- CATALOG DATA (Same as provided) ---
         const catalogData = [
-            { id: 1, name: "Aloe Vera", type: "leaf", scientific: "Aloe barbadensis miller", uses: "Skin healing, burns treatment, digestive support", description: "A succulent plant species known for its soothing gel, widely used in traditional medicine and skincare.", image: "https://images.unsplash.com/photo-1672128550038-c21875e68bed?q=80&w=1025&auto=format&fit=crop" },
-            { id: 3, name: "Peppermint", type: "leaf", scientific: "Mentha × piperita", uses: "Headaches relief, digestive aid, respiratory relief", description: "A hybrid mint with high menthol content, ideal for cooling treatments and soothing digestive issues.", image: "https://images.unsplash.com/photo-1681506346841-82ffe71e8e22?q=80&w=736&auto=format&fit=crop" },
-            { id: 5, name: "Neem", type: "leaf", scientific: "Azadirachta indica", uses: "Skin health, detoxification, antimicrobial", description: "Known as the village pharmacy in India, neem is a powerful antifungal and antibacterial botanical.", image: "https://images.unsplash.com/photo-1748839635226-0c9efbf18720?q=80&w=687&auto=format&fit=crop" },
-            { id: 7, name: "Spinach", type: "leaf", scientific: "Spinacia oleracea", uses: "Iron supplement, bone health, energy boost", description: "A nutrient-dense leafy green essential for cardiovascular health and strong bones.", image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=400" },
-            { id: 9, name: "Moringa", type: "leaf", scientific: "Moringa oleifera", uses: "Boosting immunity, improving digestion, nutrition boost", description: "The 'miracle tree' leaves are packed with proteins, vitamins, and minerals.", image: "https://images.unsplash.com/photo-1771643033515-0028fd03b708?q=80&w=1170&auto=format&fit=crop" },
-            { id: 11, name: "Tulsi (Holy Basil)", type: "leaf", scientific: "Ocimum tenuiflorum", uses: "Respiratory support, stress reduction, immunity", description: "An adaptogenic herb revered in Ayurvedic medicine for its life-extending properties.", image: "https://images.unsplash.com/photo-1665479754958-1a8bdc47cc0d?q=80&w=735&auto=format&fit=crop" },
-            { id: 13, name: "Curry leaves", type: "leaf", scientific: "Murraya koenigii", uses: "Hair health, digestion, blood sugar management", description: "Highly aromatic leaves used to treat gastrointestinal issues and promote thick hair growth.", image: "https://images.unsplash.com/photo-1711550815689-64ab57f32ead?q=80&w=735&auto=format&fit=crop" },
-            { id: 15, name: "Papaya leaves", type: "leaf", scientific: "Carica papaya", uses: "Platelet count support, digestion aid", description: "Famous for increasing platelet count during viral infections and aiding in protein digestion.", image: "https://images.unsplash.com/photo-1642565571978-23d9f162ee21?q=80&w=1170&auto=format&fit=crop" },
-            { id: 101, name: "Blueberry", type: "fruit", scientific: "Vaccinium corymbosum", uses: "Brain health, anti-aging, inflammation reduction", description: "Extremely high in antioxidants. Blueberries are considered one of the best foods for cognitive function and cellular protection.", image: "https://images.unsplash.com/photo-1425934398893-310a009a77f9?q=80&w=1171&auto=format&fit=crop" },
-            { id: 102, name: "Pomegranate", type: "fruit", scientific: "Punica granatum", uses: "Heart health, anti-inflammatory, antioxidant boost", description: "Known for its unique arils, pomegranates contain punicalagins which are potent antioxidants for cardiovascular protection.", image: "https://plus.unsplash.com/premium_photo-1668076515507-c5bc223c99a4?q=80&w=1074&auto=format&fit=crop" },
-            { id: 103, name: "Guava", type: "fruit", scientific: "Psidium guajava", uses: "Immunity booster, digestion, vitamin C source", description: "Contains four times the vitamin C of an orange. Excellent for skin health and boosting the immune system.", image: "https://images.unsplash.com/photo-1689996647099-a7a0b67fd2f6?q=80&w=735&auto=format&fit=crop" },
-            { id: 104, name: "Lemon", type: "fruit", scientific: "Citrus limon", uses: "Detox support, digestion, immunity aid", description: "A citrus staple for alkaline-acid balance in the body. Great for vitamin C and stimulating liver function.", image: "https://images.unsplash.com/photo-1590502593747-42a996133562?q=80&w=1170&auto=format&fit=crop" },
-            { id: 105, name: "Papaya", type: "fruit", scientific: "Carica papaya", uses: "Strong digestive aid, enzyme source, skin glow", description: "Contains papain, an enzyme that helps digest proteins. It's rich in fiber and vitamins A and C.", image: "https://plus.unsplash.com/premium_photo-1723126209077-f298ec1aa178?q=80&w=687&auto=format&fit=crop" },
-            { id: 106, name: "Strawberry", type: "fruit", scientific: "Fragaria × ananassa", uses: "Skin health, heart protection, antioxidant power", description: "Low glycemic index fruit rich in folate and manganese. Excellent for maintaining healthy skin and heart.", image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=1170&auto=format&fit=crop" },
-            { id: 107, name: "Grapes", type: "fruit", scientific: "Vitis vinifera", uses: "Longevity support, heart health, resveratrol source", description: "Grapes, especially dark varieties, contain resveratrol which is linked to cellular repair and heart longevity.", image: "https://images.unsplash.com/photo-1537640538966-79f369143f8f?q=80&w=1170&auto=format&fit=crop" },
-            { id: 108, name: "Orange", type: "fruit", scientific: "Citrus × sinensis", uses: "Immunity, collagen production, vitamin C", description: "The classic source of vitamin C. Oranges are essential for immune defense and skin repair through collagen.", image: "https://images.unsplash.com/photo-1547514701-42782101795e?q=80&w=687&auto=format&fit=crop" },
-            { id: 109, name: "Kiwi", type: "fruit", scientific: "Actinidia deliciosa", uses: "Digestion aid, high vitamin C, sleep quality", description: "Dense in fiber and actinidin enzyme. Just two kiwis can significantly improve digestion and vitamin C intake.", image: "https://images.unsplash.com/photo-1616684000067-36952fde56ec?q=80&w=1228&auto=format&fit=crop" },
-            { id: 110, name: "Apple", type: "fruit", scientific: "Malus domestica", uses: "Gut health, heart benefits, fiber source", description: "Contains pectin, a prebiotic fiber that feeds good gut bacteria. Helps in maintaining cholesterol levels.", image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=1074&auto=format&fit=crop" },
-            { id: 111, name: "Pineapple", type: "fruit", scientific: "Ananas comosus", uses: "Anti-inflammatory, digestion, bromelain source", description: "The only major food source of bromelain, an enzyme complex that helps reduce inflammation and heal tissues.", image: "https://plus.unsplash.com/premium_photo-1724255994628-dceb76a829e8?q=80&w=687&auto=format&fit=crop" },
-            { id: 112, name: "Cherry", type: "fruit", scientific: "Prunus avium", uses: "Sleep improvement, muscle recovery, joint health", description: "One of the few natural sources of melatonin. Excellent for post-workout recovery and improving sleep cycles.", image: "https://images.unsplash.com/photo-1528821128474-27f963b062bf?q=80&w=1170&auto=format&fit=crop" },
-            { id: 113, name: "Mango", type: "fruit", scientific: "Mangifera indica", uses: "Eye health, immunity, rich in Vitamin A", description: "The 'King of Fruits' is high in Vitamin A and Zeaxanthin, making it perfect for maintaining vision and immunity.", image: "https://images.unsplash.com/photo-1553279768-865429fa0078?q=80&w=1074&auto=format&fit=crop" },
-            { id: 114, name: "Watermelon", type: "fruit", scientific: "Citrullus lanatus", uses: "Hydration, lycopene source, heart health", description: "Over 90% water. Rich in Lycopene, which protects cells from damage and supports heart health.", image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=688&auto=format&fit=crop" },
-            { id: 115, name: "Banana", type: "fruit", scientific: "Musa acuminata", uses: "Energy boost, potassium, muscle function", description: "An excellent source of quick energy and potassium, crucial for nerve and muscle communication.", image: "https://images.unsplash.com/photo-1603833665858-e61d17a86224?q=80&w=627&auto=format&fit=crop" },
-            { id: 116, name: "Dragon Fruit", type: "fruit", scientific: "Selenicereus undatus", uses: "Fiber rich, immune support, iron boost", description: "A striking cactus fruit that helps balance gut flora and provides a healthy dose of magnesium.", image: "https://images.unsplash.com/photo-1698546690393-45482eb06942?q=80&w=687&auto=format&fit=crop" },
-            { id: 117, name: "Avocado", type: "fruit", scientific: "Persea americana", uses: "Healthy fats, vitamin E, skin nourishment", description: "Unique for being high in monounsaturated fats rather than sugar. Essential for brain and skin health.", image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&q=80&w=400" },
-            { id: 201, name: "Amla (Vusiri)", type: "wild_fruit", scientific: "Phyllanthus emblica", uses: "Powerful immunity booster, supports digestion, skin, and hair", description: "Also known as Indian Gooseberry, it is highly revered in Ayurveda for its extremely high Vitamin C content and rejuvenating properties.", image: "https://images.unsplash.com/photo-1676043967557-2b70d9facd71?q=80&w=627&auto=format&fit=crop" },
-            { id: 202, name: "Bael (Maredu)", type: "wild_fruit", scientific: "Aegle marmelos", uses: "Excellent for gut health, helps treat diarrhea and ulcers", description: "A sacred tree fruit with a hard woody shell, its pulp is highly therapeutic and traditionally used to treat various gastrointestinal disorders.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/935dee8e1b7dc960e5886d0e8107c463259c9a1b/maredu.png" },
-            { id: 203, name: "Jamun (Neredu)", type: "wild_fruit", scientific: "Syzygium cumini", uses: "Helps regulate blood sugar, good for digestion", description: "A dark purple, astringent wild berry known for its profound anti-diabetic properties and high iron content.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jamun.png" },
-            { id: 204, name: "Wood apple (Velaga Pandu)", type: "wild_fruit", scientific: "Limonia acidissima", uses: "Supports liver health, aids digestion", description: "With a rugged exterior resembling wood, the sticky pulp inside is sour-sweet and acts as a potent detoxifier and liver tonic.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/woodapple.png" },
-            { id: 205, name: "Karonda (Vaakkaya)", type: "wild_fruit", scientific: "Carissa carandas", uses: "Rich in iron, helps with anemia", description: "A sour, pink-and-white wild berry used commonly in pickles. It is incredibly rich in iron and vitamin C, making it excellent for anemia.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/vaakkaya.png" },
-            { id: 206, name: "Haritaki (Karakkaya)", type: "wild_fruit", scientific: "Terminalia chebula", uses: "Known for detoxification, improves gut health", description: "One of the three fruits in the famous Ayurvedic 'Triphala' blend. It is known as the 'king of medicines' for its balancing and detoxifying nature.", image:"https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/karakkaya.png" },
-            { id: 207, name: "Mulberry", type: "wild_fruit", scientific: "Morus alba / nigra", uses: "Rich in antioxidants and iron, supports blood health", description: "Sweet wild berries that grow on trees. They are an exceptional source of iron, Vitamin C, and plant compounds beneficial for blood circulation.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/mulberry.png" },
-            { id: 208, name: "Indian jujube (Rekkaya)", type: "wild_fruit", scientific: "Ziziphus mauritiana", uses: "Helps improve sleep, supports digestion", description: "Also known as Ber, this small wild fruit is packed with Vitamin C and compounds that have a calming effect on the nervous system.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jujube.png" },
-            { id: 209, name: "Mahua (Vippa Puvvu)", type: "wild_fruit", scientific: "Madhuca longifolia", uses: "Provides energy, used in traditional remedies", description: "The sweet, fleshy flowers and fruits of the Mahua tree are highly nutritious and historically relied upon by forest communities for energy and medicine.", image: "https://www.yesearth.org/wp-content/uploads/2025/07/mahuwa.jpg" },
-            { id: 210, name: "Tendu (Thunikkaya)", type: "wild_fruit", scientific: "Diospyros melanoxylon", uses: "Aids digestion, supports gut health", description: "An exotic wild fruit of the ebony family. Its sweet, astringent taste makes it a popular wild snack that naturally regulates digestion.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/thunikkaya.png" },
-            { id: 211, name: "Wild Almond (Adavi Badam)", type: "wild_fruit", scientific: "Prunus amygdalus var. amara", uses:"Historically used for bitter almond oil and extracts.", description: "The wild, bitter relative of the cultivated sweet almond. It produces a green, fuzzy hull that splits open to reveal a hard shell containing the seed.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/wildbadam.png" },
-            { id: 212, name: "Lasoda (Banka Nakkera)", type: "wild_fruit", scientific: "Cordia dichotoma", uses: "Helps digestion, supports joint health", description: "Also called Indian Cherry, this sticky wild fruit is famously used in traditional anti-inflammatory remedies and digestive tonics.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/irikkaya.png" }
+            { id: 1, name: "Aloe Vera", type: "leaf", scientific: "Aloe barbadensis miller", uses: "Skin healing, Burns treatment, Digestive support", description: "A succulent plant species known for its soothing gel, widely used in traditional medicine and skincare.", image: "https://images.unsplash.com/photo-1672128550038-c21875e68bed?q=80&w=1025&auto=format&fit=crop" },
+            { id: 3, name: "Peppermint", type: "leaf", scientific: "Mentha × piperita", uses: "Headaches relief, Digestive aid, Respiratory relief", description: "A hybrid mint with high menthol content, ideal for cooling treatments.", image: "https://images.unsplash.com/photo-1681506346841-82ffe71e8e22?q=80&w=736&auto=format&fit=crop" },
+            { id: 5, name: "Neem", type: "leaf", scientific: "Azadirachta indica", uses: "Skin health, Detoxification, Antimicrobial", description: "Powerful antifungal and antibacterial botanical.", image: "https://images.unsplash.com/photo-1748839635226-0c9efbf18720?q=80&w=687&auto=format&fit=crop" },
+            { id: 7, name: "Spinach", type: "leaf", scientific: "Spinacia oleracea", uses: "Iron supplement, Bone health, Energy boost", description: "Nutrient-dense leafy green essential for cardiovascular health.", image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=400" },
+            { id: 9, name: "Moringa", type: "leaf", scientific: "Moringa oleifera", uses: "Boosting immunity, Improving digestion, Nutrition boost", description: "The 'miracle tree' leaves are packed with proteins.", image: "https://images.unsplash.com/photo-1771643033515-0028fd03b708?q=80&w=1170&auto=format&fit=crop" },
+            { id: 11, name: "Tulsi", type: "leaf", scientific: "Ocimum tenuiflorum", uses: "Respiratory support, Stress reduction, Immunity", description: "An adaptogenic herb revered in Ayurvedic medicine.", image: "https://images.unsplash.com/photo-1665479754958-1a8bdc47cc0d?q=80&w=735&auto=format&fit=crop" },
+            { id: 13, name: "Curry leaves", type: "leaf", scientific: "Murraya koenigii", uses: "Hair health, Digestion, Blood sugar management", description: "Aromatic leaves used to treat gastrointestinal issues.", image: "https://images.unsplash.com/photo-1711550815689-64ab57f32ead?q=80&w=735&auto=format&fit=crop" },
+            { id: 15, name: "Papaya leaves", type: "leaf", scientific: "Carica papaya", uses: "Platelet count support, Digestion aid", description: "Famous for increasing platelet count during viral infections.", image: "https://images.unsplash.com/photo-1642565571978-23d9f162ee21?q=80&w=1170&auto=format&fit=crop" },
+            { id: 101, name: "Blueberry", type: "fruit", scientific: "Vaccinium corymbosum", uses: "Brain health, Anti-aging, Inflammation reduction", description: "High in antioxidants for cognitive function.", image: "https://images.unsplash.com/photo-1425934398893-310a009a77f9?q=80&w=1171&auto=format&fit=crop" },
+            { id: 102, name: "Pomegranate", type: "fruit", scientific: "Punica granatum", uses: "Heart health, Anti-inflammatory, Antioxidant boost", description: "Potent antioxidants for cardiovascular protection.", image: "https://plus.unsplash.com/premium_photo-1668076515507-c5bc223c99a4?q=80&w=1074&auto=format&fit=crop" },
+            { id: 103, name: "Guava", type: "fruit", scientific: "Psidium guajava", uses: "Immunity booster, Digestion, Vitamin C source", description: "Contains four times the vitamin C of an orange.", image: "https://images.unsplash.com/photo-1689996647099-a7a0b67fd2f6?q=80&w=735&auto=format&fit=crop" },
+            { id: 104, name: "Lemon", type: "fruit", scientific: "Citrus limon", uses: "Detox support, Digestion, Immunity aid", description: "Staple for alkaline-acid balance.", image: "https://images.unsplash.com/photo-1590502593747-42a996133562?q=80&w=1170&auto=format&fit=crop" },
+            { id: 105, name: "Papaya", type: "fruit", scientific: "Carica papaya", uses: "Strong digestive aid, Enzyme source, Skin glow", description: "Contains papain to help digest proteins.", image: "https://plus.unsplash.com/premium_photo-1723126209077-f298ec1aa178?q=80&w=687&auto=format&fit=crop" },
+            { id: 106, name: "Strawberry", type: "fruit", scientific: "Fragaria × ananassa", uses: "Skin health, Heart protection", description: "Low glycemic index fruit rich in folate.", image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=1170&auto=format&fit=crop" },
+            { id: 107, name: "Grapes", type: "fruit", scientific: "Vitis vinifera", uses: "Longevity, Heart health, Resveratrol", description: "Contains resveratrol for cellular repair.", image: "https://images.unsplash.com/photo-1537640538966-79f369143f8f?q=80&w=1170&auto=format&fit=crop" },
+            { id: 108, name: "Orange", type: "fruit", scientific: "Citrus × sinensis", uses: "Immunity, Collagen, Vitamin C", description: "Essential for immune defense.", image: "https://images.unsplash.com/photo-1547514701-42782101795e?q=80&w=687&auto=format&fit=crop" },
+            { id: 109, name: "Kiwi", type: "fruit", scientific: "Actinidia deliciosa", uses: "Digestion aid, Vitamin C, Sleep", description: "Dense in fiber and actinidin enzyme.", image: "https://images.unsplash.com/photo-1616684000067-36952fde56ec?q=80&w=1228&auto=format&fit=crop" },
+            { id: 110, name: "Apple", type: "fruit", scientific: "Malus domestica", uses: "Gut health, Heart benefits, Fiber", description: "Contains pectin, a prebiotic fiber.", image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=1074&auto=format&fit=crop" },
+            { id: 111, name: "Pineapple", type: "fruit", scientific: "Ananas comosus", uses: "Anti-inflammatory, Bromelain source", description: "Natural source of anti-inflammatory bromelain.", image: "https://plus.unsplash.com/premium_photo-1724255994628-dceb76a829e8?q=80&w=687&auto=format&fit=crop" },
+            { id: 112, name: "Cherry", type: "fruit", scientific: "Prunus avium", uses: "Sleep improvement, Recovery, Joint health", description: "Natural source of melatonin.", image: "https://images.unsplash.com/photo-1528821128474-27f963b062bf?q=80&w=1170&auto=format&fit=crop" },
+            { id: 113, name: "Mango", type: "fruit", scientific: "Mangifera indica", uses: "Eye health, Immunity, Vitamin A", description: "High in Vitamin A for vision.", image: "https://images.unsplash.com/photo-1553279768-865429fa0078?q=80&w=1074&auto=format&fit=crop" },
+            { id: 114, name: "Watermelon", type: "fruit", scientific: "Citrullus lanatus", uses: "Hydration, Lycopene source", description: "Over 90% water for hydration.", image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=688&auto=format&fit=crop" },
+            { id: 115, name: "Banana", type: "fruit", scientific: "Musa acuminata", uses: "Energy boost, Potassium", description: "Quick source of potassium.", image: "https://images.unsplash.com/photo-1603833665858-e61d17a86224?q=80&w=627&auto=format&fit=crop" },
+            { id: 116, name: "Dragon Fruit", type: "fruit", scientific: "Selenicereus undatus", uses: "Fiber, Immune support, Iron", description: "A striking cactus fruit.", image: "https://images.unsplash.com/photo-1698546690393-45482eb06942?q=80&w=687&auto=format&fit=crop" },
+            { id: 117, name: "Avocado", type: "fruit", scientific: "Persea americana", uses: "Healthy fats, Vitamin E", description: "Essential for brain health.", image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&q=80&w=400" },
+            { id: 201, name: "Amla", type: "wild_fruit", scientific: "Phyllanthus emblica", uses: "Immunity, Digestion, Hair", description: "Extremely high Vitamin C content.", image: "https://images.unsplash.com/photo-1676043967557-2b70d9facd71?q=80&w=627&auto=format&fit=crop" },
+            { id: 202, name: "Bael", type: "wild_fruit", scientific: "Aegle marmelos", uses: "Gut health, Ulcers", description: "Sacred fruit with woody shell.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/935dee8e1b7dc960e5886d0e8107c463259c9a1b/maredu.png" },
+            { id: 203, name: "Jamun", type: "wild_fruit", scientific: "Syzygium cumini", uses: "Blood sugar, Digestion", description: "Anti-diabetic wild berry.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jamun.png" },
+            { id: 204, name: "Wood apple", type: "wild_fruit", scientific: "Limonia acidissima", uses: "Liver health, Detox", description: "Sour-sweet sticky pulp.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/woodapple.png" },
+            { id: 205, name: "Karonda", type: "wild_fruit", scientific: "Carissa carandas", uses: "Iron, Anemia", description: "Pink berry rich in iron.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/vaakkaya.png" },
+            { id: 206, name: "Haritaki", type: "wild_fruit", scientific: "Terminalia chebula", uses: "Detox, Gut health", description: "Known as king of medicines.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/karakkaya.png" },
+            { id: 207, name: "Mulberry", type: "wild_fruit", scientific: "Morus alba", uses: "Antioxidants, Blood health", description: "Supports circulation.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/mulberry.png" },
+            { id: 208, name: "Indian jujube", type: "wild_fruit", scientific: "Ziziphus mauritiana", uses: "Sleep, Digestion", description: "Packed with Vitamin C.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jujube.png" },
+            { id: 209, name: "Mahua", type: "wild_fruit", scientific: "Madhuca longifolia", uses: "Energy, Traditional remedies", description: "Fleshy flowers for community nutrition.", image: "https://www.yesearth.org/wp-content/uploads/2025/07/mahuwa.jpg" },
+            { id: 210, name: "Tendu", type: "wild_fruit", scientific: "Diospyros melanoxylon", uses: "Aids digestion", description: "Exotic wild snack.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/thunikkaya.png" },
+            { id: 211, name: "Wild Almond", type: "wild_fruit", scientific: "Prunus amygdalus", uses: "Traditional extracts", description: "Bitter relative of almond.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/wildbadam.png" },
+            { id: 212, name: "Lasoda", type: "wild_fruit", scientific: "Cordia dichotoma", uses: "Joint health, Digestion", description: "Indian cherry for tonics.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/irikkaya.png" }
         ];
 
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-        const gridContainer = document.getElementById('gridContainer');
-        const itemCount = document.getElementById('itemCount');
-        const modal = document.getElementById('modal');
-        const modalContent = document.getElementById('modalContent');
-        const searchInput = document.getElementById('searchInput');
-        const mobileFilter = document.getElementById('mobileFilter');
-        let currentFilter = 'all';
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-        function toggleFavorite(event, id) {
-            event.stopPropagation();
-            if (favorites.includes(id)) {
-                favorites = favorites.filter(favId => favId !== id);
-            } else {
-                favorites.push(id);
-            }
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            document.getElementById('themeIcon').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        function renderItems(items) {
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = '';
+            document.getElementById('itemCount').textContent = items.length;
+            
+            items.forEach(item => {
+                const isFav = favorites.includes(item.id);
+                const isCart = cart.includes(item.id);
+                const card = document.createElement('div');
+                card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative";
+                card.onclick = () => openModal(item);
+                card.innerHTML = `
+                    <div class="h-56 overflow-hidden relative">
+                        <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase text-emerald-700">${item.type.replace('_', ' ')}</div>
+                        <div class="absolute top-4 right-4 flex flex-col gap-2">
+                            <button onclick="toggleFav(event, ${item.id})" class="bg-white/90 backdrop-blur w-9 h-9 flex items-center justify-center rounded-full shadow-sm hover:scale-110 transition-transform">
+                                <i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart"></i>
+                            </button>
+                            <button onclick="toggleCartItem(event, ${item.id})" class="bg-white/90 backdrop-blur w-9 h-9 flex items-center justify-center rounded-full shadow-sm hover:scale-110 transition-transform">
+                                <i class="fas ${isCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'}"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-1">${item.name}</h3>
+                        <p class="text-xs italic text-emerald-600 font-semibold mb-4 opacity-80">${item.scientific}</p>
+                        <p class="text-sm line-clamp-2 text-muted-custom font-medium leading-relaxed">${item.uses}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openModal(item) {
+            document.getElementById('modalContent').innerHTML = `
+                <div class="relative">
+                    <div class="h-80 w-full relative overflow-hidden">
+                        <img src="${item.image}" class="w-full h-full object-cover">
+                        <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/40 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/60 transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="p-8 md:p-10">
+                        <h2 class="text-4xl font-bold mb-1">${item.name}</h2>
+                        <p class="text-lg italic text-emerald-600 mb-8 font-bold">${item.scientific}</p>
+                        <div class="flex flex-col md:flex-row gap-8 mb-10">
+                            <div class="flex-1">
+                                <h4 class="text-xs font-black uppercase tracking-widest text-emerald-500 mb-3">Botanical Description</h4>
+                                <p class="text-muted-custom text-sm leading-relaxed font-medium">${item.description}</p>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="text-xs font-black uppercase tracking-widest text-emerald-500 mb-3">Key Benefits</h4>
+                                <ul class="space-y-2">
+                                    ${item.uses.split(',').map(u => `<li class="text-sm text-muted-custom font-medium flex items-start"><i class="fas fa-circle text-[6px] text-emerald-500 mr-3 mt-2"></i>${u.trim()}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                        <button onclick="addToCart(${item.id})" class="w-full bg-[#10b981] hover:bg-[#059669] text-white py-4 rounded-2xl font-bold text-lg shadow-lg transition-all transform hover:-translate-y-1">
+                            Add to Collection
+                        </button>
+                    </div>
+                </div>`;
+            document.getElementById('modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function toggleFav(e, id) {
+            e.stopPropagation();
+            favorites = favorites.includes(id) ? favorites.filter(i => i !== id) : [...favorites, id];
             localStorage.setItem('favorites', JSON.stringify(favorites));
             applyCombinedFilters();
         }
 
-        function formatTypeLabel(type) { return type.replace('_', ' '); }
-
-        function getBadgeColor(type) {
-            if (type === 'leaf') return 'bg-emerald-100 text-emerald-700';
-            if (type === 'fruit') return 'bg-rose-100 text-rose-700';
-            if (type === 'wild_fruit') return 'bg-amber-100 text-amber-800';
-            return 'bg-slate-100 text-slate-700';
-        }
-
-        function renderItems(items) {
-            gridContainer.innerHTML = '';
-            itemCount.textContent = items.length;
-            
-            if (items.length === 0) {
-                gridContainer.innerHTML = `
-                    <div class="col-span-full text-center py-20 px-4 bg-white/5 rounded-3xl border-2 border-dashed border-slate-700">
-                        <div class="bg-slate-800 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-search text-slate-600 text-3xl"></i>
-                        </div>
-                        <h3 class="text-xl font-bold">No matches found</h3>
-                        <p class="text-slate-500 mt-2">Try a different search term. 🌿</p>
-                    </div>
-                `;
-                return;
+        function toggleCartItem(e, id) {
+            if(e) e.stopPropagation();
+            if (cart.includes(id)) {
+                cart = cart.filter(i => i !== id);
+            } else {
+                cart.push(id);
             }
-
-            items.forEach(item => {
-                const badgeColor = getBadgeColor(item.type);
-                const isFav = favorites.includes(item.id);
-                const heartIconClass = isFav ? 'fas text-rose-500' : 'far text-slate-400';
-                
-                const card = document.createElement('div');
-                card.className = "nature-card card-gradient rounded-3xl overflow-hidden border cursor-pointer group";
-                card.onclick = () => openModal(item);
-                
-                card.innerHTML = `
-                    <div class="h-56 overflow-hidden relative">
-                        <img loading="lazy" src="${item.image}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute top-4 left-4 ${badgeColor} backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-sm">
-                            ${formatTypeLabel(item.type)}
-                        </div>
-                        <button onclick="toggleFavorite(event, ${item.id})" class="absolute top-4 right-4 bg-white/90 backdrop-blur w-9 h-9 flex items-center justify-center rounded-full shadow-sm hover:scale-110 transition-transform z-10">
-                            <i class="${heartIconClass} fa-heart text-lg mt-0.5"></i>
-                        </button>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="text-xl font-bold">${item.name}</h3>
-                            <div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <i class="fas fa-chevron-right text-emerald-600 text-xs"></i>
-                            </div>
-                        </div>
-                        <p class="text-xs italic text-slate-400 mb-4 tracking-wide">${item.scientific}</p>
-                        <div class="flex items-start text-sm h-10">
-                            <i class="fas fa-hand-holding-heart mr-2 text-emerald-600/60 mt-1"></i>
-                            <span class="line-clamp-2 leading-snug">${item.uses}</span>
-                        </div>
-                    </div>
-                `;
-                gridContainer.appendChild(card);
-            });
-        }
-
-        function filterItems(type) {
-            currentFilter = type;
-            localStorage.setItem("selectedFilter", type);
-            const buttons = document.querySelectorAll('.filter-btn');
-            buttons.forEach(btn => {
-                btn.classList.remove('text-emerald-600', 'border-emerald-600', 'border-b-2');
-                btn.classList.add('text-slate-500');
-                if(btn.getAttribute('data-filter') === type) {
-                    btn.classList.add('text-emerald-600', 'border-emerald-600', 'border-b-2');
-                    btn.classList.remove('text-slate-500');
-                }
-            });
-            mobileFilter.value = type;
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartBadge();
+            renderCartItems();
             applyCombinedFilters();
         }
 
+        function addToCart(id) {
+            if(!cart.includes(id)) {
+                cart.push(id);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartBadge();
+            }
+            closeModal();
+            toggleCartSidebar();
+        }
+
+        function toggleCartSidebar() {
+            renderCartItems();
+            document.getElementById('cartSidebar').classList.add('active');
+            document.getElementById('cartOverlay').style.display = 'block';
+        }
+
+        function closeCart() {
+            document.getElementById('cartSidebar').classList.remove('active');
+            document.getElementById('cartOverlay').style.display = 'none';
+        }
+
+        function renderCartItems() {
+            const list = document.getElementById('cartItemsList');
+            const items = catalogData.filter(i => cart.includes(i.id));
+            list.innerHTML = items.length ? items.map(i => `
+                <div class="flex items-center gap-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border dark:border-slate-800">
+                    <img src="${i.image}" class="w-16 h-16 rounded-xl object-cover">
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-sm">${i.name}</h4>
+                        <p class="text-[10px] text-emerald-600 font-bold italic">${i.scientific}</p>
+                    </div>
+                    <button onclick="toggleCartItem(null, ${i.id})" class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 p-2 rounded-lg transition-colors">
+                        <i class="fas fa-trash-can"></i>
+                    </button>
+                </div>`).join('') : '<div class="text-center py-10"><i class="fas fa-shopping-basket text-4xl text-slate-200 mb-4 block"></i><p class="text-slate-400 font-medium">Your cart is empty</p></div>';
+        }
+
+        function updateCartBadge() {
+            const b = document.getElementById('cartBadge');
+            b.textContent = cart.length; b.classList.toggle('hidden', !cart.length);
+        }
+
         function applyCombinedFilters() {
-            const term = searchInput.value.toLowerCase();
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const type = localStorage.getItem('selectedFilter') || 'all';
             const filtered = catalogData.filter(item => {
-                const matchesType = currentFilter === 'all' || item.type === currentFilter || (currentFilter === 'favorites' && favorites.includes(item.id));
-                const matchesSearch = item.name.toLowerCase().includes(term) || item.scientific.toLowerCase().includes(term) || item.uses.toLowerCase().includes(term);
+                const matchesType = type === 'all' || item.type === type || (type === 'favorites' && favorites.includes(item.id));
+                const matchesSearch = item.name.toLowerCase().includes(term) || item.uses.toLowerCase().includes(term) || item.scientific.toLowerCase().includes(term);
                 return matchesType && matchesSearch;
             });
             renderItems(filtered);
         }
 
-        function openModal(item) {
-            modalContent.innerHTML = `
-                <div class="relative bg-white dark:bg-slate-900 rounded-3xl overflow-hidden">
-                    <button onclick="closeModal()" class="absolute top-4 right-4 z-10 bg-black/40 hover:bg-black/60 text-white w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center">
-                        <i class="fas fa-times"></i>
-                    </button>
-                    <div class="h-64 sm:h-96 w-full overflow-hidden">
-                        <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
-                    </div>
-                    <div class="p-6 md:p-10">
-                        <div class="flex items-center space-x-3 mb-2">
-                            <span class="px-3 py-1 rounded-full ${getBadgeColor(item.type)} text-[10px] font-bold uppercase tracking-wider">${formatTypeLabel(item.type)}</span>
-                            <h2 class="text-3xl font-extrabold">${item.name}</h2>
-                        </div>
-                        <p class="text-lg italic text-slate-400 mb-8">${item.scientific}</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                            <div>
-                                <h4 class="font-bold mb-3 flex items-center uppercase text-xs tracking-widest text-emerald-500">Description</h4>
-                                <p class="leading-relaxed text-sm">${item.description}</p>
-                            </div>
-                            <div>
-                                <h4 class="font-bold mb-3 flex items-center uppercase text-xs tracking-widest text-emerald-500">Benefits & Uses</h4>
-                                <ul class="space-y-3">
-                                    ${item.uses.split(',').map(use => `<li class="flex items-start text-sm"><i class="fas fa-check text-emerald-500 text-[10px] mr-3 mt-1"></i>${use.trim()}</li>`).join('')}
-                                </ul>
-                            </div>
-                        </div>
-                        <button onclick="closeModal()" class="mt-10 w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all shadow-xl">Close</button>
-                    </div>
-                </div>
-            `;
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+        function filterItems(type) {
+            localStorage.setItem('selectedFilter', type);
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                const isActive = btn.dataset.filter === type;
+                btn.classList.toggle('text-emerald-600', isActive);
+                btn.classList.toggle('border-b-2', isActive);
+                btn.classList.toggle('text-muted-custom', !isActive);
+            });
+            applyCombinedFilters();
         }
 
-        function closeModal() { modal.classList.add('hidden'); document.body.style.overflow = 'auto'; }
-        searchInput.oninput = (e) => { localStorage.setItem("lastSearch", e.target.value); applyCombinedFilters(); };
-        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-        modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
+        document.getElementById('searchInput').oninput = applyCombinedFilters;
 
         window.onload = () => {
-            const savedSearch = localStorage.getItem("lastSearch");
-            if (savedSearch) searchInput.value = savedSearch;
-            const savedFilter = localStorage.getItem("selectedFilter") || 'all';
-            filterItems(savedFilter);
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark');
+                document.getElementById('themeIcon').className = 'fas fa-sun';
+            }
+            updateCartBadge();
+            filterItems('all');
         };
     </script>
 </body>
