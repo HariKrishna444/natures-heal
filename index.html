@@ -5,30 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nature's Heal: Leaves & Fruits Encyclopedia</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            // Initialized with your provided Public Key
+            emailjs.init("706tMcZMfIbmEwZiQ");
+        })();
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
         
         :root {
             --bg-body: #f8fafc;
             --bg-card: #ffffff;
-            --text-main: #0f172a;    /* Deep navy for high readability in light mode */
-            --text-muted: #475569;  /* Balanced slate for descriptions */
-            --header-bg: rgba(255, 255, 255, 0.9);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --header-bg: #059669; /* Solid Emerald Green */
             --border-color: #e2e8f0;
             --input-bg: #ffffff;
             --footer-bg: #0f172a;
             --hero-bg: #064e3b;
+            --cart-bg: #ecfdf5; /* Light Green */
         }
 
         .dark {
-            --bg-body: #020617;     /* Darker midnight blue */
+            --bg-body: #020617;
             --bg-card: #0f172a;
-            --text-main: #f1f5f9;   /* Clean white/grey for dark mode */
-            --text-muted: #94a3b8;  /* Light slate for descriptions */
-            --header-bg: rgba(2, 6, 23, 0.9);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --header-bg: #064e3b; /* Solid Emerald Green in Dark Mode too */
             --border-color: #1e293b;
             --input-bg: #1e293b;
+            --cart-bg: #022c22; /* Dark Green */
         }
 
         body {
@@ -76,13 +87,17 @@
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
+        .text-primary {
+            color: var(--text-main);
+        }
+
         .text-muted-custom {
             color: var(--text-muted);
         }
 
         #cartSidebar {
             position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px; height: 100vh;
-            background: var(--bg-card); z-index: 100; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--cart-bg); z-index: 100; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: -10px 0 30px rgba(0,0,0,0.1); border-left: 1px solid var(--border-color);
         }
 
@@ -121,42 +136,48 @@
     
     <div id="cartSidebar">
         <div class="flex flex-col h-full p-6">
-            <div class="flex justify-between items-center mb-8 border-b border-slate-100 dark:border-slate-800 pb-4">
-                <h2 class="text-2xl font-bold">Shopping Cart</h2>
-                <button onclick="closeCart()" class="text-slate-400 hover:text-slate-600">
+            <div class="flex justify-between items-center mb-8 border-b border-emerald-200 dark:border-emerald-800 pb-4">
+                <h2 class="text-2xl font-bold dark:text-white">Shopping Cart</h2>
+                <button onclick="closeCart()" class="text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
             <div id="cartItemsList" class="flex-grow overflow-y-auto space-y-4 pr-2"></div>
-            <div class="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
-                <button onclick="alert('Order Placed Successfully!')" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-colors">Place Order</button>
+            <div class="mt-6 pt-6 border-t border-emerald-200 dark:border-emerald-800">
+                <div class="flex justify-between items-center mb-4 px-2">
+                    <span class="font-bold text-slate-600 dark:text-slate-300">Total Amount:</span>
+                    <span id="cartTotal" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹0.00</span>
+                </div>
+                <button id="placeOrderBtn" onclick="placeOrder()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all flex justify-center items-center gap-2">
+                    <span>Place Order</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <header class="sticky top-0 z-40 backdrop-blur-md">
+    <header class="sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center space-x-2">
-                <div class="bg-emerald-600 p-2 rounded-lg"><i class="fas fa-leaf text-white text-xl"></i></div>
-                <span class="text-2xl font-bold tracking-tight">Nature's <span class="text-emerald-600">Heal</span></span>
+                <div class="bg-white p-2 rounded-lg"><i class="fas fa-leaf text-emerald-600 text-xl"></i></div>
+                <span class="text-2xl font-bold tracking-tight text-white">Nature's Heal</span>
             </div>
             
             <nav class="hidden md:flex space-x-8 font-semibold">
-                <button data-filter="all" onclick="filterItems('all')" class="filter-btn text-emerald-600 border-b-2 border-emerald-600 pb-1">All Catalog</button>
-                <button data-filter="leaf" onclick="filterItems('leaf')" class="filter-btn text-muted-custom hover:text-emerald-600 pb-1">Leaves</button>
-                <button data-filter="fruit" onclick="filterItems('fruit')" class="filter-btn text-muted-custom hover:text-emerald-600 pb-1">Fruits</button>
-                <button data-filter="wild_fruit" onclick="filterItems('wild_fruit')" class="filter-btn text-muted-custom hover:text-emerald-600 pb-1">Wild Fruits</button>
-                <button data-filter="favorites" onclick="filterItems('favorites')" class="filter-btn text-muted-custom hover:text-emerald-600 pb-1">Collection ⭐</button>
+                <button data-filter="all" onclick="filterItems('all')" class="filter-btn text-white border-b-2 border-white pb-1">All Catalog</button>
+                <button data-filter="leaf" onclick="filterItems('leaf')" class="filter-btn text-emerald-100 hover:text-white pb-1">Leaves</button>
+                <button data-filter="fruit" onclick="filterItems('fruit')" class="filter-btn text-emerald-100 hover:text-white pb-1">Fruits</button>
+                <button data-filter="wild_fruit" onclick="filterItems('wild_fruit')" class="filter-btn text-emerald-100 hover:text-white pb-1">Wild Fruits</button>
+                <button data-filter="favorites" onclick="filterItems('favorites')" class="filter-btn text-emerald-100 hover:text-white pb-1">Collection ⭐</button>
             </nav>
 
             <div class="relative flex items-center gap-3">
-                <button onclick="toggleCartSidebar()" class="relative p-2 text-muted-custom hover:text-emerald-600">
+                <button onclick="toggleCartSidebar()" class="relative p-2 text-white hover:text-emerald-200">
                     <i class="fas fa-shopping-cart text-xl"></i>
                     <span id="cartBadge" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
                 </button>
                 <div class="relative">
-                    <input type="text" id="searchInput" placeholder="Search plants..." class="bg-slate-100 dark:bg-slate-800 text-main border-none rounded-full py-2 px-4 pl-10 focus:ring-2 focus:ring-emerald-500 w-full md:w-64 transition-all">
-                    <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
+                    <input type="text" id="searchInput" placeholder="Search plants..." class="bg-emerald-700 text-white placeholder-emerald-200 border-none rounded-full py-2 px-4 pl-10 focus:ring-2 focus:ring-white w-full md:w-64 transition-all">
+                    <i class="fas fa-search absolute left-3 top-3 text-emerald-200"></i>
                 </div>
             </div>
         </div>
@@ -172,7 +193,7 @@
         </section>
 
         <div class="mb-8">
-            <h2 class="text-3xl font-bold mb-1">Botanical Catalog</h2>
+            <h2 class="text-3xl font-bold mb-1 dark:text-white">Botanical Catalog</h2>
             <p class="text-muted-custom font-medium">Showing <span id="itemCount" class="font-bold text-emerald-600">0</span> unique species</p>
         </div>
         
@@ -188,9 +209,9 @@
             <p class="text-slate-400 mb-8 max-w-md mx-auto">Your companion for exploring the healing power of the natural world.</p>
             
             <div class="flex justify-center space-x-6 mb-12 text-slate-400">
-                <a href="#" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-facebook"></i></a>
+                <a href="https://www.instagram.com/hari_krishna_ak/" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://www.facebook.com/hari.krishna.arvapalli/" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-facebook-f"></i></a>
             </div>
 
             <div class="text-slate-500 text-xs font-bold tracking-widest uppercase">
@@ -205,43 +226,48 @@
 
     <script>
         const catalogData = [
-            { id: 1, name: "Aloe Vera", type: "leaf", scientific: "Aloe barbadensis miller", uses: "Skin healing, Burns treatment, Digestive support", description: "A succulent plant species known for its soothing gel, widely used in traditional medicine and skincare.", image: "https://images.unsplash.com/photo-1672128550038-c21875e68bed?q=80&w=1025&auto=format&fit=crop" },
-            { id: 3, name: "Peppermint", type: "leaf", scientific: "Mentha × piperita", uses: "Headaches relief, Digestive aid, Respiratory relief", description: "A hybrid mint with high menthol content, ideal for cooling treatments.", image: "https://images.unsplash.com/photo-1681506346841-82ffe71e8e22?q=80&w=736&auto=format&fit=crop" },
-            { id: 5, name: "Neem", type: "leaf", scientific: "Azadirachta indica", uses: "Skin health, Detoxification, Antimicrobial", description: "Powerful antifungal and antibacterial botanical.", image: "https://images.unsplash.com/photo-1748839635226-0c9efbf18720?q=80&w=687&auto=format&fit=crop" },
-            { id: 7, name: "Spinach", type: "leaf", scientific: "Spinacia oleracea", uses: "Iron supplement, Bone health, Energy boost", description: "Nutrient-dense leafy green essential for cardiovascular health.", image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=400" },
-            { id: 9, name: "Moringa", type: "leaf", scientific: "Moringa oleifera", uses: "Boosting immunity, Improving digestion, Nutrition boost", description: "The 'miracle tree' leaves are packed with proteins.", image: "https://images.unsplash.com/photo-1771643033515-0028fd03b708?q=80&w=1170&auto=format&fit=crop" },
-            { id: 11, name: "Tulsi", type: "leaf", scientific: "Ocimum tenuiflorum", uses: "Respiratory support, Stress reduction, Immunity", description: "An adaptogenic herb revered in Ayurvedic medicine.", image: "https://images.unsplash.com/photo-1665479754958-1a8bdc47cc0d?q=80&w=735&auto=format&fit=crop" },
-            { id: 13, name: "Curry leaves", type: "leaf", scientific: "Murraya koenigii", uses: "Hair health, Digestion, Blood sugar management", description: "Aromatic leaves used to treat gastrointestinal issues.", image: "https://images.unsplash.com/photo-1711550815689-64ab57f32ead?q=80&w=735&auto=format&fit=crop" },
-            { id: 15, name: "Papaya leaves", type: "leaf", scientific: "Carica papaya", uses: "Platelet count support, Digestion aid", description: "Famous for increasing platelet count during viral infections.", image: "https://images.unsplash.com/photo-1642565571978-23d9f162ee21?q=80&w=1170&auto=format&fit=crop" },
-            { id: 101, name: "Blueberry", type: "fruit", scientific: "Vaccinium corymbosum", uses: "Brain health, Anti-aging, Inflammation reduction", description: "High in antioxidants for cognitive function.", image: "https://images.unsplash.com/photo-1425934398893-310a009a77f9?q=80&w=1171&auto=format&fit=crop" },
-            { id: 102, name: "Pomegranate", type: "fruit", scientific: "Punica granatum", uses: "Heart health, Anti-inflammatory, Antioxidant boost", description: "Potent antioxidants for cardiovascular protection.", image: "https://plus.unsplash.com/premium_photo-1668076515507-c5bc223c99a4?q=80&w=1074&auto=format&fit=crop" },
-            { id: 103, name: "Guava", type: "fruit", scientific: "Psidium guajava", uses: "Immunity booster, Digestion, Vitamin C source", description: "Contains four times the vitamin C of an orange.", image: "https://images.unsplash.com/photo-1689996647099-a7a0b67fd2f6?q=80&w=735&auto=format&fit=crop" },
-            { id: 104, name: "Lemon", type: "fruit", scientific: "Citrus limon", uses: "Detox support, Digestion, Immunity aid", description: "Staple for alkaline-acid balance.", image: "https://images.unsplash.com/photo-1590502593747-42a996133562?q=80&w=1170&auto=format&fit=crop" },
-            { id: 105, name: "Papaya", type: "fruit", scientific: "Carica papaya", uses: "Strong digestive aid, Enzyme source, Skin glow", description: "Contains papain to help digest proteins.", image: "https://plus.unsplash.com/premium_photo-1723126209077-f298ec1aa178?q=80&w=687&auto=format&fit=crop" },
-            { id: 106, name: "Strawberry", type: "fruit", scientific: "Fragaria × ananassa", uses: "Skin health, Heart protection", description: "Low glycemic index fruit rich in folate.", image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=1170&auto=format&fit=crop" },
-            { id: 107, name: "Grapes", type: "fruit", scientific: "Vitis vinifera", uses: "Longevity, Heart health, Resveratrol", description: "Contains resveratrol for cellular repair.", image: "https://images.unsplash.com/photo-1537640538966-79f369143f8f?q=80&w=1170&auto=format&fit=crop" },
-            { id: 108, name: "Orange", type: "fruit", scientific: "Citrus × sinensis", uses: "Immunity, Collagen, Vitamin C", description: "Essential for immune defense.", image: "https://images.unsplash.com/photo-1547514701-42782101795e?q=80&w=687&auto=format&fit=crop" },
-            { id: 109, name: "Kiwi", type: "fruit", scientific: "Actinidia deliciosa", uses: "Digestion aid, Vitamin C, Sleep", description: "Dense in fiber and actinidin enzyme.", image: "https://images.unsplash.com/photo-1616684000067-36952fde56ec?q=80&w=1228&auto=format&fit=crop" },
-            { id: 110, name: "Apple", type: "fruit", scientific: "Malus domestica", uses: "Gut health, Heart benefits, Fiber", description: "Contains pectin, a prebiotic fiber.", image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=1074&auto=format&fit=crop" },
-            { id: 111, name: "Pineapple", type: "fruit", scientific: "Ananas comosus", uses: "Anti-inflammatory, Bromelain source", description: "Natural source of anti-inflammatory bromelain.", image: "https://plus.unsplash.com/premium_photo-1724255994628-dceb76a829e8?q=80&w=687&auto=format&fit=crop" },
-            { id: 112, name: "Cherry", type: "fruit", scientific: "Prunus avium", uses: "Sleep improvement, Recovery, Joint health", description: "Natural source of melatonin.", image: "https://images.unsplash.com/photo-1528821128474-27f963b062bf?q=80&w=1170&auto=format&fit=crop" },
-            { id: 113, name: "Mango", type: "fruit", scientific: "Mangifera indica", uses: "Eye health, Immunity, Vitamin A", description: "High in Vitamin A for vision.", image: "https://images.unsplash.com/photo-1553279768-865429fa0078?q=80&w=1074&auto=format&fit=crop" },
-            { id: 114, name: "Watermelon", type: "fruit", scientific: "Citrullus lanatus", uses: "Hydration, Lycopene source", description: "Over 90% water for hydration.", image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=688&auto=format&fit=crop" },
-            { id: 115, name: "Banana", type: "fruit", scientific: "Musa acuminata", uses: "Energy boost, Potassium", description: "Quick source of potassium.", image: "https://images.unsplash.com/photo-1603833665858-e61d17a86224?q=80&w=627&auto=format&fit=crop" },
-            { id: 116, name: "Dragon Fruit", type: "fruit", scientific: "Selenicereus undatus", uses: "Fiber, Immune support, Iron", description: "A striking cactus fruit.", image: "https://images.unsplash.com/photo-1698546690393-45482eb06942?q=80&w=687&auto=format&fit=crop" },
-            { id: 117, name: "Avocado", type: "fruit", scientific: "Persea americana", uses: "Healthy fats, Vitamin E", description: "Essential for brain health.", image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&q=80&w=400" },
-            { id: 201, name: "Amla", type: "wild_fruit", scientific: "Phyllanthus emblica", uses: "Immunity, Digestion, Hair", description: "Extremely high Vitamin C content.", image: "https://images.unsplash.com/photo-1676043967557-2b70d9facd71?q=80&w=627&auto=format&fit=crop" },
-            { id: 202, name: "Bael", type: "wild_fruit", scientific: "Aegle marmelos", uses: "Gut health, Ulcers", description: "Sacred fruit with woody shell.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/935dee8e1b7dc960e5886d0e8107c463259c9a1b/maredu.png" },
-            { id: 203, name: "Jamun", type: "wild_fruit", scientific: "Syzygium cumini", uses: "Blood sugar, Digestion", description: "Anti-diabetic wild berry.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jamun.png" },
-            { id: 204, name: "Wood apple", type: "wild_fruit", scientific: "Limonia acidissima", uses: "Liver health, Detox", description: "Sour-sweet sticky pulp.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/woodapple.png" },
-            { id: 205, name: "Karonda", type: "wild_fruit", scientific: "Carissa carandas", uses: "Iron, Anemia", description: "Pink berry rich in iron.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/vaakkaya.png" },
-            { id: 206, name: "Haritaki", type: "wild_fruit", scientific: "Terminalia chebula", uses: "Detox, Gut health", description: "Known as king of medicines.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/karakkaya.png" },
-            { id: 207, name: "Mulberry", type: "wild_fruit", scientific: "Morus alba", uses: "Antioxidants, Blood health", description: "Supports circulation.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/mulberry.png" },
-            { id: 208, name: "Indian jujube", type: "wild_fruit", scientific: "Ziziphus mauritiana", uses: "Sleep, Digestion", description: "Packed with Vitamin C.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jujube.png" },
-            { id: 209, name: "Mahua", type: "wild_fruit", scientific: "Madhuca longifolia", uses: "Energy, Traditional remedies", description: "Fleshy flowers for community nutrition.", image: "https://www.yesearth.org/wp-content/uploads/2025/07/mahuwa.jpg" },
-            { id: 210, name: "Tendu", type: "wild_fruit", scientific: "Diospyros melanoxylon", uses: "Aids digestion", description: "Exotic wild snack.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/thunikkaya.png" },
-            { id: 211, name: "Wild Almond", type: "wild_fruit", scientific: "Prunus amygdalus", uses: "Traditional extracts", description: "Bitter relative of almond.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/wildbadam.png" },
-            { id: 212, name: "Lasoda", type: "wild_fruit", scientific: "Cordia dichotoma", uses: "Joint health, Digestion", description: "Indian cherry for tonics.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/irikkaya.png" }
+            // LEAVES - Prices converted to INR (all < ₹200)
+            { id: 1, name: "Aloe Vera", type: "leaf", scientific: "Aloe barbadensis miller", price: 95.00, uses: "Skin healing, Burns treatment, Digestive support", description: "A succulent plant species known for its soothing gel, widely used in traditional medicine and skincare.", image: "https://images.unsplash.com/photo-1672128550038-c21875e68bed?q=80&w=1025&auto=format&fit=crop" },
+            { id: 3, name: "Peppermint", type: "leaf", scientific: "Mentha × piperita", price: 60.00, uses: "Headaches relief, Digestive aid, Respiratory relief", description: "A hybrid mint with high menthol content, ideal for cooling treatments.", image: "https://images.unsplash.com/photo-1681506346841-82ffe71e8e22?q=80&w=736&auto=format&fit=crop" },
+            { id: 5, name: "Neem", type: "leaf", scientific: "Azadirachta indica", price: 110.00, uses: "Skin health, Detoxification, Antimicrobial", description: "Powerful antifungal and antibacterial botanical.", image: "https://images.unsplash.com/photo-1748839635226-0c9efbf18720?q=80&w=687&auto=format&fit=crop" },
+            { id: 7, name: "Spinach", type: "leaf", scientific: "Spinacia oleracea", price: 35.00, uses: "Iron supplement, Bone health, Energy boost", description: "Nutrient-dense leafy green essential for cardiovascular health.", image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=400" },
+            { id: 9, name: "Moringa", type: "leaf", scientific: "Moringa oleifera", price: 140.00, uses: "Boosting immunity, Improving digestion, Nutrition boost", description: "The 'miracle tree' leaves are packed with proteins.", image: "https://images.unsplash.com/photo-1771643033515-0028fd03b708?q=80&w=1170&auto=format&fit=crop" },
+            { id: 11, name: "Tulsi", type: "leaf", scientific: "Ocimum tenuiflorum", price: 75.00, uses: "Respiratory support, Stress reduction, Immunity", description: "An adaptogenic herb revered in Ayurvedic medicine.", image: "https://images.unsplash.com/photo-1665479754958-1a8bdc47cc0d?q=80&w=735&auto=format&fit=crop" },
+            { id: 13, name: "Curry leaves", type: "leaf", scientific: "Murraya koenigii", price: 45.00, uses: "Hair health, Digestion, Blood sugar management", description: "Aromatic leaves used to treat gastrointestinal issues.", image: "https://images.unsplash.com/photo-1711550815689-64ab57f32ead?q=80&w=735&auto=format&fit=crop" },
+            { id: 15, name: "Papaya leaves", type: "leaf", scientific: "Carica papaya", price: 55.00, uses: "Platelet count support, Digestion aid", description: "Famous for increasing platelet count during viral infections.", image: "https://images.unsplash.com/photo-1642565571978-23d9f162ee21?q=80&w=1170&auto=format&fit=crop" },
+            
+            // FRUITS - Prices converted to INR (all < ₹200)
+            { id: 101, name: "Blueberry", type: "fruit", scientific: "Vaccinium corymbosum", price: 180.00, uses: "Brain health, Anti-aging, Inflammation reduction", description: "High in antioxidants for cognitive function.", image: "https://images.unsplash.com/photo-1425934398893-310a009a77f9?q=80&w=1171&auto=format&fit=crop" },
+            { id: 102, name: "Pomegranate", type: "fruit", scientific: "Punica granatum", price: 120.00, uses: "Heart health, Anti-inflammatory, Antioxidant boost", description: "Potent antioxidants for cardiovascular protection.", image: "https://plus.unsplash.com/premium_photo-1668076515507-c5bc223c99a4?q=80&w=1074&auto=format&fit=crop" },
+            { id: 103, name: "Guava", type: "fruit", scientific: "Psidium guajava", price: 50.00, uses: "Immunity booster, Digestion, Vitamin C source", description: "Contains four times the vitamin C of an orange.", image: "https://images.unsplash.com/photo-1689996647099-a7a0b67fd2f6?q=80&w=735&auto=format&fit=crop" },
+            { id: 104, name: "Lemon", type: "fruit", scientific: "Citrus limon", price: 25.00, uses: "Detox support, Digestion, Immunity aid", description: "Staple for alkaline-acid balance.", image: "https://images.unsplash.com/photo-1590502593747-42a996133562?q=80&w=1170&auto=format&fit=crop" },
+            { id: 105, name: "Papaya", type: "fruit", scientific: "Carica papaya", price: 70.00, uses: "Strong digestive aid, Enzyme source, Skin glow", description: "Contains papain to help digest proteins.", image: "https://plus.unsplash.com/premium_photo-1723126209077-f298ec1aa178?q=80&w=687&auto=format&fit=crop" },
+            { id: 106, name: "Strawberry", type: "fruit", scientific: "Fragaria × ananassa", price: 150.00, uses: "Skin health, Heart protection", description: "Low glycemic index fruit rich in folate.", image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=1170&auto=format&fit=crop" },
+            { id: 107, name: "Grapes", type: "fruit", scientific: "Vitis vinifera", price: 90.00, uses: "Longevity, Heart health, Resveratrol", description: "Contains resveratrol for cellular repair.", image: "https://images.unsplash.com/photo-1537640538966-79f369143f8f?q=80&w=1170&auto=format&fit=crop" },
+            { id: 108, name: "Orange", type: "fruit", scientific: "Citrus × sinensis", price: 40.00, uses: "Immunity, Collagen, Vitamin C", description: "Essential for immune defense.", image: "https://images.unsplash.com/photo-1547514701-42782101795e?q=80&w=687&auto=format&fit=crop" },
+            { id: 109, name: "Kiwi", type: "fruit", scientific: "Actinidai deliciosa", price: 110.00, uses: "Digestion aid, Vitamin C, Sleep", description: "Dense in fiber and actinidin enzyme.", image: "https://images.unsplash.com/photo-1616684000067-36952fde56ec?q=80&w=1228&auto=format&fit=crop" },
+            { id: 110, name: "Apple", type: "fruit", scientific: "Malus domestica", price: 130.00, uses: "Gut health, Heart benefits, Fiber", description: "Contains pectin, a prebiotic fiber.", image: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=1074&auto=format&fit=crop" },
+            { id: 111, name: "Pineapple", type: "fruit", scientific: "Ananas comosus", price: 80.00, uses: "Anti-inflammatory, Bromelain source", description: "Natural source of anti-inflammatory bromelain.", image: "https://plus.unsplash.com/premium_photo-1724255994628-dceb76a829e8?q=80&w=687&auto=format&fit=crop" },
+            { id: 112, name: "Cherry", type: "fruit", scientific: "Prunus avium", price: 195.00, uses: "Sleep improvement, Recovery, Joint health", description: "Natural source of melatonin.", image: "https://images.unsplash.com/photo-1528821128474-27f963b062bf?q=80&w=1170&auto=format&fit=crop" },
+            { id: 113, name: "Mango", type: "fruit", scientific: "Mangifera indica", price: 140.00, uses: "Eye health, Immunity, Vitamin A", description: "High in Vitamin A for vision.", image: "https://images.unsplash.com/photo-1553279768-865429fa0078?q=80&w=1074&auto=format&fit=crop" },
+            { id: 114, name: "Watermelon", type: "fruit", scientific: "Citrullus lanatus", price: 90.00, uses: "Hydration, Lycopene source", description: "Over 90% water for hydration.", image: "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=688&auto=format&fit=crop" },
+            { id: 115, name: "Banana", type: "fruit", scientific: "Musa acuminata", price: 20.00, uses: "Energy boost, Potassium", description: "Quick source of potassium.", image: "https://images.unsplash.com/photo-1603833665858-e61d17a86224?q=80&w=627&auto=format&fit=crop" },
+            { id: 116, name: "Dragon Fruit", type: "fruit", scientific: "Selenicereus undatus", price: 160.00, uses: "Fiber, Immune support, Iron", description: "A striking cactus fruit.", image: "https://images.unsplash.com/photo-1698546690393-45482eb06942?q=80&w=687&auto=format&fit=crop" },
+            { id: 117, name: "Avocado", type: "fruit", scientific: "Persea americana", price: 175.00, uses: "Healthy fats, Vitamin E", description: "Essential for brain health.", image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&q=80&w=400" },
+            
+            // WILD FRUITS - Prices converted to INR (all < ₹200)
+            { id: 201, name: "Amla", type: "wild_fruit", scientific: "Phyllanthus emblica", price: 80.00, uses: "Immunity, Digestion, Hair", description: "Extremely high Vitamin C content.", image: "https://images.unsplash.com/photo-1676043967557-2b70d9facd71?q=80&w=627&auto=format&fit=crop" },
+            { id: 202, name: "Bael", type: "wild_fruit", scientific: "Aegle marmelos", price: 110.00, uses: "Gut health, Ulcers", description: "Sacred fruit with woody shell.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/935dee8e1b7dc960e5886d0e8107c463259c9a1b/maredu.png" },
+            { id: 203, name: "Jamun", type: "wild_fruit", scientific: "Syzygium cumini", price: 95.00, uses: "Blood sugar, Digestion", description: "Anti-diabetic wild berry.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jamun.png" },
+            { id: 204, name: "Wood apple", type: "wild_fruit", scientific: "Limonia acidissima", price: 75.00, uses: "Liver health, Detox", description: "Sour-sweet sticky pulp.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/woodapple.png" },
+            { id: 205, name: "Karonda", type: "wild_fruit", scientific: "Carissa carandas", price: 65.00, uses: "Iron, Anemia", description: "Pink berry rich in iron.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/vaakkaya.png" },
+            { id: 206, name: "Haritaki", type: "wild_fruit", scientific: "Terminalia chebula", price: 160.00, uses: "Detox, Gut health", description: "Known as king of medicines.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/karakkaya.png" },
+            { id: 207, name: "Mulberry", type: "wild_fruit", scientific: "Morus alba", price: 105.00, uses: "Antioxidants, Blood health", description: "Supports circulation.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/mulberry.png" },
+            { id: 208, name: "Indian jujube", type: "wild_fruit", scientific: "Ziziphus mauritiana", price: 55.00, uses: "Sleep, Digestion", description: "Packed with Vitamin C.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jujube.png" },
+            { id: 209, name: "Mahua", type: "wild_fruit", scientific: "Madhuca longifolia", price: 85.00, uses: "Energy, Traditional remedies", description: "Fleshy flowers for community nutrition.", image: "https://www.yesearth.org/wp-content/uploads/2025/07/mahuwa.jpg" },
+            { id: 210, name: "Tendu", type: "wild_fruit", scientific: "Diospyros melanoxylon", price: 70.00, uses: "Aids digestion", description: "Exotic wild snack.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/thunikkaya.png" },
+            { id: 211, name: "Wild Almond", type: "wild_fruit", scientific: "Prunus amygdalus", price: 135.00, uses: "Traditional extracts", description: "Bitter relative of almond.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/wildbadam.png" },
+            { id: 212, name: "Lasoda", type: "wild_fruit", scientific: "Cordia dichotoma", price: 80.00, uses: "Joint health, Digestion", description: "Indian cherry for tonics.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/irikkaya.png" }
         ];
 
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
@@ -279,7 +305,10 @@
                         </div>
                     </div>
                     <div class="p-6">
-                        <h3 class="text-xl font-bold mb-1">${item.name}</h3>
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="text-xl font-bold text-primary">${item.name}</h3>
+                            <span class="text-emerald-600 font-black">₹${item.price.toFixed(2)}</span>
+                        </div>
                         <p class="text-xs italic text-emerald-600 font-semibold mb-4 opacity-80">${item.scientific}</p>
                         <p class="text-sm line-clamp-2 text-muted-custom font-medium leading-relaxed">${item.uses}</p>
                     </div>
@@ -298,7 +327,10 @@
                         </button>
                     </div>
                     <div class="p-8 md:p-10">
-                        <h2 class="text-4xl font-bold mb-1">${item.name}</h2>
+                        <div class="flex justify-between items-start mb-1">
+                            <h2 class="text-4xl font-bold text-primary">${item.name}</h2>
+                            <span class="text-3xl font-black text-emerald-600">₹${item.price.toFixed(2)}</span>
+                        </div>
                         <p class="text-lg italic text-emerald-600 mb-8 font-bold">${item.scientific}</p>
                         <div class="flex flex-col md:flex-row gap-8 mb-10">
                             <div class="flex-1">
@@ -313,7 +345,7 @@
                             </div>
                         </div>
                         <button onclick="addToCart(${item.id})" class="w-full bg-[#10b981] hover:bg-[#059669] text-white py-4 rounded-2xl font-bold text-lg shadow-lg transition-all transform hover:-translate-y-1">
-                            Add to Collection
+                            Add to Cart
                         </button>
                     </div>
                 </div>`;
@@ -365,17 +397,23 @@
         function renderCartItems() {
             const list = document.getElementById('cartItemsList');
             const items = catalogData.filter(i => cart.includes(i.id));
+            const total = items.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
+
             list.innerHTML = items.length ? items.map(i => `
-                <div class="flex items-center gap-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border dark:border-slate-800">
+                <div class="flex items-center gap-4 p-3 bg-white/60 dark:bg-black/20 rounded-2xl border dark:border-white/10">
                     <img src="${i.image}" class="w-16 h-16 rounded-xl object-cover">
                     <div class="flex-grow">
-                        <h4 class="font-bold text-sm">${i.name}</h4>
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-bold text-sm text-primary">${i.name}</h4>
+                            <span class="text-xs font-black text-emerald-600">₹${i.price.toFixed(2)}</span>
+                        </div>
                         <p class="text-[10px] text-emerald-600 font-bold italic">${i.scientific}</p>
                     </div>
                     <button onclick="toggleCartItem(null, ${i.id})" class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 p-2 rounded-lg transition-colors">
                         <i class="fas fa-trash-can"></i>
                     </button>
-                </div>`).join('') : '<div class="text-center py-10"><i class="fas fa-shopping-basket text-4xl text-slate-200 mb-4 block"></i><p class="text-slate-400 font-medium">Your cart is empty</p></div>';
+                </div>`).join('') : '<div class="text-center py-10"><i class="fas fa-shopping-basket text-4xl text-emerald-200 dark:text-emerald-800 mb-4 block"></i><p class="text-slate-500 dark:text-slate-400 font-medium">Your cart is empty</p></div>';
         }
 
         function updateCartBadge() {
@@ -398,15 +436,61 @@
             localStorage.setItem('selectedFilter', type);
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 const isActive = btn.dataset.filter === type;
-                btn.classList.toggle('text-emerald-600', isActive);
-                btn.classList.toggle('border-b-2', isActive);
-                btn.classList.toggle('text-muted-custom', !isActive);
+                if (isActive) {
+                    btn.classList.add('text-white', 'border-b-2', 'border-white');
+                    btn.classList.remove('text-emerald-100');
+                } else {
+                    btn.classList.remove('text-white', 'border-b-2', 'border-white');
+                    btn.classList.add('text-emerald-100');
+                }
             });
             applyCombinedFilters();
         }
 
         function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
         document.getElementById('searchInput').oninput = applyCombinedFilters;
+
+        function placeOrder() {
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+
+            const btn = document.getElementById('placeOrderBtn');
+            const originalContent = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Processing...`;
+
+            const items = catalogData.filter(i => cart.includes(i.id));
+            const total = items.reduce((sum, item) => sum + item.price, 0);
+            const itemDetails = items.map(i => `- ${i.name} (₹${i.price.toFixed(2)})`).join('\n');
+
+            const templateParams = {
+                order_details: itemDetails,
+                total_items: cart.length,
+                total_price: `₹${total.toFixed(2)}`,
+                order_date: new Date().toLocaleString()
+            };
+
+            emailjs.send('service_414ax6g', 'template_35uhaop', templateParams)
+                .then(function(response) {
+                    alert('Order Placed Successfully! Total: ₹' + total.toFixed(2));
+                    cart = []; 
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    updateCartBadge();
+                    renderCartItems();
+                    closeCart();
+                    applyCombinedFilters();
+                }, function(error) {
+                    alert('Failed to place order. Please check your console for errors.');
+                    console.error('EmailJS Error:', error);
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                });
+        }
 
         window.onload = () => {
             if (localStorage.getItem('theme') === 'dark') {
