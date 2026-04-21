@@ -167,6 +167,7 @@
                 <button data-filter="leaf" onclick="filterItems('leaf')" class="filter-btn text-emerald-100 hover:text-white pb-1">Leaves</button>
                 <button data-filter="fruit" onclick="filterItems('fruit')" class="filter-btn text-emerald-100 hover:text-white pb-1">Fruits</button>
                 <button data-filter="wild_fruit" onclick="filterItems('wild_fruit')" class="filter-btn text-emerald-100 hover:text-white pb-1">Wild Fruits</button>
+                <button data-filter="seed" onclick="filterItems('seed')" class="filter-btn text-emerald-100 hover:text-white pb-1">Seeds</button>
                 <button data-filter="favorites" onclick="filterItems('favorites')" class="filter-btn text-emerald-100 hover:text-white pb-1">Collection ⭐</button>
             </nav>
 
@@ -187,7 +188,7 @@
         <section class="hero-banner p-8 md:p-16 mb-16 text-white shadow-xl">
             <div class="max-w-2xl relative z-10">
                 <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">Discover the Power of Nature's Elements</h1>
-                <p class="text-emerald-50 text-lg mb-10 leading-relaxed opacity-90">Explore the medicinal uses, nutritional values, and fascinating facts about the world's most vital leaves, fruits, and wild botanical treasures.</p>
+                <p class="text-emerald-50 text-lg mb-10 leading-relaxed opacity-90">Explore the medicinal uses, nutritional values, and fascinating facts about the world's most vital leaves, fruits, seeds, and wild botanical treasures.</p>
                 <button onclick="document.getElementById('gridContainer').scrollIntoView({behavior: 'smooth'})" class="bg-white text-emerald-900 px-8 py-3 rounded-full font-bold hover:bg-emerald-50 transition-all transform hover:scale-105">Start Exploring</button>
             </div>
         </section>
@@ -267,7 +268,25 @@
             { id: 209, name: "Mahua", type: "wild_fruit", scientific: "Madhuca longifolia", price: 85.00, uses: "Energy, Traditional remedies", description: "Fleshy flowers for community nutrition.", image: "https://www.yesearth.org/wp-content/uploads/2025/07/mahuwa.jpg" },
             { id: 210, name: "Tendu", type: "wild_fruit", scientific: "Diospyros melanoxylon", price: 70.00, uses: "Aids digestion", description: "Exotic wild snack.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/thunikkaya.png" },
             { id: 211, name: "Wild Almond", type: "wild_fruit", scientific: "Prunus amygdalus", price: 135.00, uses: "Traditional extracts", description: "Bitter relative of almond.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/wildbadam.png" },
-            { id: 212, name: "Lasoda", type: "wild_fruit", scientific: "Cordia dichotoma", price: 80.00, uses: "Joint health, Digestion", description: "Indian cherry for tonics.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/irikkaya.png" }
+            { id: 212, name: "Lasoda", type: "wild_fruit", scientific: "Cordia dichotoma", price: 80.00, uses: "Joint health, Digestion", description: "Indian cherry for tonics.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/irikkaya.png" },
+
+            // SEEDS - Prices converted to INR
+            { id: 301, name: "Chia seeds", type: "seed", scientific: "Salvia hispanica", price: 150.00, uses: "Supports digestion & weight loss", description: "Omega-3, fiber", image: "https://images.unsplash.com/photo-1691443229545-8b17638c8f9c?q=80&w=1205&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            { id: 302, name: "Sunflower seeds", type: "seed", scientific: "Helianthus annuus", price: 90.00, uses: "Good for skin & heart", description: "Rich in Vitamin E", image: "https://images.unsplash.com/photo-1613500788522-89c4d55bdd0e?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            { id: 303, name: "Pumpkin seeds", type: "seed", scientific: "Cucurbita pepo", price: 120.00, uses: "Boost immunity & sleep", description: "Zinc & magnesium", image: "https://plus.unsplash.com/premium_photo-1723874550998-f72f9d3f0b16?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            { id: 304, name: "Flax seeds", type: "seed", scientific: "Linum usitatissimum", price: 80.00, uses: "Reduces cholesterol", description: "Heart health", image: "https://images.unsplash.com/photo-1642497393440-4b5cc5f03ff5?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            { id: 305, name: "Sesame seeds", type: "seed", scientific: "Sesamum indicum", price: 95.00, uses: "Strong bones", description: "Calcium-rich", image: "https://plus.unsplash.com/premium_photo-1667773301057-65909aa87b95?q=80&w=968&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            { id: 306, name: "Hemp seeds", type: "seed", scientific: "Cannabis sativa", price: 180.00, uses: "Muscle & brain support", description: "Complete protein", image: "https://plus.unsplash.com/premium_photo-1671130295236-e8afa3ac38c9?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            { id: 307, name: "Poppy seeds", type: "seed", scientific: "Papaver somniferum", price: 140.00, uses: "Improves sleep", description: "Rich in minerals", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/main/poppyseeds.png" },
+            { id: 308, name: "Watermelon seeds", type: "seed", scientific: "Citrullus lanatus", price: 70.00, uses: "Energy boost", description: "Protein & magnesium", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/main/watermelon.png" },
+            { id: 309, name: "Basil seeds", type: "seed", scientific: "Ocimum basilicum", price: 65.00, uses: "Helps digestion", description: "Cooling effect", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/main/basil.png" },
+            { id: 310, name: "Fenugreek seeds", type: "seed", scientific: "Trigonella foenum-graecum", price: 45.00, uses: "Controls blood sugar", description: "Improves metabolism", image: "https://www.harighotra.co.uk/images/Shutterstock/fenugreekseeds_560x560.webp" },
+            { id: 311, name: "Mustard seeds", type: "seed", scientific: "Brassica nigra", price: 30.00, uses: "Anti-inflammatory", description: "Boost metabolism", image: "https://images.unsplash.com/photo-1701188542949-210beb8e382c?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            { id: 312, name: "Nigella seeds", type: "seed", scientific: "Nigella sativa", price: 85.00, uses: "Supports respiratory health", description: "Immunity booster", image: "https://plus.unsplash.com/premium_photo-1726877060096-882c2ac6d13c?q=80&w=1063&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            { id: 313, name: "Cumin seeds", type: "seed", scientific: "Cuminum cyminum", price: 60.00, uses: "Helps bloating", description: "Improves digestion", image: "https://plus.unsplash.com/premium_photo-1723874683717-006f24c93975?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            { id: 314, name: "Fennel seeds", type: "seed", scientific: "Foeniculum vulgare", price: 55.00, uses: "Aids digestion", description: "Freshens breath", image: "https://images.unsplash.com/photo-1701189975806-97b11541ec82?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            { id: 315, name: "Carom seeds", type: "seed", scientific: "Trachyspermum ammi", price: 50.00, uses: "Good for gut health", description: "Relieves acidity", image: "https://tajspices.co.uk/cdn/shop/articles/Carom_Seed_500x.jpg?v=1649759522" },
+            { id: 316, name: "Garden cress seeds", type: "seed", scientific: "Lepidium sativum", price: 110.00, uses: "Boosts hemoglobin", description: "High in iron", image: "https://i.cdn.newsbytesapp.com/images/l65020251212132537.jpeg?tr=w-720" }
         ];
 
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
