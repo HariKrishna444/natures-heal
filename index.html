@@ -181,6 +181,17 @@
                     <i class="fas fa-search absolute left-3 top-3 text-emerald-200"></i>
                 </div>
             </div>
+
+            <div class="w-full md:hidden mt-2">
+                <select id="mobileFilter" onchange="filterItems(this.value)" class="w-full bg-emerald-800 text-white border-none rounded-xl py-3 px-4 focus:ring-2 focus:ring-white transition-all outline-none font-semibold">
+                    <option value="all">🌿 All Catalog</option>
+                    <option value="leaf">🍃 Leaves</option>
+                    <option value="fruit">🍎 Fruits</option>
+                    <option value="wild_fruit">🫐 Wild Fruits</option>
+                    <option value="seed">🌰 Seeds</option>
+                    <option value="favorites">⭐ Collection</option>
+                </select>
+            </div>
         </div>
     </header>
 
@@ -311,7 +322,7 @@
                 card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative";
                 card.onclick = () => openModal(item);
                 card.innerHTML = `
-                    <div class="h-56 overflow-hidden relative">
+                    <div class="h-40 md:h-56 overflow-hidden relative">
                         <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                         <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase text-emerald-700">${item.type.replace('_', ' ')}</div>
                         <div class="absolute top-4 right-4 flex flex-col gap-2">
@@ -325,7 +336,7 @@
                     </div>
                     <div class="p-6">
                         <div class="flex justify-between items-start mb-1">
-                            <h3 class="text-xl font-bold text-primary">${item.name}</h3>
+                            <h3 class="text-xl font-bold text-emerald-700 dark:text-emerald-400">${item.name}</h3>
                             <span class="text-emerald-600 font-black">₹${item.price.toFixed(2)}</span>
                         </div>
                         <p class="text-xs italic text-emerald-600 font-semibold mb-4 opacity-80">${item.scientific}</p>
@@ -347,7 +358,7 @@
                     </div>
                     <div class="p-8 md:p-10">
                         <div class="flex justify-between items-start mb-1">
-                            <h2 class="text-4xl font-bold text-primary">${item.name}</h2>
+                            <h2 class="text-4xl font-bold text-emerald-700 dark:text-emerald-400">${item.name}</h2>
                             <span class="text-3xl font-black text-emerald-600">₹${item.price.toFixed(2)}</span>
                         </div>
                         <p class="text-lg italic text-emerald-600 mb-8 font-bold">${item.scientific}</p>
@@ -424,7 +435,7 @@
                     <img src="${i.image}" class="w-16 h-16 rounded-xl object-cover">
                     <div class="flex-grow">
                         <div class="flex justify-between items-start">
-                            <h4 class="font-bold text-sm text-primary">${i.name}</h4>
+                            <h4 class="font-bold text-sm text-emerald-700 dark:text-emerald-400">${i.name}</h4>
                             <span class="text-xs font-black text-emerald-600">₹${i.price.toFixed(2)}</span>
                         </div>
                         <p class="text-[10px] text-emerald-600 font-bold italic">${i.scientific}</p>
@@ -453,6 +464,8 @@
 
         function filterItems(type) {
             localStorage.setItem('selectedFilter', type);
+            
+            // Sync Desktop Nav
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 const isActive = btn.dataset.filter === type;
                 if (isActive) {
@@ -463,6 +476,13 @@
                     btn.classList.add('text-emerald-100');
                 }
             });
+
+            // Sync Mobile Dropdown Nav
+            const mobileDropdown = document.getElementById('mobileFilter');
+            if(mobileDropdown) {
+                mobileDropdown.value = type;
+            }
+
             applyCombinedFilters();
         }
 
