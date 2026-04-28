@@ -28,7 +28,7 @@
             --input-bg: #ffffff;
             --footer-bg: #0f172a;
             --hero-bg: #064e3b;
-            --cart-bg: #ffffff; /* Solid white for clarity in light mode */
+            --cart-bg: #ffffff;
         }
 
         .dark {
@@ -39,7 +39,7 @@
             --header-bg: #064e3b; 
             --border-color: #1e293b;
             --input-bg: #1e293b;
-            --cart-bg: #0f172a; /* Solid navy for dark mode */
+            --cart-bg: #0f172a;
         }
 
         body {
@@ -209,7 +209,7 @@
             <p class="text-muted-custom font-medium">Showing <span id="itemCount" class="font-bold text-emerald-600">0</span> unique species</p>
         </div>
         
-        <div id="gridContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
+        <div id="gridContainer" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-8"></div>
     </main>
 
     <footer class="py-16 px-4">
@@ -273,7 +273,7 @@
             { id: 203, name: "Jamun", type: "wild_fruit", scientific: "Syzygium cumini", price: 95.00, uses: "Blood sugar, Digestion", description: "Anti-diabetic wild berry.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jamun.png" },
             { id: 204, name: "Wood apple", type: "wild_fruit", scientific: "Limonia acidissima", price: 75.00, uses: "Liver health, Detox", description: "Sour-sweet sticky pulp.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/woodapple.png" },
             { id: 205, name: "Karonda", type: "wild_fruit", scientific: "Carissa carandas", price: 65.00, uses: "Iron, Anemia", description: "Pink berry rich in iron.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/vaakkaya.png" },
-            { id: 206, name: "Haritaki", type: "wild_fruit", scientific: "Terminalia chebula", price: 160.00, uses: "Detox, Gut health", description: "Known as king of medicines.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/karakkaya.png" },
+            { id: 206, name: "Haritaki", type: "wild_fruit", scientific: "Terminalia manyula", price: 160.00, uses: "Detox, Gut health", description: "Known as king of medicines.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/karakkaya.png" },
             { id: 207, name: "Mulberry", type: "wild_fruit", scientific: "Morus alba", price: 105.00, uses: "Antioxidants, Blood health", description: "Supports circulation.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/mulberry.png" },
             { id: 208, name: "Indian jujube", type: "wild_fruit", scientific: "Ziziphus mauritiana", price: 55.00, uses: "Sleep, Digestion", description: "Packed with Vitamin C.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jujube.png" },
             { id: 209, name: "Mahua", type: "wild_fruit", scientific: "Madhuca longifolia", price: 85.00, uses: "Energy, Traditional remedies", description: "Fleshy flowers for community nutrition.", image: "https://www.yesearth.org/wp-content/uploads/2025/07/mahuwa.jpg" },
@@ -322,32 +322,31 @@
                 card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative";
                 card.onclick = () => openModal(item);
                 card.innerHTML = `
-                    <div class="h-40 md:h-56 overflow-hidden relative">
+                    <div class="h-32 md:h-56 overflow-hidden relative">
                         <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase text-emerald-700">${item.type.replace('_', ' ')}</div>
-                        <div class="absolute top-4 right-4 flex flex-col gap-2">
-                            <button onclick="toggleFav(event, ${item.id})" class="bg-white/90 backdrop-blur w-9 h-9 flex items-center justify-center rounded-full shadow-sm hover:scale-110 transition-transform">
-                                <i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart"></i>
+                        <div class="absolute top-2 left-2 md:top-4 md:left-4 bg-white/90 backdrop-blur px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[8px] md:text-[10px] font-bold uppercase text-emerald-700">${item.type.replace('_', ' ')}</div>
+                        <div class="absolute top-2 right-2 md:top-4 md:right-4 flex flex-col gap-1.5 md:gap-2">
+                            <button onclick="toggleFav(event, ${item.id})" class="w-7 h-7 md:w-9 md:h-9 flex items-center justify-center rounded-full shadow-sm hover:scale-110 transition-transform bg-white/90 backdrop-blur">
+                                <i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-xs md:text-base"></i>
                             </button>
-                            <button onclick="toggleCartItem(event, ${item.id})" class="bg-white/90 backdrop-blur w-9 h-9 flex items-center justify-center rounded-full shadow-sm hover:scale-110 transition-transform">
-                                <i class="fas ${isCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'}"></i>
+                            <button onclick="toggleCartItem(event, ${item.id})" class="w-7 h-7 md:w-9 md:h-9 flex items-center justify-center rounded-full shadow-sm hover:scale-110 transition-transform bg-white/90 backdrop-blur">
+                                <i class="fas ${isCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-xs md:text-base"></i>
                             </button>
                         </div>
                     </div>
-                    <div class="p-6">
+                    <div class="p-3 md:p-6">
                         <div class="flex justify-between items-start mb-1">
-                            <h3 class="text-xl font-bold text-emerald-700 dark:text-emerald-400">${item.name}</h3>
-                            <span class="text-emerald-600 font-black">₹${item.price.toFixed(2)}</span>
+                            <h3 class="text-sm md:text-xl font-bold text-emerald-700 dark:text-emerald-400 line-clamp-1">${item.name}</h3>
+                            <span class="text-xs md:text-base text-emerald-600 font-black">₹${item.price.toFixed(2)}</span>
                         </div>
-                        <p class="text-xs italic text-emerald-600 font-semibold mb-4 opacity-80">${item.scientific}</p>
-                        <p class="text-sm line-clamp-2 text-muted-custom font-medium leading-relaxed">${item.uses}</p>
+                        <p class="text-[9px] md:text-xs italic text-emerald-600 font-semibold mb-2 md:mb-4 opacity-80 line-clamp-1">${item.scientific}</p>
+                        <p class="text-[10px] md:text-sm line-clamp-2 text-muted-custom font-medium leading-tight md:leading-relaxed">${item.uses}</p>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // Updated openModal to use text-white for description and benefits
         function openModal(item) {
             document.getElementById('modalContent').innerHTML = `
                 <div class="relative">
