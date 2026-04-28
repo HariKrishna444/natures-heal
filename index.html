@@ -23,12 +23,12 @@
             --bg-card: #ffffff;
             --text-main: #0f172a;
             --text-muted: #475569;
-            --header-bg: #059669; /* Solid Emerald Green */
+            --header-bg: #059669; 
             --border-color: #e2e8f0;
             --input-bg: #ffffff;
             --footer-bg: #0f172a;
             --hero-bg: #064e3b;
-            --cart-bg: #ecfdf5; /* Light Green */
+            --cart-bg: #ffffff; /* Solid white for clarity in light mode */
         }
 
         .dark {
@@ -36,10 +36,10 @@
             --bg-card: #0f172a;
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
-            --header-bg: #064e3b; /* Solid Emerald Green in Dark Mode too */
+            --header-bg: #064e3b; 
             --border-color: #1e293b;
             --input-bg: #1e293b;
-            --cart-bg: #022c22; /* Dark Green */
+            --cart-bg: #0f172a; /* Solid navy for dark mode */
         }
 
         body {
@@ -137,7 +137,7 @@
     <div id="cartSidebar">
         <div class="flex flex-col h-full p-6">
             <div class="flex justify-between items-center mb-8 border-b border-emerald-200 dark:border-emerald-800 pb-4">
-                <h2 class="text-2xl font-bold dark:text-white">Shopping Cart</h2>
+                <h2 class="text-2xl font-bold text-emerald-600">Shopping Cart</h2>
                 <button onclick="closeCart()" class="text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors">
                     <i class="fas fa-times text-xl"></i>
                 </button>
@@ -233,12 +233,12 @@
     </footer>
 
     <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm hidden">
-        <div id="modalContent" class="bg-white dark:bg-slate-900 rounded-[2rem] max-w-2xl w-full overflow-hidden shadow-2xl modal-animate border dark:border-slate-800"></div>
+        <div id="modalContent" class="bg-emerald-950 rounded-[2rem] max-w-2xl w-full overflow-hidden shadow-2xl modal-animate border border-emerald-800"></div>
     </div>
 
     <script>
         const catalogData = [
-            // LEAVES - Prices converted to INR (all < ₹200)
+            // LEAVES 
             { id: 1, name: "Aloe Vera", type: "leaf", scientific: "Aloe barbadensis miller", price: 95.00, uses: "Skin healing, Burns treatment, Digestive support", description: "A succulent plant species known for its soothing gel, widely used in traditional medicine and skincare.", image: "https://images.unsplash.com/photo-1672128550038-c21875e68bed?q=80&w=1025&auto=format&fit=crop" },
             { id: 3, name: "Peppermint", type: "leaf", scientific: "Mentha × piperita", price: 60.00, uses: "Headaches relief, Digestive aid, Respiratory relief", description: "A hybrid mint with high menthol content, ideal for cooling treatments.", image: "https://images.unsplash.com/photo-1681506346841-82ffe71e8e22?q=80&w=736&auto=format&fit=crop" },
             { id: 5, name: "Neem", type: "leaf", scientific: "Azadirachta indica", price: 110.00, uses: "Skin health, Detoxification, Antimicrobial", description: "Powerful antifungal and antibacterial botanical.", image: "https://images.unsplash.com/photo-1748839635226-0c9efbf18720?q=80&w=687&auto=format&fit=crop" },
@@ -248,7 +248,7 @@
             { id: 13, name: "Curry leaves", type: "leaf", scientific: "Murraya koenigii", price: 45.00, uses: "Hair health, Digestion, Blood sugar management", description: "Aromatic leaves used to treat gastrointestinal issues.", image: "https://images.unsplash.com/photo-1711550815689-64ab57f32ead?q=80&w=735&auto=format&fit=crop" },
             { id: 15, name: "Papaya leaves", type: "leaf", scientific: "Carica papaya", price: 55.00, uses: "Platelet count support, Digestion aid", description: "Famous for increasing platelet count during viral infections.", image: "https://images.unsplash.com/photo-1642565571978-23d9f162ee21?q=80&w=1170&auto=format&fit=crop" },
             
-            // FRUITS - Prices converted to INR (all < ₹200)
+            // FRUITS
             { id: 101, name: "Blueberry", type: "fruit", scientific: "Vaccinium corymbosum", price: 180.00, uses: "Brain health, Anti-aging, Inflammation reduction", description: "High in antioxidants for cognitive function.", image: "https://images.unsplash.com/photo-1425934398893-310a009a77f9?q=80&w=1171&auto=format&fit=crop" },
             { id: 102, name: "Pomegranate", type: "fruit", scientific: "Punica granatum", price: 120.00, uses: "Heart health, Anti-inflammatory, Antioxidant boost", description: "Potent antioxidants for cardiovascular protection.", image: "https://plus.unsplash.com/premium_photo-1668076515507-c5bc223c99a4?q=80&w=1074&auto=format&fit=crop" },
             { id: 103, name: "Guava", type: "fruit", scientific: "Psidium guajava", price: 50.00, uses: "Immunity booster, Digestion, Vitamin C source", description: "Contains four times the vitamin C of an orange.", image: "https://images.unsplash.com/photo-1689996647099-a7a0b67fd2f6?q=80&w=735&auto=format&fit=crop" },
@@ -267,7 +267,7 @@
             { id: 116, name: "Dragon Fruit", type: "fruit", scientific: "Selenicereus undatus", price: 160.00, uses: "Fiber, Immune support, Iron", description: "A striking cactus fruit.", image: "https://images.unsplash.com/photo-1698546690393-45482eb06942?q=80&w=687&auto=format&fit=crop" },
             { id: 117, name: "Avocado", type: "fruit", scientific: "Persea americana", price: 175.00, uses: "Healthy fats, Vitamin E", description: "Essential for brain health.", image: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?auto=format&fit=crop&q=80&w=400" },
             
-            // WILD FRUITS - Prices converted to INR (all < ₹200)
+            // WILD FRUITS
             { id: 201, name: "Amla", type: "wild_fruit", scientific: "Phyllanthus emblica", price: 80.00, uses: "Immunity, Digestion, Hair", description: "Extremely high Vitamin C content.", image: "https://images.unsplash.com/photo-1676043967557-2b70d9facd71?q=80&w=627&auto=format&fit=crop" },
             { id: 202, name: "Bael", type: "wild_fruit", scientific: "Aegle marmelos", price: 110.00, uses: "Gut health, Ulcers", description: "Sacred fruit with woody shell.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/935dee8e1b7dc960e5886d0e8107c463259c9a1b/maredu.png" },
             { id: 203, name: "Jamun", type: "wild_fruit", scientific: "Syzygium cumini", price: 95.00, uses: "Blood sugar, Digestion", description: "Anti-diabetic wild berry.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/jamun.png" },
@@ -281,21 +281,21 @@
             { id: 211, name: "Wild Almond", type: "wild_fruit", scientific: "Prunus amygdalus", price: 135.00, uses: "Traditional extracts", description: "Bitter relative of almond.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/wildbadam.png" },
             { id: 212, name: "Lasoda", type: "wild_fruit", scientific: "Cordia dichotoma", price: 80.00, uses: "Joint health, Digestion", description: "Indian cherry for tonics.", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/0d46d9a8a61ea2cfe3e79ff36dcee9700ced2c5b/irikkaya.png" },
 
-            // SEEDS - Prices converted to INR
-            { id: 301, name: "Chia seeds", type: "seed", scientific: "Salvia hispanica", price: 150.00, uses: "Supports digestion & weight loss", description: "Omega-3, fiber", image: "https://images.unsplash.com/photo-1691443229545-8b17638c8f9c?q=80&w=1205&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
-            { id: 302, name: "Sunflower seeds", type: "seed", scientific: "Helianthus annuus", price: 90.00, uses: "Good for skin & heart", description: "Rich in Vitamin E", image: "https://images.unsplash.com/photo-1613500788522-89c4d55bdd0e?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
-            { id: 303, name: "Pumpkin seeds", type: "seed", scientific: "Cucurbita pepo", price: 120.00, uses: "Boost immunity & sleep", description: "Zinc & magnesium", image: "https://plus.unsplash.com/premium_photo-1723874550998-f72f9d3f0b16?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
-            { id: 304, name: "Flax seeds", type: "seed", scientific: "Linum usitatissimum", price: 80.00, uses: "Reduces cholesterol", description: "Heart health", image: "https://images.unsplash.com/photo-1642497393440-4b5cc5f03ff5?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
-            { id: 305, name: "Sesame seeds", type: "seed", scientific: "Sesamum indicum", price: 95.00, uses: "Strong bones", description: "Calcium-rich", image: "https://plus.unsplash.com/premium_photo-1667773301057-65909aa87b95?q=80&w=968&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
-            { id: 306, name: "Hemp seeds", type: "seed", scientific: "Cannabis sativa", price: 180.00, uses: "Muscle & brain support", description: "Complete protein", image: "https://plus.unsplash.com/premium_photo-1671130295236-e8afa3ac38c9?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            // SEEDS
+            { id: 301, name: "Chia seeds", type: "seed", scientific: "Salvia hispanica", price: 150.00, uses: "Supports digestion & weight loss", description: "Omega-3, fiber", image: "https://images.unsplash.com/photo-1691443229545-8b17638c8f9c?q=80&w=1205&auto=format&fit=crop" },
+            { id: 302, name: "Sunflower seeds", type: "seed", scientific: "Helianthus annuus", price: 90.00, uses: "Good for skin & heart", description: "Rich in Vitamin E", image: "https://images.unsplash.com/photo-1613500788522-89c4d55bdd0e?q=80&w=687&auto=format&fit=crop" },
+            { id: 303, name: "Pumpkin seeds", type: "seed", scientific: "Cucurbita pepo", price: 120.00, uses: "Boost immunity & sleep", description: "Zinc & magnesium", image: "https://plus.unsplash.com/premium_photo-1723874550998-f72f9d3f0b16?q=80&w=688&auto=format&fit=crop" },
+            { id: 304, name: "Flax seeds", type: "seed", scientific: "Linum usitatissimum", price: 80.00, uses: "Reduces cholesterol", description: "Heart health", image: "https://images.unsplash.com/photo-1642497393440-4b5cc5f03ff5?q=80&w=1074&auto=format&fit=crop" },
+            { id: 305, name: "Sesame seeds", type: "seed", scientific: "Sesamum indicum", price: 95.00, uses: "Strong bones", description: "Calcium-rich", image: "https://plus.unsplash.com/premium_photo-1667773301057-65909aa87b95?q=80&w=968&auto=format&fit=crop" },
+            { id: 306, name: "Hemp seeds", type: "seed", scientific: "Cannabis sativa", price: 180.00, uses: "Muscle & brain support", description: "Complete protein", image: "https://plus.unsplash.com/premium_photo-1671130295236-e8afa3ac38c9?q=80&w=687&auto=format&fit=crop" },
             { id: 307, name: "Poppy seeds", type: "seed", scientific: "Papaver somniferum", price: 140.00, uses: "Improves sleep", description: "Rich in minerals", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/main/poppyseeds.png" },
             { id: 308, name: "Watermelon seeds", type: "seed", scientific: "Citrullus lanatus", price: 70.00, uses: "Energy boost", description: "Protein & magnesium", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/main/watermelon.png" },
             { id: 309, name: "Basil seeds", type: "seed", scientific: "Ocimum basilicum", price: 65.00, uses: "Helps digestion", description: "Cooling effect", image: "https://raw.githubusercontent.com/HariKrishna444/natures-heal/main/basil.png" },
             { id: 310, name: "Fenugreek seeds", type: "seed", scientific: "Trigonella foenum-graecum", price: 45.00, uses: "Controls blood sugar", description: "Improves metabolism", image: "https://www.harighotra.co.uk/images/Shutterstock/fenugreekseeds_560x560.webp" },
-            { id: 311, name: "Mustard seeds", type: "seed", scientific: "Brassica nigra", price: 30.00, uses: "Anti-inflammatory", description: "Boost metabolism", image: "https://images.unsplash.com/photo-1701188542949-210beb8e382c?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
-            { id: 312, name: "Nigella seeds", type: "seed", scientific: "Nigella sativa", price: 85.00, uses: "Supports respiratory health", description: "Immunity booster", image: "https://plus.unsplash.com/premium_photo-1726877060096-882c2ac6d13c?q=80&w=1063&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
-            { id: 313, name: "Cumin seeds", type: "seed", scientific: "Cuminum cyminum", price: 60.00, uses: "Helps bloating", description: "Improves digestion", image: "https://plus.unsplash.com/premium_photo-1723874683717-006f24c93975?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
-            { id: 314, name: "Fennel seeds", type: "seed", scientific: "Foeniculum vulgare", price: 55.00, uses: "Aids digestion", description: "Freshens breath", image: "https://images.unsplash.com/photo-1701189975806-97b11541ec82?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+            { id: 311, name: "Mustard seeds", type: "seed", scientific: "Brassica nigra", price: 30.00, uses: "Anti-inflammatory", description: "Boost metabolism", image: "https://images.unsplash.com/photo-1701188542949-210beb8e382c?q=80&w=1074&auto=format&fit=crop" },
+            { id: 312, name: "Nigella seeds", type: "seed", scientific: "Nigella sativa", price: 85.00, uses: "Supports respiratory health", description: "Immunity booster", image: "https://plus.unsplash.com/premium_photo-1726877060096-882c2ac6d13c?q=80&w=1063&auto=format&fit=crop" },
+            { id: 313, name: "Cumin seeds", type: "seed", scientific: "Cuminum cyminum", price: 60.00, uses: "Helps bloating", description: "Improves digestion", image: "https://plus.unsplash.com/premium_photo-1723874683717-006f24c93975?q=80&w=688&auto=format&fit=crop" },
+            { id: 314, name: "Fennel seeds", type: "seed", scientific: "Foeniculum vulgare", price: 55.00, uses: "Aids digestion", description: "Freshens breath", image: "https://images.unsplash.com/photo-1701189975806-97b11541ec82?q=80&w=1074&auto=format&fit=crop" },
             { id: 315, name: "Carom seeds", type: "seed", scientific: "Trachyspermum ammi", price: 50.00, uses: "Good for gut health", description: "Relieves acidity", image: "https://tajspices.co.uk/cdn/shop/articles/Carom_Seed_500x.jpg?v=1649759522" },
             { id: 316, name: "Garden cress seeds", type: "seed", scientific: "Lepidium sativum", price: 110.00, uses: "Boosts hemoglobin", description: "High in iron", image: "https://i.cdn.newsbytesapp.com/images/l65020251212132537.jpeg?tr=w-720" }
         ];
@@ -347,6 +347,7 @@
             });
         }
 
+        // Updated openModal to use text-white for description and benefits
         function openModal(item) {
             document.getElementById('modalContent').innerHTML = `
                 <div class="relative">
@@ -358,19 +359,19 @@
                     </div>
                     <div class="p-8 md:p-10">
                         <div class="flex justify-between items-start mb-1">
-                            <h2 class="text-4xl font-bold text-emerald-700 dark:text-emerald-400">${item.name}</h2>
-                            <span class="text-3xl font-black text-emerald-600">₹${item.price.toFixed(2)}</span>
+                            <h2 class="text-4xl font-bold text-emerald-400">${item.name}</h2>
+                            <span class="text-3xl font-black text-emerald-400">₹${item.price.toFixed(2)}</span>
                         </div>
-                        <p class="text-lg italic text-emerald-600 mb-8 font-bold">${item.scientific}</p>
+                        <p class="text-lg italic text-emerald-300 mb-8 font-bold">${item.scientific}</p>
                         <div class="flex flex-col md:flex-row gap-8 mb-10">
                             <div class="flex-1">
                                 <h4 class="text-xs font-black uppercase tracking-widest text-emerald-500 mb-3">Botanical Description</h4>
-                                <p class="text-muted-custom text-sm leading-relaxed font-medium">${item.description}</p>
+                                <p class="text-white text-sm leading-relaxed font-medium">${item.description}</p>
                             </div>
                             <div class="flex-1">
                                 <h4 class="text-xs font-black uppercase tracking-widest text-emerald-500 mb-3">Key Benefits</h4>
                                 <ul class="space-y-2">
-                                    ${item.uses.split(',').map(u => `<li class="text-sm text-muted-custom font-medium flex items-start"><i class="fas fa-circle text-[6px] text-emerald-500 mr-3 mt-2"></i>${u.trim()}</li>`).join('')}
+                                    ${item.uses.split(',').map(u => `<li class="text-sm text-white font-medium flex items-start"><i class="fas fa-circle text-[6px] text-emerald-500 mr-3 mt-2"></i>${u.trim()}</li>`).join('')}
                                 </ul>
                             </div>
                         </div>
@@ -464,8 +465,6 @@
 
         function filterItems(type) {
             localStorage.setItem('selectedFilter', type);
-            
-            // Sync Desktop Nav
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 const isActive = btn.dataset.filter === type;
                 if (isActive) {
@@ -477,12 +476,8 @@
                 }
             });
 
-            // Sync Mobile Dropdown Nav
             const mobileDropdown = document.getElementById('mobileFilter');
-            if(mobileDropdown) {
-                mobileDropdown.value = type;
-            }
-
+            if(mobileDropdown) mobileDropdown.value = type;
             applyCombinedFilters();
         }
 
@@ -490,14 +485,10 @@
         document.getElementById('searchInput').oninput = applyCombinedFilters;
 
         function placeOrder() {
-            if (cart.length === 0) {
-                alert("Your cart is empty!");
-                return;
-            }
+            if (cart.length === 0) { alert("Your cart is empty!"); return; }
 
             const btn = document.getElementById('placeOrderBtn');
             const originalContent = btn.innerHTML;
-            
             btn.disabled = true;
             btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Processing...`;
 
@@ -522,7 +513,7 @@
                     closeCart();
                     applyCombinedFilters();
                 }, function(error) {
-                    alert('Failed to place order. Please check your console for errors.');
+                    alert('Failed to place order.');
                     console.error('EmailJS Error:', error);
                 })
                 .finally(() => {
