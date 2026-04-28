@@ -366,13 +366,13 @@
             });
         }
 
-    function openModal(item) {
+   function openModal(item) {
     document.getElementById('modalContent').innerHTML = `
     <div class="relative max-h-[90vh] overflow-y-auto">
 
         <!-- IMAGE -->
         <div class="relative">
-            <div class="h-44 sm:h-56 md:h-80 w-full overflow-hidden">
+            <div class="h-44 sm:h-56 md:h-72 w-full overflow-hidden">
                 <img src="${item.image}" class="w-full h-full object-cover">
             </div>
 
@@ -384,8 +384,9 @@
         </div>
 
         <!-- CONTENT -->
-        <div class="p-4 sm:p-6">
+        <div class="p-4 sm:p-6 md:p-8">
 
+            <!-- TITLE + PRICE -->
             <div class="flex justify-between items-start gap-2 mb-2">
                 <h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 leading-tight">
                     ${item.name}
@@ -396,14 +397,16 @@
                 </span>
             </div>
 
-            <p class="text-xs sm:text-sm italic text-emerald-300 mb-4">
+            <p class="text-xs sm:text-sm italic text-emerald-300 mb-5">
                 ${item.scientific}
             </p>
 
-            <div class="space-y-4 mb-6">
+            <!-- ✅ LEFT RIGHT LAYOUT -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 
+                <!-- LEFT: DESCRIPTION -->
                 <div>
-                    <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-1">
+                    <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">
                         Description
                     </h4>
                     <p class="text-xs sm:text-sm text-white leading-relaxed">
@@ -411,9 +414,10 @@
                     </p>
                 </div>
 
+                <!-- RIGHT: BENEFITS -->
                 <div>
-                    <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-1">
-                        Benefits
+                    <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">
+                        Key Benefits
                     </h4>
                     <ul class="space-y-1">
                         ${item.uses.split(',').map(u => `
@@ -427,7 +431,7 @@
 
             </div>
 
-            <!-- STICKY BUTTON -->
+            <!-- ADD TO CART -->
             <button onclick="addToCart(${item.id})"
                 class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold text-sm sm:text-lg sticky bottom-2">
                 Add to Cart
