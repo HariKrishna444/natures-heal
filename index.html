@@ -347,41 +347,77 @@
             });
         }
 
-        function openModal(item) {
-            document.getElementById('modalContent').innerHTML = `
-                <div class="relative">
-                    <div class="h-80 w-full relative overflow-hidden">
-                        <img src="${item.image}" class="w-full h-full object-cover">
-                        <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/40 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/60 transition-colors">
-                            <i class="fas fa-times"></i>
-                        </button>
+    function openModal(item) {
+    document.getElementById('modalContent').innerHTML = `
+        <div class="relative max-h-[90vh] overflow-y-auto">
+            <div class="relative">
+                
+                <!-- Smaller image for mobile -->
+                <div class="h-48 sm:h-64 md:h-80 w-full relative overflow-hidden">
+                    <img src="${item.image}" class="w-full h-full object-cover">
+                    
+                    <!-- Always visible close button -->
+                    <button onclick="closeModal()" 
+                        class="absolute top-3 right-3 bg-black/60 text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-black/80 z-10">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="p-4 sm:p-6 md:p-10">
+                    
+                    <div class="flex justify-between items-start mb-2">
+                        <h2 class="text-xl sm:text-2xl md:text-4xl font-bold text-emerald-400">
+                            ${item.name}
+                        </h2>
+                        <span class="text-lg sm:text-xl md:text-3xl font-black text-emerald-400">
+                            ₹${item.price.toFixed(2)}
+                        </span>
                     </div>
-                    <div class="p-8 md:p-10">
-                        <div class="flex justify-between items-start mb-1">
-                            <h2 class="text-4xl font-bold text-emerald-400">${item.name}</h2>
-                            <span class="text-3xl font-black text-emerald-400">₹${item.price.toFixed(2)}</span>
+
+                    <p class="text-sm sm:text-base italic text-emerald-300 mb-4 font-bold">
+                        ${item.scientific}
+                    </p>
+
+                    <div class="flex flex-col gap-5 mb-6">
+                        
+                        <div>
+                            <h4 class="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-500 mb-2">
+                                Botanical Description
+                            </h4>
+                            <p class="text-white text-xs sm:text-sm leading-relaxed">
+                                ${item.description}
+                            </p>
                         </div>
-                        <p class="text-lg italic text-emerald-300 mb-8 font-bold">${item.scientific}</p>
-                        <div class="flex flex-col md:flex-row gap-8 mb-10">
-                            <div class="flex-1">
-                                <h4 class="text-xs font-black uppercase tracking-widest text-emerald-500 mb-3">Botanical Description</h4>
-                                <p class="text-white text-sm leading-relaxed font-medium">${item.description}</p>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="text-xs font-black uppercase tracking-widest text-emerald-500 mb-3">Key Benefits</h4>
-                                <ul class="space-y-2">
-                                    ${item.uses.split(',').map(u => `<li class="text-sm text-white font-medium flex items-start"><i class="fas fa-circle text-[6px] text-emerald-500 mr-3 mt-2"></i>${u.trim()}</li>`).join('')}
-                                </ul>
-                            </div>
+
+                        <div>
+                            <h4 class="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-500 mb-2">
+                                Key Benefits
+                            </h4>
+                            <ul class="space-y-1">
+                                ${item.uses.split(',').map(u => `
+                                    <li class="text-xs sm:text-sm text-white flex items-start">
+                                        <i class="fas fa-circle text-[5px] text-emerald-500 mr-2 mt-2"></i>
+                                        ${u.trim()}
+                                    </li>
+                                `).join('')}
+                            </ul>
                         </div>
-                        <button onclick="addToCart(${item.id})" class="w-full bg-[#10b981] hover:bg-[#059669] text-white py-4 rounded-2xl font-bold text-lg shadow-lg transition-all transform hover:-translate-y-1">
-                            Add to Cart
-                        </button>
+
                     </div>
-                </div>`;
-            document.getElementById('modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
+
+                    <!-- Sticky button for mobile -->
+                    <button onclick="addToCart(${item.id})"
+                        class="w-full bg-[#10b981] hover:bg-[#059669] text-white py-3 sm:py-4 rounded-2xl font-bold text-sm sm:text-lg shadow-lg sticky bottom-2">
+                        Add to Cart
+                    </button>
+
+                </div>
+            </div>
+        </div>`;
+    
+    document.getElementById('modal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
 
         function toggleFav(e, id) {
             e.stopPropagation();
