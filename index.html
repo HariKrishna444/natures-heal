@@ -322,62 +322,52 @@
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
 
-        function renderItems(items) {
-            const container = document.getElementById('gridContainer');
-            container.innerHTML = '';
-            document.getElementById('itemCount').textContent = items.length;
-            
-            items.forEach(item => {
-                const isFav = favorites.includes(item.id);
-                const isCart = cart.includes(item.id);
-                const card = document.createElement('div');
-                card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative";
-                card.onclick = () => openModal(item);
-                card.innerHTML = `
-<div class="h-28 sm:h-36 md:h-56 overflow-hidden relative">
-    <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-
-    <div class="absolute top-1 left-1 sm:top-3 sm:left-3 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">
-        ${item.type.replace('_', ' ')}
-    </div>
-
-    <div class="absolute top-1 right-1 sm:top-3 sm:right-3 flex flex-col gap-1">
-        <button onclick="toggleFav(event, ${item.id})"
-            class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90">
-            <i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i>
-        </button>
-
-        <button onclick="toggleCartItem(event, ${item.id})"
-            class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90">
-            <i class="fas ${isCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]"></i>
-        </button>
-    </div>
-</div>
-
-<div class="p-2 sm:p-4">
-    <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 truncate">
-        ${item.name}
-    </h3>
-
-    <p class="text-[9px] italic text-emerald-600 truncate">
-        ${item.scientific}
-    </p>
-
-    <div class="flex justify-between items-center mt-1">
-        <span class="text-[10px] sm:text-sm text-muted-custom truncate w-[65%]">
-            ${item.uses}
-        </span>
-
-        <span class="text-xs sm:text-sm font-black text-emerald-600">
-            ₹${item.price.toFixed(2)}
-        </span>
-    </div>
-</div>
-`;
-                container.appendChild(card);
-            });
-        }
-
+       function renderItems(items) {
+    const container = document.getElementById('gridContainer');
+    container.innerHTML = '';
+    document.getElementById('itemCount').textContent = items.length;
+    
+    items.forEach(item => {
+        const isFav = favorites.includes(item.id);
+        const isCart = cart.includes(item.id);
+        const card = document.createElement('div');
+        card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative";
+        card.onclick = () => openModal(item);
+        card.innerHTML = `
+            <div class="h-28 sm:h-36 md:h-56 overflow-hidden relative">
+                <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                <div class="absolute top-1 left-1 sm:top-3 sm:left-3 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">
+                    ${item.type.replace('_', ' ')}
+                </div>
+                <div class="absolute top-1 right-1 sm:top-3 sm:right-3 flex flex-col gap-1">
+                    <button onclick="toggleFav(event, ${item.id})" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90">
+                        <i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i>
+                    </button>
+                    <button onclick="toggleCartItem(event, ${item.id})" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90">
+                        <i class="fas ${isCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-3 sm:p-4">
+                <div class="flex justify-between items-start mb-1 gap-2">
+                    <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">
+                        ${item.name}
+                    </h3>
+                    <span class="text-xs sm:text-sm font-black text-emerald-600 whitespace-nowrap">
+                        ₹${item.price.toFixed(2)}
+                    </span>
+                </div>
+                <p class="text-[9px] italic text-emerald-600 mb-2">
+                    ${item.scientific}
+                </p>
+                <p class="text-[10px] sm:text-xs text-muted-custom leading-relaxed">
+                    ${item.description}
+                </p>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
    function openModal(item) {
     document.getElementById('modalContent').innerHTML = `
     <div class="relative max-h-[90vh] overflow-y-auto">
