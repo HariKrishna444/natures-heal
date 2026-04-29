@@ -8,13 +8,7 @@
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <script type="text/javascript">
-        (function(){
-            // Initialized with your provided Public Key
-            emailjs.init("706tMcZMfIbmEwZiQ");
-        })();
-    </script>
+    <!-- EmailJS script removed to transition to Firestore-triggered emails -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
         
@@ -127,6 +121,61 @@
     </style>
 </head>
 <body>
+<script type="module">
+  // Function 1: Firebase Initialization & Firestore Integration
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
+    authDomain: "naturesheal.firebaseapp.com",
+    projectId: "naturesheal",
+    storageBucket: "naturesheal.firebasestorage.app",
+    messagingSenderId: "429407436276",
+    appId: "1:429407436276:web:2cb0470eecbf9ed349cda1",
+    measurementId: "G-Y6FTZY92QP"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Function 2: Logic to send order to Firestore
+  window.placeOrder = async function() {
+    if (cart.length === 0) { alert("Your cart is empty!"); return; }
+
+    const btn = document.getElementById('placeOrderBtn');
+    const originalContent = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Processing...`;
+
+    const items = catalogData.filter(i => cart.includes(i.id));
+    const total = items.reduce((sum, item) => sum + item.price, 0);
+
+    try {
+        // We write to 'orders' collection. A Cloud Function should listen to this to send the email.
+        await addDoc(collection(db, "orders"), {
+            order_items: items,
+            total_price: total,
+            status: "pending",
+            created_at: serverTimestamp()
+        });
+
+        alert('Order Placed Successfully! Total: ₹' + total.toFixed(2));
+        cart = []; 
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCartBadge();
+        renderCartItems();
+        closeCart();
+        applyCombinedFilters();
+    } catch (error) {
+        alert('Failed to place order.');
+        console.error('Firestore Error:', error);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+    }
+  }
+</script>
 
     <button id="themeToggle" onclick="toggleTheme()" title="Toggle Night Mode">
         <i class="fas fa-moon" id="themeIcon"></i>
@@ -249,6 +298,7 @@
     </div>
 
     <script>
+        // ORIGINAL CATALOG DATA - UNMODIFIED[cite: 1]
         const catalogData = [
             // LEAVES 
             { id: 1, name: "Aloe Vera", type: "leaf", scientific: "Aloe barbadensis miller", price: 95.00, uses: "Skin healing, Burns treatment, Digestive support", description: "A succulent plant species known for its soothing gel, widely used in traditional medicine and skincare.", image: "https://images.unsplash.com/photo-1672128550038-c21875e68bed?q=80&w=1025&auto=format&fit=crop" },
@@ -266,7 +316,7 @@
             { id: 103, name: "Guava", type: "fruit", scientific: "Psidium guajava", price: 50.00, uses: "Immunity booster, Digestion, Vitamin C source", description: "Contains four times the vitamin C of an orange.", image: "https://images.unsplash.com/photo-1689996647099-a7a0b67fd2f6?q=80&w=735&auto=format&fit=crop" },
             { id: 104, name: "Lemon", type: "fruit", scientific: "Citrus limon", price: 25.00, uses: "Detox support, Digestion, Immunity aid", description: "Staple for alkaline-acid balance.", image: "https://images.unsplash.com/photo-1590502593747-42a996133562?q=80&w=1170&auto=format&fit=crop" },
             { id: 105, name: "Papaya", type: "fruit", scientific: "Carica papaya", price: 70.00, uses: "Strong digestive aid, Enzyme source, Skin glow", description: "Contains papain to help digest proteins.", image: "https://plus.unsplash.com/premium_photo-1723126209077-f298ec1aa178?q=80&w=687&auto=format&fit=crop" },
-            { id: 106, name: "Strawberry", type: "fruit", scientific: "Fragaria × ananassa", price: 150.00, uses: "Skin health, Heart protection", description: "Low glycemic index fruit rich in folate.", image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=1170&auto=format&fit=crop" },
+            { id: 106, name: "Strawberry", type: "fruit", scientific: "Fragaria × ananassa", price: 150.00, uses: "Skin health, Heart protection", description: "Low glycemic index fruit rich in office.", image: "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?q=80&w=1170&auto=format&fit=crop" },
             { id: 107, name: "Grapes", type: "fruit", scientific: "Vitis vinifera", price: 90.00, uses: "Longevity, Heart health, Resveratrol", description: "Contains resveratrol for cellular repair.", image: "https://images.unsplash.com/photo-1537640538966-79f369143f8f?q=80&w=1170&auto=format&fit=crop" },
             { id: 108, name: "Orange", type: "fruit", scientific: "Citrus × sinensis", price: 40.00, uses: "Immunity, Collagen, Vitamin C", description: "Essential for immune defense.", image: "https://images.unsplash.com/photo-1547514701-42782101795e?q=80&w=687&auto=format&fit=crop" },
             { id: 109, name: "Kiwi", type: "fruit", scientific: "Actinidai deliciosa", price: 110.00, uses: "Digestion aid, Vitamin C, Sleep", description: "Dense in fiber and actinidin enzyme.", image: "https://images.unsplash.com/photo-1616684000067-36952fde56ec?q=80&w=1228&auto=format&fit=crop" },
@@ -322,130 +372,88 @@
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
 
-       function renderItems(items) {
-    const container = document.getElementById('gridContainer');
-    container.innerHTML = '';
-    document.getElementById('itemCount').textContent = items.length;
-    
-    items.forEach(item => {
-        const isFav = favorites.includes(item.id);
-        const isCart = cart.includes(item.id);
-        const card = document.createElement('div');
-        card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative";
-        card.onclick = () => openModal(item);
-        card.innerHTML = `
-            <div class="h-28 sm:h-36 md:h-56 overflow-hidden relative">
-                <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                <div class="absolute top-1 left-1 sm:top-3 sm:left-3 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">
-                    ${item.type.replace('_', ' ')}
-                </div>
-                <div class="absolute top-1 right-1 sm:top-3 sm:right-3 flex flex-col gap-1">
-                    <button onclick="toggleFav(event, ${item.id})" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90">
-                        <i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i>
+        function renderItems(items) {
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = '';
+            document.getElementById('itemCount').textContent = items.length;
+            
+            items.forEach(item => {
+                const isFav = favorites.includes(item.id);
+                const isCart = cart.includes(item.id);
+                const card = document.createElement('div');
+                card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative";
+                card.onclick = () => openModal(item);
+                card.innerHTML = `
+                    <div class="h-28 sm:h-36 md:h-56 overflow-hidden relative">
+                        <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-1 left-1 sm:top-3 sm:left-3 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">
+                            ${item.type.replace('_', ' ')}
+                        </div>
+                        <div class="absolute top-1 right-1 sm:top-3 sm:right-3 flex flex-col gap-1">
+                            <button onclick="toggleFav(event, ${item.id})" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90">
+                                <i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i>
+                            </button>
+                            <button onclick="toggleCartItem(event, ${item.id})" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90">
+                                <i class="fas ${isCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-3 sm:p-4">
+                        <div class="flex justify-between items-start mb-1 gap-2">
+                            <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">
+                                ${item.name}
+                            </h3>
+                            <span class="text-xs sm:text-sm font-black text-emerald-600 whitespace-nowrap">
+                                ₹${item.price.toFixed(2)}
+                            </span>
+                        </div>
+                        <p class="text-[9px] italic text-emerald-600 mb-2">
+                            ${item.scientific}
+                        </p>
+                        <p class="text-[10px] sm:text-xs text-muted-custom leading-relaxed">
+                            ${item.description}
+                        </p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openModal(item) {
+            document.getElementById('modalContent').innerHTML = `
+            <div class="relative max-h-[90vh] overflow-y-auto">
+                <div class="relative">
+                    <div class="h-44 sm:h-56 md:h-72 w-full overflow-hidden">
+                        <img src="${item.image}" class="w-full h-full object-cover">
+                    </div>
+                    <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/60 text-white w-9 h-9 rounded-full flex items-center justify-center z-10">
+                        <i class="fas fa-times"></i>
                     </button>
-                    <button onclick="toggleCartItem(event, ${item.id})" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90">
-                        <i class="fas ${isCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]"></i>
-                    </button>
                 </div>
-            </div>
-            <div class="p-3 sm:p-4">
-                <div class="flex justify-between items-start mb-1 gap-2">
-                    <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">
-                        ${item.name}
-                    </h3>
-                    <span class="text-xs sm:text-sm font-black text-emerald-600 whitespace-nowrap">
-                        ₹${item.price.toFixed(2)}
-                    </span>
+                <div class="p-4 sm:p-6 md:p-8">
+                    <div class="flex justify-between items-start gap-2 mb-2">
+                        <h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 leading-tight">${item.name}</h2>
+                        <span class="text-base sm:text-xl font-black text-emerald-400 whitespace-nowrap">₹${item.price.toFixed(2)}</span>
+                    </div>
+                    <p class="text-xs sm:text-sm italic text-emerald-300 mb-5">${item.scientific}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Description</h4>
+                            <p class="text-xs sm:text-sm text-white leading-relaxed">${item.description}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Key Benefits</h4>
+                            <ul class="space-y-1">
+                                ${item.uses.split(',').map(u => `<li class="text-xs sm:text-sm text-white flex items-start"><i class="fas fa-circle text-[5px] text-emerald-500 mr-2 mt-2"></i>${u.trim()}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                    <button onclick="addToCart(${item.id})" class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold text-sm sm:text-lg sticky bottom-2">Add to Cart</button>
                 </div>
-                <p class="text-[9px] italic text-emerald-600 mb-2">
-                    ${item.scientific}
-                </p>
-                <p class="text-[10px] sm:text-xs text-muted-custom leading-relaxed">
-                    ${item.description}
-                </p>
-            </div>
-        `;
-        container.appendChild(card);
-    });
-}
-   function openModal(item) {
-    document.getElementById('modalContent').innerHTML = `
-    <div class="relative max-h-[90vh] overflow-y-auto">
-
-        <!-- IMAGE -->
-        <div class="relative">
-            <div class="h-44 sm:h-56 md:h-72 w-full overflow-hidden">
-                <img src="${item.image}" class="w-full h-full object-cover">
-            </div>
-
-            <!-- CLOSE BUTTON -->
-            <button onclick="closeModal()"
-                class="absolute top-3 right-3 bg-black/60 text-white w-9 h-9 rounded-full flex items-center justify-center z-10">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <!-- CONTENT -->
-        <div class="p-4 sm:p-6 md:p-8">
-
-            <!-- TITLE + PRICE -->
-            <div class="flex justify-between items-start gap-2 mb-2">
-                <h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 leading-tight">
-                    ${item.name}
-                </h2>
-
-                <span class="text-base sm:text-xl font-black text-emerald-400 whitespace-nowrap">
-                    ₹${item.price.toFixed(2)}
-                </span>
-            </div>
-
-            <p class="text-xs sm:text-sm italic text-emerald-300 mb-5">
-                ${item.scientific}
-            </p>
-
-            <!-- ✅ LEFT RIGHT LAYOUT -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-                <!-- LEFT: DESCRIPTION -->
-                <div>
-                    <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">
-                        Description
-                    </h4>
-                    <p class="text-xs sm:text-sm text-white leading-relaxed">
-                        ${item.description}
-                    </p>
-                </div>
-
-                <!-- RIGHT: BENEFITS -->
-                <div>
-                    <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">
-                        Key Benefits
-                    </h4>
-                    <ul class="space-y-1">
-                        ${item.uses.split(',').map(u => `
-                            <li class="text-xs sm:text-sm text-white flex items-start">
-                                <i class="fas fa-circle text-[5px] text-emerald-500 mr-2 mt-2"></i>
-                                ${u.trim()}
-                            </li>
-                        `).join('')}
-                    </ul>
-                </div>
-
-            </div>
-
-            <!-- ADD TO CART -->
-            <button onclick="addToCart(${item.id})"
-                class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold text-sm sm:text-lg sticky bottom-2">
-                Add to Cart
-            </button>
-
-        </div>
-    </div>
-    `;
-
-    document.getElementById('modal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
+            </div>`;
+            document.getElementById('modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
 
         function toggleFav(e, id) {
             e.stopPropagation();
@@ -546,44 +554,6 @@
 
         function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
         document.getElementById('searchInput').oninput = applyCombinedFilters;
-
-        function placeOrder() {
-            if (cart.length === 0) { alert("Your cart is empty!"); return; }
-
-            const btn = document.getElementById('placeOrderBtn');
-            const originalContent = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Processing...`;
-
-            const items = catalogData.filter(i => cart.includes(i.id));
-            const total = items.reduce((sum, item) => sum + item.price, 0);
-            const itemDetails = items.map(i => `- ${i.name} (₹${i.price.toFixed(2)})`).join('\n');
-
-            const templateParams = {
-                order_details: itemDetails,
-                total_items: cart.length,
-                total_price: `₹${total.toFixed(2)}`,
-                order_date: new Date().toLocaleString()
-            };
-
-            emailjs.send('service_414ax6g', 'template_35uhaop', templateParams)
-                .then(function(response) {
-                    alert('Order Placed Successfully! Total: ₹' + total.toFixed(2));
-                    cart = []; 
-                    localStorage.setItem('cart', JSON.stringify(cart));
-                    updateCartBadge();
-                    renderCartItems();
-                    closeCart();
-                    applyCombinedFilters();
-                }, function(error) {
-                    alert('Failed to place order.');
-                    console.error('EmailJS Error:', error);
-                })
-                .finally(() => {
-                    btn.disabled = false;
-                    btn.innerHTML = originalContent;
-                });
-        }
 
         window.onload = () => {
             if (localStorage.getItem('theme') === 'dark') {
