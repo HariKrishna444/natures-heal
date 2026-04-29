@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nature's Heal: Leaves & Fruits Encyclopedia</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     
     <style>
@@ -39,7 +38,7 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.3s ease;
             overflow-x: hidden;
         }
 
@@ -50,43 +49,11 @@
             overflow: hidden;
         }
 
-        .hero-banner::after {
-            content: '';
-            position: absolute;
-            right: -5%;
-            top: -10%;
-            width: 300px;
-            height: 300px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 50%;
-        }
-
-        .card-gradient { 
-            background: var(--bg-card); 
-            border: 1px solid var(--border-color);
-        }
-
-        header { 
-            background-color: var(--header-bg) !important; 
-            border-bottom: 1px solid var(--border-color);
-        }
+        .card-gradient { background: var(--bg-card); border: 1px solid var(--border-color); }
+        header { background-color: var(--header-bg) !important; border-bottom: 1px solid var(--border-color); }
         
-        .nature-card {
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .nature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .text-primary {
-            color: var(--text-main);
-        }
-
-        .text-muted-custom {
-            color: var(--text-muted);
-        }
+        .nature-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
 
         #cartSidebar {
             position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px; height: 100vh;
@@ -95,13 +62,9 @@
         }
 
         #cartSidebar.active { right: 0; }
-
-        #cartOverlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
-            z-index: 90; display: none;
-        }
-
-        footer { background-color: var(--footer-bg); }
+        #cartOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 90; display: none; }
+        
+        footer { background-color: var(--footer-bg); color: white; }
 
         #themeToggle {
             position: fixed; bottom: 2rem; right: 2rem; z-index: 50; width: 50px; height: 50px;
@@ -109,71 +72,106 @@
             justify-content: center; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
 
-        .modal-animate {
-            animation: modalIn 0.3s ease-out;
-        }
-
-        @keyframes modalIn {
-            from { transform: scale(0.95); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
+        .modal-animate { animation: modalIn 0.3s ease-out; }
+        @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
+
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
-    authDomain: "naturesheal.firebaseapp.com",
-    projectId: "naturesheal",
-    storageBucket: "naturesheal.firebasestorage.app",
-    messagingSenderId: "429407436276",
-    appId: "1:429407436276:web:2cb0470eecbf9ed349cda1",
-    measurementId: "G-Y6FTZY92QP"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
+  authDomain: "naturesheal.firebaseapp.com",
+  projectId: "naturesheal",
+  storageBucket: "naturesheal.firebasestorage.app",
+  messagingSenderId: "429407436276",
+  appId: "1:429407436276:web:2cb0470eecbf9ed349cda1"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-  window.placeOrder = async function() {
-    if (cart.length === 0) { alert("Your cart is empty!"); return; }
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-oDJG-YtvMsbQuQP7Xea38B2ovpgWMJA6s4GYiJ0R3RLVCJhljuwwTc0MJWzJCRWv2EF/pub?output=csv`;
 
-    const btn = document.getElementById('placeOrderBtn');
-    const originalContent = btn.innerHTML;
+window.catalogData = [];
+window.favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+window.cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+window.fetchSheetData = async function () {
+    try {
+        const res = await fetch(SHEET_URL);
+        const csv = await res.text();
+        const rows = csv.split("\n").filter(r => r.trim() !== "");
+        const headers = rows[0].split(",").map(h => h.trim().toLowerCase());
+
+        window.catalogData = rows.slice(1).map(row => {
+            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+            let obj = {};
+            headers.forEach((h, i) => {
+                let val = cols[i]?.replace(/"/g, "").trim();
+                if (h === "id" || h === "price") obj[h] = parseFloat(val) || 0;
+                else obj[h] = val || "";
+            });
+            return obj;
+        }).filter(i => i.id);
+
+        filterItems('all');
+        updateCartBadge();
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+window.placeOrder = async function () {
+    if (cart.length === 0) return alert("Your cart is empty!");
+
+    const name = document.getElementById('custName').value;
+    const phone = document.getElementById('custPhone').value;
+    const email = document.getElementById('custEmail').value;
+    const address = document.getElementById('custAddress').value;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!name || !phone || !address || !emailRegex.test(email)) {
+        return alert("Please provide valid Name, Phone, Email, and Address.");
+    }
+
+    const btn = document.getElementById("placeOrderBtn");
     btn.disabled = true;
-    btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Processing...`;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
 
-    const items = catalogData.filter(i => cart.includes(i.id));
-    const total = items.reduce((sum, item) => sum + item.price, 0);
+    const items = window.catalogData.filter(i => cart.includes(i.id));
+    const total = items.reduce((s, i) => s + i.price, 0);
 
     try {
         await addDoc(collection(db, "orders"), {
-            order_items: items,
-            total_price: total,
+            customer: { name, phone, email, address },
+            items,
+            total,
             status: "pending",
             created_at: serverTimestamp()
         });
 
-        alert('Order Placed Successfully! Total: ₹' + total.toFixed(2));
-        cart = []; 
-        localStorage.setItem('cart', JSON.stringify(cart));
+        alert("Order successful! Thank you for choosing Nature's Heal.");
+        window.cart = [];
+        localStorage.setItem("cart", "[]");
         updateCartBadge();
         renderCartItems();
         closeCart();
-        applyCombinedFilters();
-    } catch (error) {
-        alert('Failed to place order.');
-        console.error('Firestore Error:', error);
+    } catch (e) {
+        alert("Error saving order. Please try again.");
     } finally {
         btn.disabled = false;
-        btn.innerHTML = originalContent;
+        btn.innerHTML = "Place Order";
     }
-  }
+};
+
+window.onload = fetchSheetData;
 </script>
 
-    <button id="themeToggle" onclick="toggleTheme()" title="Toggle Night Mode">
+    <button id="themeToggle" onclick="toggleTheme()">
         <i class="fas fa-moon" id="themeIcon"></i>
     </button>
 
@@ -181,138 +179,80 @@
     
     <div id="cartSidebar">
         <div class="flex flex-col h-full p-6">
-            <div class="flex justify-between items-center mb-8 border-b border-emerald-200 dark:border-emerald-800 pb-4">
-                <h2 class="text-2xl font-bold text-emerald-600">Shopping Cart</h2>
-                <button onclick="closeCart()" class="text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-emerald-600">Your Cart</h2>
+                <button onclick="closeCart()"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <div id="cartItemsList" class="flex-grow overflow-y-auto space-y-4 pr-2"></div>
-            <div class="mt-6 pt-6 border-t border-emerald-200 dark:border-emerald-800">
-                <div class="flex justify-between items-center mb-4 px-2">
-                    <span class="font-bold text-slate-600 dark:text-slate-300">Total Amount:</span>
-                    <span id="cartTotal" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹0.00</span>
+
+            <!-- Customer Form -->
+            <div class="space-y-3 mb-6 bg-emerald-50 dark:bg-slate-800 p-4 rounded-xl">
+                <input type="text" id="custName" placeholder="Full Name" class="w-full p-2 rounded border border-emerald-200 dark:bg-slate-700 dark:text-white">
+                <input type="tel" id="custPhone" placeholder="Phone Number" class="w-full p-2 rounded border border-emerald-200 dark:bg-slate-700 dark:text-white">
+                <input type="email" id="custEmail" placeholder="Email Address" class="w-full p-2 rounded border border-emerald-200 dark:bg-slate-700 dark:text-white">
+                <textarea id="custAddress" placeholder="Full Delivery Address" class="w-full p-2 rounded border border-emerald-200 dark:bg-slate-700 dark:text-white"></textarea>
+            </div>
+
+            <div id="cartItemsList" class="flex-grow overflow-y-auto space-y-4"></div>
+            
+            <div class="mt-6 pt-4 border-t border-emerald-200">
+                <div class="flex justify-between font-bold text-xl mb-4">
+                    <span>Total:</span>
+                    <span id="cartTotal">₹0.00</span>
                 </div>
-                <button id="placeOrderBtn" onclick="placeOrder()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all flex justify-center items-center gap-2">
-                    <span>Place Order</span>
+                <button id="placeOrderBtn" onclick="placeOrder()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all">
+                    Place Order
                 </button>
             </div>
         </div>
     </div>
 
-    <header class="sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
+    <header class="sticky top-0 z-40 text-white">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <div class="bg-white p-2 rounded-lg"><i class="fas fa-leaf text-emerald-600 text-xl"></i></div>
-                <span class="text-2xl font-bold tracking-tight text-white">Nature's Heal</span>
+                <i class="fas fa-leaf text-2xl"></i>
+                <span class="text-2xl font-bold">Nature's Heal</span>
             </div>
-            
-            <nav class="hidden md:flex space-x-8 font-semibold">
-                <button data-filter="all" onclick="filterItems('all')" class="filter-btn text-white border-b-2 border-white pb-1">All Catalog</button>
-                <button data-filter="leaf" onclick="filterItems('leaf')" class="filter-btn text-emerald-100 hover:text-white pb-1">Leaves</button>
-                <button data-filter="fruit" onclick="filterItems('fruit')" class="filter-btn text-emerald-100 hover:text-white pb-1">Fruits</button>
-                <button data-filter="wild_fruit" onclick="filterItems('wild_fruit')" class="filter-btn text-emerald-100 hover:text-white pb-1">Wild Fruits</button>
-                <button data-filter="seed" onclick="filterItems('seed')" class="filter-btn text-emerald-100 hover:text-white pb-1">Seeds</button>
-                <button data-filter="favorites" onclick="filterItems('favorites')" class="filter-btn text-emerald-100 hover:text-white pb-1">Collection ⭐</button>
+            <nav class="hidden md:flex space-x-6 font-semibold">
+                <button onclick="filterItems('all')" class="hover:opacity-80">All</button>
+                <button onclick="filterItems('leaf')" class="hover:opacity-80">Leaves</button>
+                <button onclick="filterItems('fruit')" class="hover:opacity-80">Fruits</button>
+                <button onclick="filterItems('favorites')" class="hover:opacity-80">Favorites ⭐</button>
             </nav>
-
-            <div class="relative flex items-center gap-3">
-                <button onclick="toggleCartSidebar()" class="relative p-2 text-white hover:text-emerald-200">
-                    <i class="fas fa-shopping-cart text-xl"></i>
-                    <span id="cartBadge" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
-                </button>
-                <div class="relative">
-                    <input type="text" id="searchInput" placeholder="Search plants..." class="bg-emerald-700 text-white placeholder-emerald-200 border-none rounded-full py-2 px-4 pl-10 focus:ring-2 focus:ring-white w-full md:w-64 transition-all">
-                    <i class="fas fa-search absolute left-3 top-3 text-emerald-200"></i>
-                </div>
-            </div>
-
-            <div class="w-full md:hidden mt-2">
-                <select id="mobileFilter" onchange="filterItems(this.value)" class="w-full bg-emerald-800 text-white border-none rounded-xl py-3 px-4 focus:ring-2 focus:ring-white transition-all outline-none font-semibold">
-                    <option value="all">🌿 All Catalog</option>
-                    <option value="leaf">🍃 Leaves</option>
-                    <option value="fruit">🍎 Fruits</option>
-                    <option value="wild_fruit">🫐 Wild Fruits</option>
-                    <option value="seed">🌰 Seeds</option>
-                    <option value="favorites">⭐ Collection</option>
-                </select>
-            </div>
+            <button onclick="toggleCartSidebar()" class="relative p-2">
+                <i class="fas fa-shopping-cart text-xl"></i>
+                <span id="cartBadge" class="absolute top-0 right-0 bg-rose-500 text-white text-[10px] px-1.5 rounded-full hidden">0</span>
+            </button>
         </div>
     </header>
 
-    <main id="catalog" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <section class="hero-banner p-4 sm:p-6 md:p-12 mb-8 md:mb-16 text-white shadow-xl">
-            <div class="max-w-xl md:max-w-2xl relative z-10">
-                <h1 class="text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight">Discover the Power of Nature's Elements</h1>
-                <p class="text-sm sm:text-base md:text-lg mb-5 sm:mb-6 md:mb-10 leading-relaxed opacity-90 text-emerald-50">Explore the medicinal uses, nutritional values, and fascinating facts about the world's most vital leaves, fruits, seeds, and wild botanical treasures.</p>
-                <button onclick="document.getElementById('gridContainer').scrollIntoView({behavior: 'smooth'})" class="bg-white text-emerald-900 px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-full font-bold text-xs sm:text-sm md:text-base hover:bg-emerald-50 transition-all transform hover:scale-105">Start Exploring</button>
-            </div>
+    <main class="max-w-7xl mx-auto px-4 py-12">
+        <section class="hero-banner p-8 md:p-16 mb-12 text-white shadow-xl">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">Botanical Wonders</h1>
+            <p class="text-lg opacity-90">Explore the healing properties of nature's finest leaves and fruits.</p>
         </section>
 
-        <div class="mb-8">
-            <h2 class="text-3xl font-bold mb-1 dark:text-white">Botanical Catalog</h2>
-            <p class="text-muted-custom font-medium">Showing <span id="itemCount" class="font-bold text-emerald-600">0</span> unique species</p>
-        </div>
-        
-        <div id="gridContainer" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-8"></div>
+        <div id="gridContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6"></div>
     </main>
 
-    <footer class="py-16 px-4">
-        <div class="max-w-7xl mx-auto text-center">
-            <div class="flex items-center justify-center space-x-3 mb-6">
-                <div class="bg-emerald-600 p-2 rounded-lg"><i class="fas fa-leaf text-white text-lg"></i></div>
-                <span class="text-2xl font-bold text-white">Nature's <span class="text-emerald-500">Heal</span></span>
+    <footer class="py-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p>© 2026 Nature's Heal Encyclopedia. Bringing botanical wisdom to your fingertips.</p>
+            <div class="flex justify-center space-x-6 mt-4">
+                <i class="fab fa-instagram text-xl cursor-pointer hover:text-emerald-400"></i>
+                <i class="fab fa-facebook text-xl cursor-pointer hover:text-emerald-400"></i>
+                <i class="fab fa-twitter text-xl cursor-pointer hover:text-emerald-400"></i>
             </div>
-            <p class="text-slate-400 mb-8 max-w-md mx-auto">Your companion for exploring the healing power of the natural world.</p>
-            <div class="flex justify-center space-x-6 mb-12 text-slate-400">
-                <a href="https://www.instagram.com/hari_krishna_ak/" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-x-twitter"></i></a>
-                <a href="https://www.facebook.com/hari.krishna.arvapalli/" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-facebook-f"></i></a>
-            </div>
-            <div class="text-slate-500 text-xs font-bold tracking-widest uppercase">© 2024 NATURE'S HEAL ENCYCLOPEDIA</div>
         </div>
     </footer>
 
+    <!-- Details Modal -->
     <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm hidden">
-        <div id="modalContent" class="bg-emerald-950 rounded-[2rem] max-w-2xl w-full overflow-hidden shadow-2xl modal-animate border border-emerald-800"></div>
+        <div id="modalContent" class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl modal-animate">
+            <!-- Dynamic Content Injected Here -->
+        </div>
     </div>
 
     <script>
-        const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-oDJG-YtvMsbQuQP7Xea38B2ovpgWMJA6s4GYiJ0R3RLVCJhljuwwTc0MJWzJCRWv2EF/pub?output=csv";
-        let catalogData = [];
-        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-        async function fetchSheetData() {
-            try {
-                const response = await fetch(SHEET_URL);
-                const csvText = await response.text();
-                const rows = csvText.split('\n').slice(1); // Skip header
-
-                catalogData = rows.map(row => {
-                    const columns = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                    if (!columns || columns.length < 8) return null;
-                    
-                    const clean = (str) => str ? str.replace(/^"|"$/g, '').trim() : '';
-
-                    return {
-                        id: parseInt(clean(columns[0])),
-                        name: clean(columns[1]),
-                        type: clean(columns[2]),
-                        scientific: clean(columns[3]),
-                        price: parseFloat(clean(columns[4])),
-                        uses: clean(columns[5]),
-                        description: clean(columns[6]),
-                        image: clean(columns[7])
-                    };
-                }).filter(item => item !== null);
-
-                filterItems('all');
-            } catch (error) {
-                console.error("Error loading data from Google Sheets:", error);
-            }
-        }
-
         function toggleTheme() {
             document.body.classList.toggle('dark');
             const isDark = document.body.classList.contains('dark');
@@ -323,36 +263,20 @@
         function renderItems(items) {
             const container = document.getElementById('gridContainer');
             container.innerHTML = '';
-            document.getElementById('itemCount').textContent = items.length;
-            
             items.forEach(item => {
                 const isFav = favorites.includes(item.id);
-                const isCart = cart.includes(item.id);
                 const card = document.createElement('div');
-                card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative";
+                card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group";
                 card.onclick = () => openModal(item);
                 card.innerHTML = `
-                    <div class="h-28 sm:h-36 md:h-56 overflow-hidden relative">
-                        <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute top-1 left-1 sm:top-3 sm:left-3 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">
-                            ${item.type.replace('_', ' ')}
+                    <img src="${item.image}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-lg dark:text-emerald-400">${item.name}</h3>
+                            <span class="font-bold text-emerald-600">₹${item.price}</span>
                         </div>
-                        <div class="absolute top-1 right-1 sm:top-3 sm:right-3 flex flex-col gap-1">
-                            <button onclick="toggleFav(event, ${item.id})" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90">
-                                <i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i>
-                            </button>
-                            <button onclick="toggleCartItem(event, ${item.id})" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90">
-                                <i class="fas ${isCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="p-3 sm:p-4">
-                        <div class="flex justify-between items-start mb-1 gap-2">
-                            <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">${item.name}</h3>
-                            <span class="text-xs sm:text-sm font-black text-emerald-600 whitespace-nowrap">₹${item.price.toFixed(2)}</span>
-                        </div>
-                        <p class="text-[9px] italic text-emerald-600 mb-2">${item.scientific}</p>
-                        <p class="text-[10px] sm:text-xs text-muted-custom leading-relaxed">${item.description}</p>
+                        <p class="text-sm text-slate-500 italic mb-2">${item.scientific || ''}</p>
+                        <p class="text-xs text-slate-400 line-clamp-2">${item.description}</p>
                     </div>
                 `;
                 container.appendChild(card);
@@ -361,68 +285,41 @@
 
         function openModal(item) {
             document.getElementById('modalContent').innerHTML = `
-            <div class="relative max-h-[90vh] overflow-y-auto">
                 <div class="relative">
-                    <div class="h-44 sm:h-56 md:h-72 w-full overflow-hidden">
-                        <img src="${item.image}" class="w-full h-full object-cover">
-                    </div>
-                    <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/60 text-white w-9 h-9 rounded-full flex items-center justify-center z-10">
+                    <img src="${item.image}" class="w-full h-64 object-cover">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/50 text-white w-10 h-10 rounded-full hover:bg-black/70">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <div class="p-4 sm:p-6 md:p-8">
-                    <div class="flex justify-between items-start gap-2 mb-2">
-                        <h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 leading-tight">${item.name}</h2>
-                        <span class="text-base sm:text-xl font-black text-emerald-400 whitespace-nowrap">₹${item.price.toFixed(2)}</span>
-                    </div>
-                    <p class="text-xs sm:text-sm italic text-emerald-300 mb-5">${item.scientific}</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="p-8">
+                    <h2 class="text-3xl font-bold text-emerald-600 mb-2">${item.name}</h2>
+                    <p class="text-emerald-500 italic mb-6">${item.scientific || 'Botanical Species'}</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-8 mb-8">
                         <div>
-                            <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Description</h4>
-                            <p class="text-xs sm:text-sm text-white leading-relaxed">${item.description}</p>
+                            <h4 class="font-bold text-slate-700 dark:text-slate-200 mb-2 uppercase text-xs tracking-widest">Description</h4>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">${item.description}</p>
                         </div>
                         <div>
-                            <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Key Benefits</h4>
-                            <ul class="space-y-1">
-                                ${item.uses.split(',').map(u => `<li class="text-xs sm:text-sm text-white flex items-start"><i class="fas fa-circle text-[5px] text-emerald-500 mr-2 mt-2"></i>${u.trim()}</li>`).join('')}
-                            </ul>
+                            <h4 class="font-bold text-emerald-700 dark:text-emerald-300 mb-2 uppercase text-xs tracking-widest">Healing Benefits</h4>
+                            <p class="text-emerald-600/80 dark:text-emerald-400/80 text-sm leading-relaxed">${item.benefits || 'High in antioxidants and essential nutrients for daily wellness.'}</p>
                         </div>
                     </div>
-                    <button onclick="addToCart(${item.id})" class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold text-sm sm:text-lg sticky bottom-2">Add to Cart</button>
+                    
+                    <button onclick="addToCart(${item.id})" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-emerald-700">
+                        Add to Cart - ₹${item.price}
+                    </button>
                 </div>
-            </div>`;
+            `;
             document.getElementById('modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
 
-        function toggleFav(e, id) {
-            e.stopPropagation();
-            favorites = favorites.includes(id) ? favorites.filter(i => i !== id) : [...favorites, id];
-            localStorage.setItem('favorites', JSON.stringify(favorites));
-            applyCombinedFilters();
-        }
-
-        function toggleCartItem(e, id) {
-            if(e) e.stopPropagation();
-            if (cart.includes(id)) {
-                cart = cart.filter(i => i !== id);
-            } else {
-                cart.push(id);
-            }
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartBadge();
-            renderCartItems();
-            applyCombinedFilters();
-        }
-
-        function addToCart(id) {
-            if(!cart.includes(id)) {
-                cart.push(id);
-                localStorage.setItem('cart', JSON.stringify(cart));
-                updateCartBadge();
-            }
-            closeModal();
-            toggleCartSidebar();
+        function filterItems(type) {
+            const filtered = type === 'all' ? window.catalogData : 
+                           type === 'favorites' ? window.catalogData.filter(i => favorites.includes(i.id)) :
+                           window.catalogData.filter(i => i.type === type);
+            renderItems(filtered);
         }
 
         function toggleCartSidebar() {
@@ -436,73 +333,47 @@
             document.getElementById('cartOverlay').style.display = 'none';
         }
 
-        function renderCartItems() {
-            const list = document.getElementById('cartItemsList');
-            const items = catalogData.filter(i => cart.includes(i.id));
-            const total = items.reduce((sum, item) => sum + item.price, 0);
-            document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
 
-            list.innerHTML = items.length ? items.map(i => `
-                <div class="flex items-center gap-4 p-3 bg-white/60 dark:bg-black/20 rounded-2xl border dark:border-white/10">
-                    <img src="${i.image}" class="w-16 h-16 rounded-xl object-cover">
-                    <div class="flex-grow">
-                        <div class="flex justify-between items-start">
-                            <h4 class="font-bold text-sm text-emerald-700 dark:text-emerald-400">${i.name}</h4>
-                            <span class="text-xs font-black text-emerald-600">₹${i.price.toFixed(2)}</span>
-                        </div>
-                        <p class="text-[10px] text-emerald-600 font-bold italic">${i.scientific}</p>
-                    </div>
-                    <button onclick="toggleCartItem(null, ${i.id})" class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 p-2 rounded-lg transition-colors">
-                        <i class="fas fa-trash-can"></i>
-                    </button>
-                </div>`).join('') : '<div class="text-center py-10"><i class="fas fa-shopping-basket text-4xl text-emerald-200 dark:text-emerald-800 mb-4 block"></i><p class="text-slate-500 dark:text-slate-400 font-medium">Your cart is empty</p></div>';
+        function addToCart(id) {
+            if(!cart.includes(id)) cart.push(id);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartBadge();
+            closeModal();
+            toggleCartSidebar();
         }
 
         function updateCartBadge() {
-            const b = document.getElementById('cartBadge');
-            b.textContent = cart.length; b.classList.toggle('hidden', !cart.length);
+            const badge = document.getElementById('cartBadge');
+            badge.textContent = cart.length;
+            badge.classList.toggle('hidden', cart.length === 0);
         }
 
-        function applyCombinedFilters() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const type = localStorage.getItem('selectedFilter') || 'all';
-            const filtered = catalogData.filter(item => {
-                const matchesType = type === 'all' || item.type === type || (type === 'favorites' && favorites.includes(item.id));
-                const matchesSearch = item.name.toLowerCase().includes(term) || item.uses.toLowerCase().includes(term) || item.scientific.toLowerCase().includes(term);
-                return matchesType && matchesSearch;
-            });
-            renderItems(filtered);
+        function renderCartItems() {
+            const list = document.getElementById('cartItemsList');
+            const items = window.catalogData.filter(i => cart.includes(i.id));
+            const total = items.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
+            list.innerHTML = items.length ? items.map(i => `
+                <div class="flex items-center gap-4 bg-emerald-50 dark:bg-slate-800 p-3 rounded-2xl">
+                    <img src="${i.image}" class="w-12 h-12 rounded-lg object-cover">
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-sm dark:text-emerald-300">${i.name}</h4>
+                        <span class="text-emerald-600 text-xs">₹${i.price}</span>
+                    </div>
+                    <button onclick="removeItem(${i.id})" class="text-rose-500"><i class="fas fa-trash"></i></button>
+                </div>`).join('') : '<p class="text-center py-10 opacity-50">Your cart is lonely...</p>';
         }
 
-        function filterItems(type) {
-            localStorage.setItem('selectedFilter', type);
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                const isActive = btn.dataset.filter === type;
-                if (isActive) {
-                    btn.classList.add('text-white', 'border-b-2', 'border-white');
-                    btn.classList.remove('text-emerald-100');
-                } else {
-                    btn.classList.remove('text-white', 'border-b-2', 'border-white');
-                    btn.classList.add('text-emerald-100');
-                }
-            });
-
-            const mobileDropdown = document.getElementById('mobileFilter');
-            if(mobileDropdown) mobileDropdown.value = type;
-            applyCombinedFilters();
-        }
-
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
-        document.getElementById('searchInput').oninput = applyCombinedFilters;
-
-        window.onload = () => {
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark');
-                document.getElementById('themeIcon').className = 'fas fa-sun';
-            }
+        function removeItem(id) {
+            cart = cart.filter(i => i !== id);
+            localStorage.setItem('cart', JSON.stringify(cart));
             updateCartBadge();
-            fetchSheetData();
-        };
+            renderCartItems();
+        }
     </script>
 </body>
 </html>
