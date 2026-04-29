@@ -38,7 +38,7 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.3s ease;
             overflow-x: hidden;
         }
 
@@ -63,7 +63,8 @@
 
         #cartSidebar.active { right: 0; }
         #cartOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 90; display: none; }
-        footer { background-color: var(--footer-bg); }
+        
+        footer { background-color: var(--footer-bg); color: white; }
 
         #themeToggle {
             position: fixed; bottom: 2rem; right: 2rem; z-index: 50; width: 50px; height: 50px;
@@ -117,36 +118,29 @@ window.fetchSheetData = async function () {
             return obj;
         }).filter(i => i.id);
 
-        filterItems('all'); 
+        filterItems('all');
         updateCartBadge();
     } catch (err) {
         console.error(err);
-        document.getElementById("gridContainer").innerHTML = `<p class="text-center text-red-500">Failed to load data</p>`;
     }
 };
 
 window.placeOrder = async function () {
     if (cart.length === 0) return alert("Your cart is empty!");
 
-    const name = document.getElementById('userName').value.trim();
-    const phone = document.getElementById('userPhone').value.trim();
-    const email = document.getElementById('userEmail').value.trim();
-    const address = document.getElementById('userAddress').value.trim();
+    const name = document.getElementById('custName').value;
+    const phone = document.getElementById('custPhone').value;
+    const email = document.getElementById('custEmail').value;
+    const address = document.getElementById('custAddress').value;
 
-    // Strict Email Validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    if (!name || !phone || !email || !address) {
-        return alert("Please fill in all delivery details.");
-    }
-    if (!emailRegex.test(email)) {
-        return alert("Please enter a valid and authentic Email ID.");
+    if (!name || !phone || !address || !emailRegex.test(email)) {
+        return alert("Please provide valid Name, Phone, Email, and Address.");
     }
 
     const btn = document.getElementById("placeOrderBtn");
     btn.disabled = true;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Processing...`;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
 
     const items = window.catalogData.filter(i => cart.includes(i.id));
     const total = items.reduce((s, i) => s + i.price, 0);
@@ -154,43 +148,30 @@ window.placeOrder = async function () {
     try {
         await addDoc(collection(db, "orders"), {
             customer: { name, phone, email, address },
-            order_items: items,
-            total_price: total,
+            items,
+            total,
             status: "pending",
             created_at: serverTimestamp()
         });
 
-        alert(`Order Placed Successfully! \nA confirmation has been sent to ${email}. \nTotal: ₹${total.toFixed(2)}`);
-        
-        // Dynamic success visual effect (temporary)
-        document.querySelector('header').style.backgroundColor = '#10b981';
-        
+        alert("Order successful! Thank you for choosing Nature's Heal.");
         window.cart = [];
-        localStorage.setItem("cart", JSON.stringify(window.cart));
-
+        localStorage.setItem("cart", "[]");
         updateCartBadge();
         renderCartItems();
         closeCart();
-        applyCombinedFilters();
     } catch (e) {
-        console.error('Firestore Error:', e);
-        alert("Error placing order.");
+        alert("Error saving order. Please try again.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = "Place Order";
     }
-
-    btn.disabled = false;
-    btn.innerHTML = originalText;
 };
 
-window.onload = () => {
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark');
-        document.getElementById('themeIcon').className = 'fas fa-sun';
-    }
-    fetchSheetData();
-};
+window.onload = fetchSheetData;
 </script>
 
-    <button id="themeToggle" onclick="toggleTheme()" title="Toggle Night Mode">
+    <button id="themeToggle" onclick="toggleTheme()">
         <i class="fas fa-moon" id="themeIcon"></i>
     </button>
 
@@ -198,114 +179,77 @@ window.onload = () => {
     
     <div id="cartSidebar">
         <div class="flex flex-col h-full p-6">
-            <div class="flex justify-between items-center mb-6 border-b border-emerald-200 dark:border-emerald-800 pb-4">
-                <h2 class="text-2xl font-bold text-emerald-600">Shopping Cart</h2>
-                <button onclick="closeCart()" class="text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-emerald-600">Your Cart</h2>
+                <button onclick="closeCart()"><i class="fas fa-times text-xl"></i></button>
             </div>
 
-            <!-- Customer Details Form -->
-            <div class="space-y-3 mb-6">
-                <input type="text" id="userName" placeholder="Full Name" class="w-full p-2 text-sm border rounded-lg bg-emerald-50 dark:bg-slate-800 border-emerald-200 dark:border-emerald-700 outline-none">
-                <input type="text" id="userPhone" placeholder="Phone Number" class="w-full p-2 text-sm border rounded-lg bg-emerald-50 dark:bg-slate-800 border-emerald-200 dark:border-emerald-700 outline-none">
-                <input type="email" id="userEmail" placeholder="Email ID" class="w-full p-2 text-sm border rounded-lg bg-emerald-50 dark:bg-slate-800 border-emerald-200 dark:border-emerald-700 outline-none">
-                <textarea id="userAddress" placeholder="Delivery Address" class="w-full p-2 text-sm border rounded-lg bg-emerald-50 dark:bg-slate-800 border-emerald-200 dark:border-emerald-700 outline-none h-16"></textarea>
+            <!-- Customer Form -->
+            <div class="space-y-3 mb-6 bg-emerald-50 dark:bg-slate-800 p-4 rounded-xl">
+                <input type="text" id="custName" placeholder="Full Name" class="w-full p-2 rounded border border-emerald-200 dark:bg-slate-700 dark:text-white">
+                <input type="tel" id="custPhone" placeholder="Phone Number" class="w-full p-2 rounded border border-emerald-200 dark:bg-slate-700 dark:text-white">
+                <input type="email" id="custEmail" placeholder="Email Address" class="w-full p-2 rounded border border-emerald-200 dark:bg-slate-700 dark:text-white">
+                <textarea id="custAddress" placeholder="Full Delivery Address" class="w-full p-2 rounded border border-emerald-200 dark:bg-slate-700 dark:text-white"></textarea>
             </div>
 
-            <div id="cartItemsList" class="flex-grow overflow-y-auto space-y-4 pr-2"></div>
+            <div id="cartItemsList" class="flex-grow overflow-y-auto space-y-4"></div>
             
-            <div class="mt-6 pt-6 border-t border-emerald-200 dark:border-emerald-800">
-                <div class="flex justify-between items-center mb-4 px-2">
-                    <span class="font-bold text-slate-600 dark:text-slate-300">Total Amount:</span>
-                    <span id="cartTotal" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹0.00</span>
+            <div class="mt-6 pt-4 border-t border-emerald-200">
+                <div class="flex justify-between font-bold text-xl mb-4">
+                    <span>Total:</span>
+                    <span id="cartTotal">₹0.00</span>
                 </div>
-                <button id="placeOrderBtn" onclick="placeOrder()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all flex justify-center items-center gap-2">
-                    <span>Place Order</span>
+                <button id="placeOrderBtn" onclick="placeOrder()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all">
+                    Place Order
                 </button>
             </div>
         </div>
     </div>
 
-    <header class="sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
+    <header class="sticky top-0 z-40 text-white">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <div class="bg-white p-2 rounded-lg"><i class="fas fa-leaf text-emerald-600 text-xl"></i></div>
-                <span class="text-2xl font-bold tracking-tight text-white">Nature's Heal</span>
+                <i class="fas fa-leaf text-2xl"></i>
+                <span class="text-2xl font-bold">Nature's Heal</span>
             </div>
-            
-            <nav class="hidden md:flex space-x-8 font-semibold">
-                <button data-filter="all" onclick="filterItems('all')" class="filter-btn text-white border-b-2 border-white pb-1">All Catalog</button>
-                <button data-filter="leaf" onclick="filterItems('leaf')" class="filter-btn text-emerald-100 hover:text-white pb-1">Leaves</button>
-                <button data-filter="fruit" onclick="filterItems('fruit')" class="filter-btn text-emerald-100 hover:text-white pb-1">Fruits</button>
-                <button data-filter="wild_fruit" onclick="filterItems('wild_fruit')" class="filter-btn text-emerald-100 hover:text-white pb-1">Wild Fruits</button>
-                <button data-filter="seed" onclick="filterItems('seed')" class="filter-btn text-emerald-100 hover:text-white pb-1">Seeds</button>
-                <button data-filter="favorites" onclick="filterItems('favorites')" class="filter-btn text-emerald-100 hover:text-white pb-1">Collection ⭐</button>
+            <nav class="hidden md:flex space-x-6 font-semibold">
+                <button onclick="filterItems('all')" class="hover:opacity-80">All</button>
+                <button onclick="filterItems('leaf')" class="hover:opacity-80">Leaves</button>
+                <button onclick="filterItems('fruit')" class="hover:opacity-80">Fruits</button>
+                <button onclick="filterItems('favorites')" class="hover:opacity-80">Favorites ⭐</button>
             </nav>
-
-            <div class="relative flex items-center gap-3">
-                <button onclick="toggleCartSidebar()" class="relative p-2 text-white hover:text-emerald-200">
-                    <i class="fas fa-shopping-cart text-xl"></i>
-                    <span id="cartBadge" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
-                </button>
-                <div class="relative">
-                    <input type="text" id="searchInput" placeholder="Search plants..." class="bg-emerald-700 text-white placeholder-emerald-200 border-none rounded-full py-2 px-4 pl-10 focus:ring-2 focus:ring-white w-full md:w-64 transition-all">
-                    <i class="fas fa-search absolute left-3 top-3 text-emerald-200"></i>
-                </div>
-            </div>
-
-            <div class="w-full md:hidden mt-2">
-                <select id="mobileFilter" onchange="filterItems(this.value)" class="w-full bg-emerald-800 text-white border-none rounded-xl py-3 px-4 focus:ring-2 focus:ring-white transition-all outline-none font-semibold">
-                    <option value="all">🌿 All Catalog</option>
-                    <option value="leaf">🍃 Leaves</option>
-                    <option value="fruit">🍎 Fruits</option>
-                    <option value="wild_fruit">🫐 Wild Fruits</option>
-                    <option value="seed">🌰 Seeds</option>
-                    <option value="favorites">⭐ Collection</option>
-                </select>
-            </div>
+            <button onclick="toggleCartSidebar()" class="relative p-2">
+                <i class="fas fa-shopping-cart text-xl"></i>
+                <span id="cartBadge" class="absolute top-0 right-0 bg-rose-500 text-white text-[10px] px-1.5 rounded-full hidden">0</span>
+            </button>
         </div>
     </header>
 
-    <main id="catalog" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <section class="hero-banner p-4 sm:p-6 md:p-12 mb-8 md:mb-16 text-white shadow-xl">
-            <div class="max-w-xl md:max-w-2xl relative z-10">
-                <h1 class="text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight">Discover the Power of Nature's Elements</h1>
-                <p class="text-sm sm:text-base md:text-lg mb-5 sm:mb-6 md:mb-10 opacity-90 text-emerald-50">Explore botanical treasures pulled straight from our live database.</p>
-                <button onclick="document.getElementById('gridContainer').scrollIntoView({behavior: 'smooth'})"
-                    class="bg-white text-emerald-900 px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-full font-bold text-xs sm:text-sm md:text-base hover:bg-emerald-50 transition-all transform hover:scale-105">Start Exploring</button>
-            </div>
+    <main class="max-w-7xl mx-auto px-4 py-12">
+        <section class="hero-banner p-8 md:p-16 mb-12 text-white shadow-xl">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">Botanical Wonders</h1>
+            <p class="text-lg opacity-90">Explore the healing properties of nature's finest leaves and fruits.</p>
         </section>
 
-        <div class="mb-8">
-            <h2 class="text-3xl font-bold mb-1 dark:text-white">Botanical Catalog</h2>
-            <p class="text-muted font-medium">Showing <span id="itemCount" class="font-bold text-emerald-600">0</span> items</p>
-        </div>
-        
-        <div id="gridContainer" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-8"></div>
+        <div id="gridContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6"></div>
     </main>
 
-    <footer class="py-12 mt-20 border-t border-emerald-900/10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
-                <div class="flex items-center space-x-2">
-                    <div class="bg-emerald-600 p-2 rounded-lg"><i class="fas fa-leaf text-white text-xl"></i></div>
-                    <span class="text-xl font-bold dark:text-white">Nature's Heal</span>
-                </div>
-                <div class="text-slate-500 dark:text-slate-400 text-sm">
-                    © 2026 Nature's Heal Encyclopedia. All botanical data sourced responsibly.
-                </div>
-                <div class="flex space-x-6 text-emerald-600">
-                    <a href="#" class="hover:text-emerald-500"><i class="fab fa-instagram text-xl"></i></a>
-                    <a href="#" class="hover:text-emerald-500"><i class="fab fa-facebook text-xl"></i></a>
-                    <a href="#" class="hover:text-emerald-500"><i class="fab fa-twitter text-xl"></i></a>
-                </div>
+    <footer class="py-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p>© 2026 Nature's Heal Encyclopedia. Bringing botanical wisdom to your fingertips.</p>
+            <div class="flex justify-center space-x-6 mt-4">
+                <i class="fab fa-instagram text-xl cursor-pointer hover:text-emerald-400"></i>
+                <i class="fab fa-facebook text-xl cursor-pointer hover:text-emerald-400"></i>
+                <i class="fab fa-twitter text-xl cursor-pointer hover:text-emerald-400"></i>
             </div>
         </div>
     </footer>
 
+    <!-- Details Modal -->
     <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm hidden">
-        <div id="modalContent" class="bg-emerald-950 rounded-[2rem] max-w-2xl w-full overflow-hidden shadow-2xl modal-animate border border-emerald-800"></div>
+        <div id="modalContent" class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl modal-animate">
+            <!-- Dynamic Content Injected Here -->
+        </div>
     </div>
 
     <script>
@@ -319,33 +263,20 @@ window.onload = () => {
         function renderItems(items) {
             const container = document.getElementById('gridContainer');
             container.innerHTML = '';
-            document.getElementById('itemCount').textContent = items.length;
-            
             items.forEach(item => {
                 const isFav = favorites.includes(item.id);
-                const isCart = cart.includes(item.id);
                 const card = document.createElement('div');
-                card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative";
+                card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group";
                 card.onclick = () => openModal(item);
                 card.innerHTML = `
-                    <div class="h-28 sm:h-36 md:h-56 overflow-hidden relative">
-                        <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute top-1 right-1 sm:top-3 sm:right-3 flex flex-col gap-1">
-                            <button onclick="toggleFav(event, ${item.id})" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90">
-                                <i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i>
-                            </button>
-                            <button onclick="toggleCartItem(event, ${item.id})" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90">
-                                <i class="fas ${isCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]"></i>
-                            </button>
+                    <img src="${item.image}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-lg dark:text-emerald-400">${item.name}</h3>
+                            <span class="font-bold text-emerald-600">₹${item.price}</span>
                         </div>
-                    </div>
-                    <div class="p-3 sm:p-4">
-                        <div class="flex justify-between items-start mb-1 gap-2">
-                            <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">${item.name}</h3>
-                            <span class="text-xs sm:text-sm font-black text-emerald-600 whitespace-nowrap">₹${item.price}</span>
-                        </div>
-                        <p class="text-[9px] italic text-emerald-600 mb-2">${item.scientific || ''}</p>
-                        <p class="text-[10px] sm:text-xs text-slate-500 leading-relaxed">${item.description?.substring(0, 60)}...</p>
+                        <p class="text-sm text-slate-500 italic mb-2">${item.scientific || ''}</p>
+                        <p class="text-xs text-slate-400 line-clamp-2">${item.description}</p>
                     </div>
                 `;
                 container.appendChild(card);
@@ -354,50 +285,72 @@ window.onload = () => {
 
         function openModal(item) {
             document.getElementById('modalContent').innerHTML = `
-            <div class="relative max-h-[90vh] overflow-y-auto">
-                <img src="${item.image}" class="w-full h-44 sm:h-72 object-cover">
-                <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/60 text-white w-9 h-9 rounded-full"><i class="fas fa-times"></i></button>
-                <div class="p-6">
-                    <h2 class="text-2xl font-bold text-emerald-400 mb-2">${item.name}</h2>
-                    <p class="text-sm italic text-emerald-300 mb-4">${item.scientific || ''}</p>
-                    <p class="text-white text-sm leading-relaxed mb-6">${item.description}</p>
-                    <button onclick="addToCart(${item.id})" class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold">Add to Cart - ₹${item.price}</button>
+                <div class="relative">
+                    <img src="${item.image}" class="w-full h-64 object-cover">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/50 text-white w-10 h-10 rounded-full hover:bg-black/70">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-            </div>`;
+                <div class="p-8">
+                    <h2 class="text-3xl font-bold text-emerald-600 mb-2">${item.name}</h2>
+                    <p class="text-emerald-500 italic mb-6">${item.scientific || 'Botanical Species'}</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <h4 class="font-bold text-slate-700 dark:text-slate-200 mb-2 uppercase text-xs tracking-widest">Description</h4>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">${item.description}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-emerald-700 dark:text-emerald-300 mb-2 uppercase text-xs tracking-widest">Healing Benefits</h4>
+                            <p class="text-emerald-600/80 dark:text-emerald-400/80 text-sm leading-relaxed">${item.benefits || 'High in antioxidants and essential nutrients for daily wellness.'}</p>
+                        </div>
+                    </div>
+                    
+                    <button onclick="addToCart(${item.id})" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-emerald-700">
+                        Add to Cart - ₹${item.price}
+                    </button>
+                </div>
+            `;
             document.getElementById('modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
 
-        function applyCombinedFilters() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const type = localStorage.getItem('selectedFilter') || 'all';
-            const filtered = window.catalogData.filter(item => {
-                const matchesType = type === 'all' || item.type === type || (type === 'favorites' && favorites.includes(item.id));
-                const matchesSearch = item.name.toLowerCase().includes(term);
-                return matchesType && matchesSearch;
-            });
+        function filterItems(type) {
+            const filtered = type === 'all' ? window.catalogData : 
+                           type === 'favorites' ? window.catalogData.filter(i => favorites.includes(i.id)) :
+                           window.catalogData.filter(i => i.type === type);
             renderItems(filtered);
         }
 
-        function filterItems(type) {
-            localStorage.setItem('selectedFilter', type);
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.toggle('text-white', btn.dataset.filter === type);
-                btn.classList.toggle('border-b-2', btn.dataset.filter === type);
-            });
-            const mobileDropdown = document.getElementById('mobileFilter');
-            if(mobileDropdown) mobileDropdown.value = type;
-            applyCombinedFilters();
+        function toggleCartSidebar() {
+            renderCartItems();
+            document.getElementById('cartSidebar').classList.add('active');
+            document.getElementById('cartOverlay').style.display = 'block';
         }
 
-        function toggleFav(e, id) { e.stopPropagation(); favorites = favorites.includes(id) ? favorites.filter(i => i !== id) : [...favorites, id]; localStorage.setItem('favorites', JSON.stringify(favorites)); applyCombinedFilters(); }
-        function toggleCartItem(e, id) { if(e) e.stopPropagation(); cart = cart.includes(id) ? cart.filter(i => i !== id) : [...cart, id]; localStorage.setItem('cart', JSON.stringify(cart)); updateCartBadge(); renderCartItems(); applyCombinedFilters(); }
-        function addToCart(id) { if(!cart.includes(id)) cart.push(id); localStorage.setItem('cart', JSON.stringify(cart)); updateCartBadge(); closeModal(); toggleCartSidebar(); }
-        function updateCartBadge() { const b = document.getElementById('cartBadge'); b.textContent = cart.length; b.classList.toggle('hidden', !cart.length); }
-        function toggleCartSidebar() { renderCartItems(); document.getElementById('cartSidebar').classList.add('active'); document.getElementById('cartOverlay').style.display = 'block'; }
-        function closeCart() { document.getElementById('cartSidebar').classList.remove('active'); document.getElementById('cartOverlay').style.display = 'none'; }
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
-        document.getElementById('searchInput').oninput = applyCombinedFilters;
+        function closeCart() {
+            document.getElementById('cartSidebar').classList.remove('active');
+            document.getElementById('cartOverlay').style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function addToCart(id) {
+            if(!cart.includes(id)) cart.push(id);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartBadge();
+            closeModal();
+            toggleCartSidebar();
+        }
+
+        function updateCartBadge() {
+            const badge = document.getElementById('cartBadge');
+            badge.textContent = cart.length;
+            badge.classList.toggle('hidden', cart.length === 0);
+        }
 
         function renderCartItems() {
             const list = document.getElementById('cartItemsList');
@@ -405,14 +358,21 @@ window.onload = () => {
             const total = items.reduce((sum, item) => sum + item.price, 0);
             document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
             list.innerHTML = items.length ? items.map(i => `
-                <div class="flex items-center gap-4 p-3 bg-white/60 dark:bg-black/20 rounded-2xl border">
-                    <img src="${i.image}" class="w-12 h-12 rounded-xl object-cover">
+                <div class="flex items-center gap-4 bg-emerald-50 dark:bg-slate-800 p-3 rounded-2xl">
+                    <img src="${i.image}" class="w-12 h-12 rounded-lg object-cover">
                     <div class="flex-grow">
-                        <h4 class="font-bold text-sm text-emerald-700 dark:text-emerald-400">${i.name}</h4>
-                        <span class="text-xs font-black text-emerald-600">₹${i.price}</span>
+                        <h4 class="font-bold text-sm dark:text-emerald-300">${i.name}</h4>
+                        <span class="text-emerald-600 text-xs">₹${i.price}</span>
                     </div>
-                    <button onclick="toggleCartItem(null, ${i.id})" class="text-rose-500"><i class="fas fa-trash-can"></i></button>
-                </div>`).join('') : '<p class="text-center py-10">Cart is empty</p>';
+                    <button onclick="removeItem(${i.id})" class="text-rose-500"><i class="fas fa-trash"></i></button>
+                </div>`).join('') : '<p class="text-center py-10 opacity-50">Your cart is lonely...</p>';
+        }
+
+        function removeItem(id) {
+            cart = cart.filter(i => i !== id);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartBadge();
+            renderCartItems();
         }
     </script>
 </body>
