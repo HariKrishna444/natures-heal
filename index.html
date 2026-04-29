@@ -32,7 +32,6 @@
         .modal-animate { animation: modalIn 0.3s ease-out; }
         @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* Toast Notification Styles */
         #toast {
             position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
             background: #10b981; color: white; padding: 1rem 2rem; border-radius: 1rem;
@@ -42,7 +41,6 @@
     </style>
 </head>
 <body>
-    <!-- Toast Element -->
     <div id="toast">Order Placed Successfully!</div>
 
 <script type="module">
@@ -193,14 +191,12 @@
     <script>
         const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-oDJG-YtvMsbQuQP7Xea38B2ovpgWMJA6s4GYiJ0R3RLVCJhljuwwTc0MJWzJCRWv2EF/pub?output=csv`;
         
-        // Unified State Object[cite: 2]
         window.appState = {
             catalogData: [],
             favorites: JSON.parse(localStorage.getItem('favorites')) || [],
             cart: JSON.parse(localStorage.getItem('cart')) || []
         };
 
-        // Fetch and Robust Parsing[cite: 2]
         window.fetchSheetData = async function() {
             try {
                 document.getElementById('gridContainer').innerHTML = 
@@ -210,35 +206,47 @@
                 const data = await response.text();
                 
                 const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
-                if (rows.length < 2) return;
+                if (rows.length < 2) {
+                   document.getElementById('gridContainer').innerHTML = `<p class="col-span-full text-center text-slate-500 py-20">No data found</p>`;
+                   return;
+                }
 
-                const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
+                // Explicit Mapping to prevent column drift errors[cite: 2]
+                const map = { id: 0, name: 1, type: 2, scientific: 3, price: 4, uses: 5, description: 6, image: 7 };
 
                 window.appState.catalogData = rows.slice(1).map(row => {
                     const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    let obj = {};
-                    headers.forEach((h, i) => {
-                        let val = cols[i]?.replace(/^"|"$/g, "").trim();
-                        if (h === "id" || h === "price") obj[h] = parseFloat(val) || 0;
-                        else obj[h] = val || "";
-                    });
-                    return obj;
+                    return {
+                        id: parseFloat(cols[map.id]) || 0,
+                        name: cols[map.name]?.replace(/"/g, "").trim() || "",
+                        type: cols[map.type]?.trim() || "",
+                        scientific: cols[map.scientific]?.trim() || "",
+                        price: parseFloat(cols[map.price]) || 0,
+                        uses: cols[map.uses]?.trim() || "",
+                        description: cols[map.description]?.trim() || "",
+                        image: cols[map.image]?.trim() || ""
+                    };
                 }).filter(i => i.id);
 
-                applyCombinedFilters();
+                if(window.appState.catalogData.length === 0) {
+                    document.getElementById('gridContainer').innerHTML = `<p class="col-span-full text-center text-slate-500 py-20">No items available in catalog</p>`;
+                } else {
+                    applyCombinedFilters();
+                }
             } catch (e) { 
                 console.error("Sheet Fetch Error", e);
                 showToast("Failed to load catalog.", true);
             }
         };
 
-        // UI Helpers
+        let toastTimeout;
         function showToast(msg, isError = false) {
             const t = document.getElementById('toast');
+            clearTimeout(toastTimeout);[cite: 2]
             t.textContent = msg;
             t.style.background = isError ? '#ef4444' : '#10b981';
             t.classList.add('active');
-            setTimeout(() => t.classList.remove('active'), 3000);
+            toastTimeout = setTimeout(() => t.classList.remove('active'), 3000);
         }
 
         function toggleTheme() {
@@ -263,7 +271,7 @@
                         <img src="${item.image}" 
                              onerror="this.src='https://via.placeholder.com/300?text=No+Image'"
                              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        <div class="absolute top-1 left-1 sm:top-3 sm:left-3 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">${(item.type || "").replace('_', ' ')}</div>
+                        <div class="absolute top-1 left-1 sm:top-3 sm:left-3 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">${String(item.type || "").replace('_', ' ')}</div>
                         <div class="absolute top-1 right-1 sm:top-3 sm:right-3 flex flex-col gap-1">
                             <button onclick="toggleFav(event, ${item.id})" id="fav-${item.id}" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90"><i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i></button>
                             <button onclick="toggleCartItem(event, ${item.id})" id="cart-btn-${item.id}" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90"><i class="fas ${isInCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]"></i></button>
@@ -313,7 +321,6 @@
             document.body.style.overflow = 'hidden';
         }
 
-        // Logic Updates
         function toggleFav(e, id) {
             e.stopPropagation();
             window.appState.favorites = window.appState.favorites.includes(id) 
@@ -321,7 +328,6 @@
                 : [...window.appState.favorites, id];
             localStorage.setItem('favorites', JSON.stringify(window.appState.favorites));
             
-            // Partial update[cite: 2]
             const icon = document.querySelector(`#fav-${id} i`);
             if(icon) icon.className = window.appState.favorites.includes(id) ? 'fas text-rose-500 fa-heart text-[10px]' : 'far text-slate-400 fa-heart text-[10px]';
             if(localStorage.getItem('selectedFilter') === 'favorites') applyCombinedFilters();
@@ -334,7 +340,6 @@
                 : [...window.appState.cart, id];
             localStorage.setItem('cart', JSON.stringify(window.appState.cart));
             
-            // Partial updates[cite: 2]
             updateCartBadge();
             const btnIcon = document.querySelector(`#cart-btn-${id} i`);
             if(btnIcon) btnIcon.className = `fas ${window.appState.cart.includes(id) ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]`;
@@ -347,6 +352,10 @@
                 localStorage.setItem('cart', JSON.stringify(window.appState.cart));
                 updateCartBadge();
             }
+            // Fix: Immediately update the icon on the main card when added from modal[cite: 2]
+            const btnIcon = document.querySelector(`#cart-btn-${id} i`);
+            if(btnIcon) btnIcon.className = 'fas fa-shopping-cart text-emerald-600 text-[10px]';
+            
             closeModal();
             toggleCartSidebar();
         }
@@ -380,13 +389,10 @@
             const type = localStorage.getItem('selectedFilter') || 'all';
             const filtered = window.appState.catalogData.filter(item => {
                 const matchesType = type === 'all' || item.type === type || (type === 'favorites' && window.appState.favorites.includes(item.id));
-                
-                // Null-safe search[cite: 2]
                 const matchesSearch =
                     (item.name || "").toLowerCase().includes(term) ||
                     (item.uses || "").toLowerCase().includes(term) ||
                     (item.scientific || "").toLowerCase().includes(term);  
-
                 return matchesType && matchesSearch;
             });
             renderItems(filtered);
@@ -408,7 +414,6 @@
 
         function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
         
-        // Search Debounce[cite: 2]
         let debounce;
         document.getElementById('searchInput').oninput = () => {
             clearTimeout(debounce);
