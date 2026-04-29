@@ -34,17 +34,11 @@
             --cart-bg: #0f172a;
         }
 
-        /* Success Theme (Dynamic) */
-        .success-theme {
-            --header-bg: #1e40af !important;
-            --hero-bg: #1e3a8a !important;
-        }
-
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
-            transition: all 0.5s ease;
+            transition: background-color 0.3s ease, color 0.3s ease;
             overflow-x: hidden;
         }
 
@@ -53,11 +47,10 @@
             border-radius: 2rem;
             position: relative;
             overflow: hidden;
-            transition: background-color 0.5s ease;
         }
 
         .card-gradient { background: var(--bg-card); border: 1px solid var(--border-color); }
-        header { background-color: var(--header-bg) !important; border-bottom: 1px solid var(--border-color); transition: background-color 0.5s ease; }
+        header { background-color: var(--header-bg) !important; border-bottom: 1px solid var(--border-color); }
         
         .nature-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .nature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
@@ -70,6 +63,7 @@
 
         #cartSidebar.active { right: 0; }
         #cartOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 90; display: none; }
+        footer { background-color: var(--footer-bg); }
 
         #themeToggle {
             position: fixed; bottom: 2rem; right: 2rem; z-index: 50; width: 50px; height: 50px;
@@ -123,7 +117,7 @@ window.fetchSheetData = async function () {
             return obj;
         }).filter(i => i.id);
 
-        filterItems('all');
+        filterItems('all'); 
         updateCartBadge();
     } catch (err) {
         console.error(err);
@@ -134,18 +128,24 @@ window.fetchSheetData = async function () {
 window.placeOrder = async function () {
     if (cart.length === 0) return alert("Your cart is empty!");
 
-    const name = document.getElementById('custName').value;
-    const phone = document.getElementById('custPhone').value;
-    const email = document.getElementById('custEmail').value;
-    const address = document.getElementById('custAddress').value;
+    const name = document.getElementById('userName').value.trim();
+    const phone = document.getElementById('userPhone').value.trim();
+    const email = document.getElementById('userEmail').value.trim();
+    const address = document.getElementById('userAddress').value.trim();
 
-    // Email validation (Strict)
+    // Strict Email Validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!name || !phone || !address) return alert("Please fill all delivery details.");
-    if (!emailRegex.test(email)) return alert("Please enter a valid, authentic email address.");
+    
+    if (!name || !phone || !email || !address) {
+        return alert("Please fill in all delivery details.");
+    }
+    if (!emailRegex.test(email)) {
+        return alert("Please enter a valid and authentic Email ID.");
+    }
 
     const btn = document.getElementById("placeOrderBtn");
     btn.disabled = true;
+    const originalText = btn.innerHTML;
     btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Processing...`;
 
     const items = window.catalogData.filter(i => cart.includes(i.id));
@@ -153,20 +153,17 @@ window.placeOrder = async function () {
 
     try {
         await addDoc(collection(db, "orders"), {
-            customer_name: name,
-            customer_email: email,
-            customer_phone: phone,
-            delivery_address: address,
+            customer: { name, phone, email, address },
             order_items: items,
             total_price: total,
             status: "pending",
             created_at: serverTimestamp()
         });
 
-        alert(`Order Placed Successfully! \nConfirmation sent to: ${email}`);
+        alert(`Order Placed Successfully! \nA confirmation has been sent to ${email}. \nTotal: ₹${total.toFixed(2)}`);
         
-        // Dynamic Theme Change
-        document.body.classList.add('success-theme');
+        // Dynamic success visual effect (temporary)
+        document.querySelector('header').style.backgroundColor = '#10b981';
         
         window.cart = [];
         localStorage.setItem("cart", JSON.stringify(window.cart));
@@ -181,7 +178,7 @@ window.placeOrder = async function () {
     }
 
     btn.disabled = false;
-    btn.innerHTML = `<span>Place Order</span>`;
+    btn.innerHTML = originalText;
 };
 
 window.onload = () => {
@@ -209,19 +206,18 @@ window.onload = () => {
             </div>
 
             <!-- Customer Details Form -->
-            <div class="space-y-3 mb-6 bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-2xl">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-600 mb-2">Delivery Details</h3>
-                <input type="text" id="custName" placeholder="Full Name" class="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-800 border-emerald-200 dark:border-emerald-700 outline-none focus:ring-1 focus:ring-emerald-500">
-                <input type="tel" id="custPhone" placeholder="Phone Number" class="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-800 border-emerald-200 dark:border-emerald-700 outline-none focus:ring-1 focus:ring-emerald-500">
-                <input type="email" id="custEmail" placeholder="Email Address (Required)" class="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-800 border-emerald-200 dark:border-emerald-700 outline-none focus:ring-1 focus:ring-emerald-500">
-                <textarea id="custAddress" placeholder="Full Delivery Address" rows="2" class="w-full text-xs p-2 rounded-lg border bg-white dark:bg-slate-800 border-emerald-200 dark:border-emerald-700 outline-none focus:ring-1 focus:ring-emerald-500"></textarea>
+            <div class="space-y-3 mb-6">
+                <input type="text" id="userName" placeholder="Full Name" class="w-full p-2 text-sm border rounded-lg bg-emerald-50 dark:bg-slate-800 border-emerald-200 dark:border-emerald-700 outline-none">
+                <input type="text" id="userPhone" placeholder="Phone Number" class="w-full p-2 text-sm border rounded-lg bg-emerald-50 dark:bg-slate-800 border-emerald-200 dark:border-emerald-700 outline-none">
+                <input type="email" id="userEmail" placeholder="Email ID" class="w-full p-2 text-sm border rounded-lg bg-emerald-50 dark:bg-slate-800 border-emerald-200 dark:border-emerald-700 outline-none">
+                <textarea id="userAddress" placeholder="Delivery Address" class="w-full p-2 text-sm border rounded-lg bg-emerald-50 dark:bg-slate-800 border-emerald-200 dark:border-emerald-700 outline-none h-16"></textarea>
             </div>
 
             <div id="cartItemsList" class="flex-grow overflow-y-auto space-y-4 pr-2"></div>
             
             <div class="mt-6 pt-6 border-t border-emerald-200 dark:border-emerald-800">
                 <div class="flex justify-between items-center mb-4 px-2">
-                    <span class="font-bold text-slate-600 dark:text-slate-300">Total:</span>
+                    <span class="font-bold text-slate-600 dark:text-slate-300">Total Amount:</span>
                     <span id="cartTotal" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹0.00</span>
                 </div>
                 <button id="placeOrderBtn" onclick="placeOrder()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all flex justify-center items-center gap-2">
@@ -288,6 +284,25 @@ window.onload = () => {
         
         <div id="gridContainer" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-8"></div>
     </main>
+
+    <footer class="py-12 mt-20 border-t border-emerald-900/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                <div class="flex items-center space-x-2">
+                    <div class="bg-emerald-600 p-2 rounded-lg"><i class="fas fa-leaf text-white text-xl"></i></div>
+                    <span class="text-xl font-bold dark:text-white">Nature's Heal</span>
+                </div>
+                <div class="text-slate-500 dark:text-slate-400 text-sm">
+                    © 2026 Nature's Heal Encyclopedia. All botanical data sourced responsibly.
+                </div>
+                <div class="flex space-x-6 text-emerald-600">
+                    <a href="#" class="hover:text-emerald-500"><i class="fab fa-instagram text-xl"></i></a>
+                    <a href="#" class="hover:text-emerald-500"><i class="fab fa-facebook text-xl"></i></a>
+                    <a href="#" class="hover:text-emerald-500"><i class="fab fa-twitter text-xl"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm hidden">
         <div id="modalContent" class="bg-emerald-950 rounded-[2rem] max-w-2xl w-full overflow-hidden shadow-2xl modal-animate border border-emerald-800"></div>
@@ -390,14 +405,14 @@ window.onload = () => {
             const total = items.reduce((sum, item) => sum + item.price, 0);
             document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
             list.innerHTML = items.length ? items.map(i => `
-                <div class="flex items-center gap-4 p-3 bg-white/60 dark:bg-black/20 rounded-2xl border border-emerald-100 dark:border-emerald-800">
+                <div class="flex items-center gap-4 p-3 bg-white/60 dark:bg-black/20 rounded-2xl border">
                     <img src="${i.image}" class="w-12 h-12 rounded-xl object-cover">
                     <div class="flex-grow">
                         <h4 class="font-bold text-sm text-emerald-700 dark:text-emerald-400">${i.name}</h4>
                         <span class="text-xs font-black text-emerald-600">₹${i.price}</span>
                     </div>
                     <button onclick="toggleCartItem(null, ${i.id})" class="text-rose-500"><i class="fas fa-trash-can"></i></button>
-                </div>`).join('') : '<p class="text-center py-10 opacity-50">Cart is empty</p>';
+                </div>`).join('') : '<p class="text-center py-10">Cart is empty</p>';
         }
     </script>
 </body>
