@@ -38,7 +38,7 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease;
             overflow-x: hidden;
         }
 
@@ -49,10 +49,9 @@
             overflow: hidden;
         }
 
-        .card-gradient { background: var(--bg-card); border: 1px solid var(--border-color); }
         header { background-color: var(--header-bg) !important; border-bottom: 1px solid var(--border-color); }
         
-        .nature-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nature-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: var(--bg-card); border: 1px solid var(--border-color); }
         .nature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
 
         #cartSidebar {
@@ -63,8 +62,6 @@
 
         #cartSidebar.active { right: 0; }
         #cartOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 90; display: none; }
-        
-        footer { background-color: var(--footer-bg); color: white; }
 
         #themeToggle {
             position: fixed; bottom: 2rem; right: 2rem; z-index: 50; width: 50px; height: 50px;
@@ -79,129 +76,130 @@
 <body>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
-  authDomain: "naturesheal.firebaseapp.com",
-  projectId: "naturesheal",
-  storageBucket: "naturesheal.firebasestorage.app",
-  messagingSenderId: "429407436276",
-  appId: "1:429407436276:web:2cb0470eecbf9ed349cda1"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
+    authDomain: "naturesheal.firebaseapp.com",
+    projectId: "naturesheal",
+    storageBucket: "naturesheal.firebasestorage.app",
+    messagingSenderId: "429407436276",
+    appId: "1:429407436276:web:2cb0470eecbf9ed349cda1"
+  };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-oDJG-YtvMsbQuQP7Xea38B2ovpgWMJA6s4GYiJ0R3RLVCJhljuwwTc0MJWzJCRWv2EF/pub?output=csv`;
+  // Google Sheet URL Integration
+  const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-oDJG-YtvMsbQuQP7Xea38B2ovpgWMJA6s4GYiJ0R3RLVCJhljuwwTc0MJWzJCRWv2EF/pub?output=csv`;
 
-window.catalogData = [];
-window.favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-window.cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-window.fetchSheetData = async function () {
+  // Fetch data from Sheet
+  window.fetchSheetData = async function() {
     try {
-        const res = await fetch(SHEET_URL);
-        const csv = await res.text();
-        const rows = csv.split("\n").filter(r => r.trim() !== "");
-        const headers = rows[0].split(",").map(h => h.trim().toLowerCase());
+      const response = await fetch(SHEET_URL);
+      const data = await response.text();
+      const rows = data.split('\n').slice(1);
+      
+      if(rows.length > 0 && rows[0].trim() !== "") {
+          window.catalogData = rows.map(row => {
+              const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+              return {
+                  id: parseInt(cols[0]),
+                  name: cols[1]?.replace(/"/g, ""),
+                  type: cols[2]?.replace(/"/g, ""),
+                  scientific: cols[3]?.replace(/"/g, ""),
+                  price: parseFloat(cols[4]),
+                  uses: cols[5]?.replace(/"/g, ""),
+                  description: cols[6]?.replace(/"/g, ""),
+                  image: cols[7]?.trim().replace(/"/g, "")
+              };
+          }).filter(item => item.id);
+          applyCombinedFilters();
+      }
+    } catch (e) { console.error("Sheet Fetch Error", e); }
+  };
 
-        window.catalogData = rows.slice(1).map(row => {
-            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            let obj = {};
-            headers.forEach((h, i) => {
-                let val = cols[i]?.replace(/"/g, "").trim();
-                if (h === "id" || h === "price") obj[h] = parseFloat(val) || 0;
-                else obj[h] = val || "";
-            });
-            return obj;
-        }).filter(i => i.id);
-
-        filterItems('all');
-        updateCartBadge();
-    } catch (err) {
-        console.error(err);
-    }
-};
-
-window.placeOrder = async function () {
-    if (cart.length === 0) return alert("Your cart is empty!");
+  // Place Order to Firestore
+  window.placeOrder = async function() {
+    if (cart.length === 0) { alert("Your cart is empty!"); return; }
 
     const name = document.getElementById('custName').value;
     const phone = document.getElementById('custPhone').value;
     const email = document.getElementById('custEmail').value;
-    const address = document.getElementById('custAddress').value;
+    const addr = document.getElementById('custAddr').value;
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!name || !phone || !address || !emailRegex.test(email)) {
-        return alert("Please provide valid Name, Phone, Email, and Address.");
-    }
+    if(!name || !phone || !email || !addr) { alert("Please fill in all delivery details."); return; }
 
-    const btn = document.getElementById("placeOrderBtn");
+    const btn = document.getElementById('placeOrderBtn');
     btn.disabled = true;
     btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
 
-    const items = window.catalogData.filter(i => cart.includes(i.id));
-    const total = items.reduce((s, i) => s + i.price, 0);
+    const items = catalogData.filter(i => cart.includes(i.id));
+    const total = items.reduce((sum, item) => sum + item.price, 0);
 
     try {
         await addDoc(collection(db, "orders"), {
-            customer: { name, phone, email, address },
-            items,
-            total,
+            customer: { name, phone, email, address: addr },
+            order_items: items,
+            total_price: total,
             status: "pending",
             created_at: serverTimestamp()
         });
 
-        alert("Order successful! Thank you for choosing Nature's Heal.");
-        window.cart = [];
-        localStorage.setItem("cart", "[]");
+        alert('Order Placed Successfully! Total: ₹' + total.toFixed(2));
+        window.cart = []; 
+        localStorage.setItem('cart', JSON.stringify(window.cart));
         updateCartBadge();
         renderCartItems();
         closeCart();
-    } catch (e) {
-        alert("Error saving order. Please try again.");
+        applyCombinedFilters();
+    } catch (error) {
+        alert('Failed to place order.');
     } finally {
         btn.disabled = false;
         btn.innerHTML = "Place Order";
     }
-};
+  };
 
-window.onload = fetchSheetData;
+  window.onload = () => {
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('themeIcon').className = 'fas fa-sun';
+    }
+    fetchSheetData(); 
+    updateCartBadge();
+    filterItems('all');
+  };
 </script>
 
-    <button id="themeToggle" onclick="toggleTheme()">
-        <i class="fas fa-moon" id="themeIcon"></i>
-    </button>
+    <button id="themeToggle" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
 
     <div id="cartOverlay" onclick="closeCart()"></div>
     
     <div id="cartSidebar">
         <div class="flex flex-col h-full p-6">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
                 <h2 class="text-2xl font-bold text-emerald-600">Your Cart</h2>
                 <button onclick="closeCart()"><i class="fas fa-times text-xl"></i></button>
             </div>
 
-            <!-- Customer Form -->
-            <div class="space-y-3 mb-6 bg-emerald-50 dark:bg-slate-800 p-4 rounded-xl">
-                <input type="text" id="custName" placeholder="Full Name" class="w-full p-2 rounded border border-emerald-200 dark:bg-slate-700 dark:text-white">
-                <input type="tel" id="custPhone" placeholder="Phone Number" class="w-full p-2 rounded border border-emerald-200 dark:bg-slate-700 dark:text-white">
-                <input type="email" id="custEmail" placeholder="Email Address" class="w-full p-2 rounded border border-emerald-200 dark:bg-slate-700 dark:text-white">
-                <textarea id="custAddress" placeholder="Full Delivery Address" class="w-full p-2 rounded border border-emerald-200 dark:bg-slate-700 dark:text-white"></textarea>
+            <div class="space-y-3 mb-6 bg-emerald-50 dark:bg-slate-800 p-4 rounded-2xl">
+                <p class="text-[10px] font-bold uppercase text-emerald-600">Delivery Details</p>
+                <input type="text" id="custName" placeholder="Full Name" class="w-full p-2 text-sm border rounded-lg dark:bg-slate-700 dark:border-slate-600">
+                <input type="tel" id="custPhone" placeholder="Phone Number" class="w-full p-2 text-sm border rounded-lg dark:bg-slate-700 dark:border-slate-600">
+                <input type="email" id="custEmail" placeholder="Email Address" class="w-full p-2 text-sm border rounded-lg dark:bg-slate-700 dark:border-slate-600">
+                <textarea id="custAddr" placeholder="Delivery Address" class="w-full p-2 text-sm border rounded-lg dark:bg-slate-700 dark:border-slate-600 h-16"></textarea>
             </div>
 
             <div id="cartItemsList" class="flex-grow overflow-y-auto space-y-4"></div>
             
-            <div class="mt-6 pt-4 border-t border-emerald-200">
-                <div class="flex justify-between font-bold text-xl mb-4">
-                    <span>Total:</span>
-                    <span id="cartTotal">₹0.00</span>
+            <div class="mt-6 pt-6 border-t">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="font-bold">Total:</span>
+                    <span id="cartTotal" class="text-2xl font-black text-emerald-600">₹0.00</span>
                 </div>
-                <button id="placeOrderBtn" onclick="placeOrder()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all">
-                    Place Order
-                </button>
+                <button id="placeOrderBtn" onclick="placeOrder()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700">Place Order</button>
             </div>
         </div>
     </div>
@@ -213,46 +211,72 @@ window.onload = fetchSheetData;
                 <span class="text-2xl font-bold">Nature's Heal</span>
             </div>
             <nav class="hidden md:flex space-x-6 font-semibold">
-                <button onclick="filterItems('all')" class="hover:opacity-80">All</button>
-                <button onclick="filterItems('leaf')" class="hover:opacity-80">Leaves</button>
-                <button onclick="filterItems('fruit')" class="hover:opacity-80">Fruits</button>
-                <button onclick="filterItems('favorites')" class="hover:opacity-80">Favorites ⭐</button>
+                <button onclick="filterItems('all')" class="filter-btn border-b-2">All</button>
+                <button onclick="filterItems('leaf')" class="filter-btn opacity-80">Leaves</button>
+                <button onclick="filterItems('fruit')" class="filter-btn opacity-80">Fruits</button>
+                <button onclick="filterItems('wild_fruit')" class="filter-btn opacity-80">Wild</button>
+                <button onclick="filterItems('seed')" class="filter-btn opacity-80">Seeds</button>
             </nav>
-            <button onclick="toggleCartSidebar()" class="relative p-2">
-                <i class="fas fa-shopping-cart text-xl"></i>
-                <span id="cartBadge" class="absolute top-0 right-0 bg-rose-500 text-white text-[10px] px-1.5 rounded-full hidden">0</span>
-            </button>
+            <div class="flex items-center gap-4">
+                <button onclick="toggleCartSidebar()" class="relative p-2">
+                    <i class="fas fa-shopping-cart text-xl"></i>
+                    <span id="cartBadge" class="absolute top-0 right-0 bg-rose-500 text-[10px] px-1.5 rounded-full hidden">0</span>
+                </button>
+                <input type="text" id="searchInput" placeholder="Search..." class="hidden sm:block bg-emerald-700 text-white px-4 py-1 rounded-full placeholder-emerald-200 outline-none">
+            </div>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-12">
         <section class="hero-banner p-8 md:p-16 mb-12 text-white shadow-xl">
-            <h1 class="text-4xl md:text-6xl font-bold mb-4">Botanical Wonders</h1>
-            <p class="text-lg opacity-90">Explore the healing properties of nature's finest leaves and fruits.</p>
+            <div class="max-w-2xl">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6">Discover Nature's Healing Elements</h1>
+                <p class="text-lg mb-8 opacity-90">Explore medicinal uses, nutritional values, and fascinating botanical facts.</p>
+                <button onclick="document.getElementById('gridContainer').scrollIntoView({behavior: 'smooth'})" class="bg-white text-emerald-900 px-8 py-3 rounded-full font-bold hover:bg-emerald-50 transition-transform hover:scale-105">Start Exploring</button>
+            </div>
         </section>
 
-        <div id="gridContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        <div class="mb-8 flex justify-between items-end">
+            <div>
+                <h2 class="text-3xl font-bold dark:text-white">Botanical Catalog</h2>
+                <p class="text-slate-500">Showing <span id="itemCount" class="text-emerald-600 font-bold">0</span> species</p>
+            </div>
+        </div>
+        
+        <div id="gridContainer" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8"></div>
     </main>
 
-    <footer class="py-12">
-        <div class="max-w-7xl mx-auto px-4 text-center">
-            <p>© 2026 Nature's Heal Encyclopedia. Bringing botanical wisdom to your fingertips.</p>
-            <div class="flex justify-center space-x-6 mt-4">
-                <i class="fab fa-instagram text-xl cursor-pointer hover:text-emerald-400"></i>
-                <i class="fab fa-facebook text-xl cursor-pointer hover:text-emerald-400"></i>
-                <i class="fab fa-twitter text-xl cursor-pointer hover:text-emerald-400"></i>
+    <footer class="py-16 text-center text-white">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-center items-center space-x-2 mb-4">
+                <i class="fas fa-leaf text-emerald-500 text-xl"></i>
+                <span class="text-2xl font-bold">Nature's Heal</span>
             </div>
+            <p class="text-slate-400 mb-8 max-w-md mx-auto">Exploring the medicinal and nutritional power of the natural world.</p>
+            <div class="flex justify-center space-x-6 text-xl text-slate-400">
+                <a href="https://www.instagram.com/hari_krishna_ak/" class="hover:text-emerald-500 cursor-pointer text-xl"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.facebook.com/hari.krishna.arvapalli/" class="hover:text-emerald-500 cursor-pointer text-xl"><i class="fab fa-facebook"></i></a>
+            </div>
+            <p class="mt-12 text-xs font-bold text-slate-500 uppercase tracking-widest">© 2026 NATURE'S HEAL ENCYCLOPEDIA</p>
         </div>
     </footer>
 
-    <!-- Details Modal -->
     <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm hidden">
-        <div id="modalContent" class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl modal-animate">
-            <!-- Dynamic Content Injected Here -->
-        </div>
+        <div id="modalContent" class="bg-emerald-950 rounded-[2rem] max-w-2xl w-full overflow-hidden shadow-2xl modal-animate border border-emerald-800"></div>
     </div>
 
     <script>
+        // Fallback data[cite: 1]
+        window.catalogData = [
+            { id: 1, name: "Aloe Vera", type: "leaf", scientific: "Aloe barbadensis miller", price: 95.00, uses: "Skin healing, Burns treatment", description: "Succulent plant known for its soothing gel.", image: "https://images.unsplash.com/photo-1672128550038-c21875e68bed?q=80&w=1025&auto=format&fit=crop" },
+            { id: 101, name: "Blueberry", type: "fruit", scientific: "Vaccinium corymbosum", price: 180.00, uses: "Brain health, Anti-aging", description: "High in antioxidants for cognitive function.", image: "https://images.unsplash.com/photo-1425934398893-310a009a77f9?q=80&w=1171&auto=format&fit=crop" },
+            { id: 201, name: "Amla", type: "wild_fruit", scientific: "Phyllanthus emblica", price: 80.00, uses: "Immunity, Digestion", description: "Extremely high Vitamin C content.", image: "https://images.unsplash.com/photo-1676043967557-2b70d9facd71?q=80&w=627&auto=format&fit=crop" },
+            { id: 301, name: "Chia seeds", type: "seed", scientific: "Salvia hispanica", price: 150.00, uses: "Supports digestion", description: "Rich in Omega-3 and fiber.", image: "https://images.unsplash.com/photo-1691443229545-8b17638c8f9c?q=80&w=1205&auto=format&fit=crop" }
+        ];
+
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
         function toggleTheme() {
             document.body.classList.toggle('dark');
             const isDark = document.body.classList.contains('dark');
@@ -263,22 +287,25 @@ window.onload = fetchSheetData;
         function renderItems(items) {
             const container = document.getElementById('gridContainer');
             container.innerHTML = '';
+            document.getElementById('itemCount').textContent = items.length;
+            
             items.forEach(item => {
-                const isFav = favorites.includes(item.id);
                 const card = document.createElement('div');
-                card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group";
+                card.className = "nature-card rounded-3xl overflow-hidden cursor-pointer group p-2";
                 card.onclick = () => openModal(item);
                 card.innerHTML = `
-                    <img src="${item.image}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500">
-                    <div class="p-5">
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-lg dark:text-emerald-400">${item.name}</h3>
-                            <span class="font-bold text-emerald-600">₹${item.price}</span>
-                        </div>
-                        <p class="text-sm text-slate-500 italic mb-2">${item.scientific || ''}</p>
-                        <p class="text-xs text-slate-400 line-clamp-2">${item.description}</p>
+                    <div class="h-40 md:h-56 overflow-hidden relative rounded-2xl">
+                        <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-2 left-2 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">${item.type.replace('_',' ')}</div>
                     </div>
-                `;
+                    <div class="p-3">
+                        <div class="flex justify-between items-start mb-1">
+                            <h3 class="text-sm font-bold text-emerald-700 dark:text-emerald-400">${item.name}</h3>
+                            <span class="text-xs font-black text-emerald-600">₹${item.price}</span>
+                        </div>
+                        <p class="text-[10px] italic text-emerald-600 mb-2">${item.scientific}</p>
+                        <p class="text-xs text-slate-500 line-clamp-2">${item.description}</p>
+                    </div>`;
                 container.appendChild(card);
             });
         }
@@ -287,39 +314,25 @@ window.onload = fetchSheetData;
             document.getElementById('modalContent').innerHTML = `
                 <div class="relative">
                     <img src="${item.image}" class="w-full h-64 object-cover">
-                    <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/50 text-white w-10 h-10 rounded-full hover:bg-black/70">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/50 text-white w-10 h-10 rounded-full"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="p-8">
-                    <h2 class="text-3xl font-bold text-emerald-600 mb-2">${item.name}</h2>
-                    <p class="text-emerald-500 italic mb-6">${item.scientific || 'Botanical Species'}</p>
-                    
-                    <div class="grid md:grid-cols-2 gap-8 mb-8">
+                <div class="p-8 text-white">
+                    <h2 class="text-3xl font-bold text-emerald-400 mb-2">${item.name}</h2>
+                    <p class="text-emerald-300 italic mb-6">${item.scientific}</p>
+                    <div class="grid grid-cols-2 gap-8 mb-8">
                         <div>
-                            <h4 class="font-bold text-slate-700 dark:text-slate-200 mb-2 uppercase text-xs tracking-widest">Description</h4>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">${item.description}</p>
+                            <h4 class="text-xs font-bold uppercase text-emerald-500 mb-2">Description</h4>
+                            <p class="text-sm opacity-90">${item.description}</p>
                         </div>
                         <div>
-                            <h4 class="font-bold text-emerald-700 dark:text-emerald-300 mb-2 uppercase text-xs tracking-widest">Healing Benefits</h4>
-                            <p class="text-emerald-600/80 dark:text-emerald-400/80 text-sm leading-relaxed">${item.benefits || 'High in antioxidants and essential nutrients for daily wellness.'}</p>
+                            <h4 class="text-xs font-bold uppercase text-emerald-500 mb-2">Benefits</h4>
+                            <p class="text-sm opacity-90">${item.uses}</p>
                         </div>
                     </div>
-                    
-                    <button onclick="addToCart(${item.id})" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-emerald-700">
-                        Add to Cart - ₹${item.price}
-                    </button>
-                </div>
-            `;
+                    <button onclick="addToCart(${item.id})" class="w-full bg-emerald-600 py-4 rounded-xl font-bold hover:bg-emerald-500">Add to Cart - ₹${item.price}</button>
+                </div>`;
             document.getElementById('modal').classList.remove('hidden');
             document.body.style.overflow = 'hidden';
-        }
-
-        function filterItems(type) {
-            const filtered = type === 'all' ? window.catalogData : 
-                           type === 'favorites' ? window.catalogData.filter(i => favorites.includes(i.id)) :
-                           window.catalogData.filter(i => i.type === type);
-            renderItems(filtered);
         }
 
         function toggleCartSidebar() {
@@ -333,47 +346,56 @@ window.onload = fetchSheetData;
             document.getElementById('cartOverlay').style.display = 'none';
         }
 
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
         function addToCart(id) {
-            if(!cart.includes(id)) cart.push(id);
-            localStorage.setItem('cart', JSON.stringify(cart));
-            updateCartBadge();
-            closeModal();
-            toggleCartSidebar();
-        }
-
-        function updateCartBadge() {
-            const badge = document.getElementById('cartBadge');
-            badge.textContent = cart.length;
-            badge.classList.toggle('hidden', cart.length === 0);
+            if(!cart.includes(id)) { cart.push(id); localStorage.setItem('cart', JSON.stringify(cart)); updateCartBadge(); }
+            closeModal(); toggleCartSidebar();
         }
 
         function renderCartItems() {
             const list = document.getElementById('cartItemsList');
-            const items = window.catalogData.filter(i => cart.includes(i.id));
-            const total = items.reduce((sum, item) => sum + item.price, 0);
-            document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
-            list.innerHTML = items.length ? items.map(i => `
-                <div class="flex items-center gap-4 bg-emerald-50 dark:bg-slate-800 p-3 rounded-2xl">
+            const items = catalogData.filter(i => cart.includes(i.id));
+            document.getElementById('cartTotal').textContent = `₹${items.reduce((s, i) => s + i.price, 0).toFixed(2)}`;
+            list.innerHTML = items.map(i => `
+                <div class="flex items-center gap-4 p-3 bg-white/10 rounded-xl border border-white/5">
                     <img src="${i.image}" class="w-12 h-12 rounded-lg object-cover">
                     <div class="flex-grow">
-                        <h4 class="font-bold text-sm dark:text-emerald-300">${i.name}</h4>
-                        <span class="text-emerald-600 text-xs">₹${i.price}</span>
+                        <h4 class="font-bold text-sm dark:text-emerald-400">${i.name}</h4>
+                        <span class="text-xs">₹${i.price}</span>
                     </div>
-                    <button onclick="removeItem(${i.id})" class="text-rose-500"><i class="fas fa-trash"></i></button>
-                </div>`).join('') : '<p class="text-center py-10 opacity-50">Your cart is lonely...</p>';
+                    <button onclick="removeFromCart(${i.id})" class="text-rose-500"><i class="fas fa-trash"></i></button>
+                </div>`).join('');
         }
 
-        function removeItem(id) {
+        function removeFromCart(id) {
             cart = cart.filter(i => i !== id);
             localStorage.setItem('cart', JSON.stringify(cart));
             updateCartBadge();
             renderCartItems();
         }
+
+        function updateCartBadge() {
+            const b = document.getElementById('cartBadge');
+            b.textContent = cart.length; b.classList.toggle('hidden', !cart.length);
+        }
+
+        function applyCombinedFilters() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const type = localStorage.getItem('selectedFilter') || 'all';
+            const filtered = catalogData.filter(item => {
+                const matchesType = type === 'all' || item.type === type;
+                const matchesSearch = item.name.toLowerCase().includes(term);
+                return matchesType && matchesSearch;
+            });
+            renderItems(filtered);
+        }
+
+        function filterItems(type) {
+            localStorage.setItem('selectedFilter', type);
+            applyCombinedFilters();
+        }
+
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
+        document.getElementById('searchInput').oninput = applyCombinedFilters;
     </script>
 </body>
 </html>
