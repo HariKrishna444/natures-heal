@@ -32,6 +32,7 @@
         .modal-animate { animation: modalIn 0.3s ease-out; }
         @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+        /* Toast Notification Styles */
         #toast {
             position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
             background: #10b981; color: white; padding: 1rem 2rem; border-radius: 1rem;
@@ -43,61 +44,59 @@
 <body>
     <div id="toast">Order Placed Successfully!</div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+    <!-- Firebase Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
-    authDomain: "naturesheal.firebaseapp.com",
-    projectId: "naturesheal",
-    storageBucket: "naturesheal.firebasestorage.app",
-    messagingSenderId: "429407436276",
-    appId: "1:429407436276:web:2cb0470eecbf9ed349cda1",
-    measurementId: "G-Y6FTZY92QP"
-  };
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
+            authDomain: "naturesheal.firebaseapp.com",
+            projectId: "naturesheal",
+            storageBucket: "naturesheal.firebasestorage.app",
+            messagingSenderId: "429407436276",
+            appId: "1:429407436276:web:2cb0470eecbf9ed349cda1",
+            measurementId: "G-Y6FTZY92QP"
+        };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-  window.placeOrder = async function() {
-    const btn = document.getElementById('placeOrderBtn');
-    if (btn.disabled || Object.keys(window.appState.cart).length === 0) return;
+        window.placeOrder = async function() {
+            const btn = document.getElementById('placeOrderBtn');
+            if (btn.disabled || window.appState.cart.length === 0) return;
 
-    const originalContent = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Processing...`;
+            const originalContent = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Processing...`;
 
-    const items = window.appState.catalogData
-        .filter(i => window.appState.cart[i.id])
-        .map(i => ({...i, quantity: window.appState.cart[i.id]}));
-        
-    const total = items.reduce((sum, item) => sum + ((item.price || 0) * item.quantity), 0);
+            const items = window.appState.catalogData.filter(i => window.appState.cart.includes(i.id));
+            const total = items.reduce((sum, item) => sum + (item.price || 0), 0);
 
-    try {
-        await addDoc(collection(db, "orders"), {
-            order_items: items,
-            total_price: total,
-            status: "pending",
-            created_at: serverTimestamp()
-        });
-        
-        showToast(`Order Placed! Total: ₹${total.toFixed(2)}`);
-        window.appState.cart = {}; 
-        localStorage.setItem('cart', JSON.stringify(window.appState.cart));
-        updateCartBadge();
-        renderCartItems();
-        closeCart();
-        applyCombinedFilters();
-    } catch (error) {
-        showToast('Failed to place order.', true);
-        console.error('Firestore Error:', error);
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalContent;
-    }
-  }
-</script>
+            try {
+                await addDoc(collection(db, "orders"), {
+                    order_items: items,
+                    total_price: total,
+                    status: "pending",
+                    created_at: serverTimestamp()
+                });
+                
+                showToast(`Order Placed! Total: ₹${total.toFixed(2)}`);
+                window.appState.cart = []; 
+                localStorage.setItem('cart', JSON.stringify(window.appState.cart));
+                updateCartBadge();
+                renderCartItems();
+                closeCart();
+                applyCombinedFilters();
+            } catch (error) {
+                showToast('Failed to place order.', true);
+                console.error('Firestore Error:', error);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+            }
+        }
+    </script>
 
     <button id="themeToggle" onclick="toggleTheme()" title="Toggle Night Mode">
         <i class="fas fa-moon" id="themeIcon"></i>
@@ -198,18 +197,28 @@
         window.appState = {
             catalogData: [],
             favorites: JSON.parse(localStorage.getItem('favorites')) || [],
-            cart: JSON.parse(localStorage.getItem('cart')) || {} // Should be {} for qty
+            cart: JSON.parse(localStorage.getItem('cart')) || []
         };
 
-        window.fetchSheetData = async function() {
+        // Added cache-busting and background refresh logic
+        window.fetchSheetData = async function(isBackground = false) {
             try {
-                document.getElementById('gridContainer').innerHTML = `<div class="col-span-full text-center py-20"><i class="fas fa-spinner fa-spin text-3xl text-emerald-500"></i></div>`;
-                const response = await fetch(SHEET_URL);
+                // Only show spinner on manual refresh/first load
+                if (!isBackground) {
+                    document.getElementById('gridContainer').innerHTML = 
+                        `<div class="col-span-full text-center py-20"><i class="fas fa-spinner fa-spin text-3xl text-emerald-500"></i></div>`;
+                }
+
+                // Add timestamp to bypass browser cache and get real-time price updates
+                const response = await fetch(`${SHEET_URL}&cb=${new Date().getTime()}`);
                 const data = await response.text();
+                
                 const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
                 if (rows.length < 2) return;
+
                 const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
-                window.appState.catalogData = rows.slice(1).map(row => {
+
+                const newData = rows.slice(1).map(row => {
                     const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     let obj = {};
                     headers.forEach((h, i) => {
@@ -219,12 +228,26 @@
                     });
                     return obj;
                 }).filter(i => i.id);
+
+                // Update internal state
+                window.appState.catalogData = newData;
+
+                // Silently refresh UI
                 applyCombinedFilters();
+                if(document.getElementById('cartSidebar').classList.contains('active')) renderCartItems();
+
             } catch (e) { 
                 console.error("Sheet Fetch Error", e);
-                showToast("Failed to load catalog.", true);
+                if (!isBackground) showToast("Failed to load catalog.", true);
             }
         };
+
+        // NEW: Auto-refresh function every 30 seconds
+        function startLiveUpdates() {
+            setInterval(() => {
+                fetchSheetData(true);
+            }, 30000); 
+        }
 
         function showToast(msg, isError = false) {
             const t = document.getElementById('toast');
@@ -247,13 +270,15 @@
             document.getElementById('itemCount').textContent = items.length;
             items.forEach(item => {
                 const isFav = window.appState.favorites.includes(item.id);
-                const isInCart = !!window.appState.cart[item.id];
+                const isInCart = window.appState.cart.includes(item.id);
                 const card = document.createElement('div');
                 card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative";
                 card.onclick = () => openModal(item);
                 card.innerHTML = `
                     <div class="h-28 sm:h-36 md:h-56 overflow-hidden relative">
-                        <img src="${item.image}" onerror="this.src='https://via.placeholder.com/300?text=No+Image'" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <img src="${item.image}" 
+                             onerror="this.src='https://via.placeholder.com/300?text=No+Image'"
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                         <div class="absolute top-1 left-1 sm:top-3 sm:left-3 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">${(item.type || "").replace('_', ' ')}</div>
                         <div class="absolute top-1 right-1 sm:top-3 sm:right-3 flex flex-col gap-1">
                             <button onclick="toggleFav(event, ${item.id})" id="fav-${item.id}" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90"><i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i></button>
@@ -273,25 +298,34 @@
         }
 
         function openModal(item) {
+            // Find current item in state to get live price update in modal
+            const currentItem = window.appState.catalogData.find(i => i.id === item.id) || item;
+            
             document.getElementById('modalContent').innerHTML = `
             <div class="relative max-h-[90vh] overflow-y-auto">
                 <div class="relative">
                     <div class="h-44 sm:h-56 md:h-72 w-full overflow-hidden">
-                        <img src="${item.image}" onerror="this.src='https://via.placeholder.com/300?text=No+Image'" class="w-full h-full object-cover">
+                        <img src="${currentItem.image}" onerror="this.src='https://via.placeholder.com/300?text=No+Image'" class="w-full h-full object-cover">
                     </div>
                     <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/60 text-white w-9 h-9 rounded-full flex items-center justify-center z-10"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="p-4 sm:p-6 md:p-8">
                     <div class="flex justify-between items-start gap-2 mb-2">
-                        <h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 leading-tight">${item.name}</h2>
-                        <span class="text-base sm:text-xl font-black text-emerald-400 whitespace-nowrap">₹${(item.price || 0).toFixed(2)}</span>
+                        <h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 leading-tight">${currentItem.name}</h2>
+                        <span class="text-base sm:text-xl font-black text-emerald-400 whitespace-nowrap">₹${(currentItem.price || 0).toFixed(2)}</span>
                     </div>
-                    <p class="text-xs sm:text-sm italic text-emerald-300 mb-5">${item.scientific}</p>
+                    <p class="text-xs sm:text-sm italic text-emerald-300 mb-5">${currentItem.scientific}</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div><h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Description</h4><p class="text-xs sm:text-sm text-white leading-relaxed">${item.description}</p></div>
-                        <div><h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Key Benefits</h4><ul class="space-y-1">${(item.uses || "").split(',').map(u => `<li class="text-xs sm:text-sm text-white flex items-start"><i class="fas fa-circle text-[5px] text-emerald-500 mr-2 mt-2"></i>${u.trim()}</li>`).join('')}</ul></div>
+                        <div>
+                            <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Description</h4>
+                            <p class="text-xs sm:text-sm text-white leading-relaxed">${currentItem.description}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Key Benefits</h4>
+                            <ul class="space-y-1">${(currentItem.uses || "").split(',').map(u => `<li class="text-xs sm:text-sm text-white flex items-start"><i class="fas fa-circle text-[5px] text-emerald-500 mr-2 mt-2"></i>${u.trim()}</li>`).join('')}</ul>
+                        </div>
                     </div>
-                    <button onclick="addToCart(${item.id})" class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold text-sm sm:text-lg sticky bottom-2">Add to Cart</button>
+                    <button onclick="addToCart(${currentItem.id})" class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold text-sm sm:text-lg sticky bottom-2">Add to Cart</button>
                 </div>
             </div>`;
             document.getElementById('modal').classList.remove('hidden');
@@ -300,8 +334,11 @@
 
         function toggleFav(e, id) {
             e.stopPropagation();
-            window.appState.favorites = window.appState.favorites.includes(id) ? window.appState.favorites.filter(i => i !== id) : [...window.appState.favorites, id];
+            window.appState.favorites = window.appState.favorites.includes(id) 
+                ? window.appState.favorites.filter(i => i !== id) 
+                : [...window.appState.favorites, id];
             localStorage.setItem('favorites', JSON.stringify(window.appState.favorites));
+            
             const icon = document.querySelector(`#fav-${id} i`);
             if(icon) icon.className = window.appState.favorites.includes(id) ? 'fas text-rose-500 fa-heart text-[10px]' : 'far text-slate-400 fa-heart text-[10px]';
             if(localStorage.getItem('selectedFilter') === 'favorites') applyCombinedFilters();
@@ -309,31 +346,23 @@
 
         function toggleCartItem(e, id) {
             if(e) e.stopPropagation();
-            if(window.appState.cart[id]) delete window.appState.cart[id];
-            else window.appState.cart[id] = 1;
-            saveCart();
+            window.appState.cart = window.appState.cart.includes(id) 
+                ? window.appState.cart.filter(i => i !== id) 
+                : [...window.appState.cart, id];
+            localStorage.setItem('cart', JSON.stringify(window.appState.cart));
+            
             updateCartBadge();
             const btnIcon = document.querySelector(`#cart-btn-${id} i`);
-            if(btnIcon) btnIcon.className = `fas ${window.appState.cart[id] ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]`;
+            if(btnIcon) btnIcon.className = `fas ${window.appState.cart.includes(id) ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]`;
             if(document.getElementById('cartSidebar').classList.contains('active')) renderCartItems();
         }
 
-        function updateQty(id, delta) {
-            if(!window.appState.cart[id]) return;
-            window.appState.cart[id] += delta;
-            if(window.appState.cart[id] < 1) delete window.appState.cart[id];
-            saveCart();
-            updateCartBadge();
-            renderCartItems();
-            applyCombinedFilters();
-        }
-
-        function saveCart() { localStorage.setItem('cart', JSON.stringify(window.appState.cart)); }
-
         function addToCart(id) {
-            if(!window.appState.cart[id]) window.appState.cart[id] = 1;
-            saveCart();
-            updateCartBadge();
+            if(!window.appState.cart.includes(id)) {
+                window.appState.cart.push(id);
+                localStorage.setItem('cart', JSON.stringify(window.appState.cart));
+                updateCartBadge();
+            }
             closeModal();
             toggleCartSidebar();
         }
@@ -343,35 +372,23 @@
 
         function renderCartItems() {
             const list = document.getElementById('cartItemsList');
-            const items = window.appState.catalogData.filter(i => window.appState.cart[i.id]);
-            let total = 0;
-            list.innerHTML = items.length ? items.map(i => {
-                const qty = window.appState.cart[i.id];
-                total += (i.price || 0) * qty;
-                return `
+            const items = window.appState.catalogData.filter(i => window.appState.cart.includes(i.id));
+            const total = items.reduce((sum, item) => sum + (item.price || 0), 0);
+            document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
+            list.innerHTML = items.length ? items.map(i => `
                 <div class="flex items-center gap-4 p-3 bg-white/60 dark:bg-black/20 rounded-2xl border dark:border-white/10">
                     <img src="${i.image}" onerror="this.src='https://via.placeholder.com/300?text=No+Image'" class="w-16 h-16 rounded-xl object-cover">
                     <div class="flex-grow">
-                        <div class="flex justify-between items-start"><h4 class="font-bold text-sm text-emerald-700 dark:text-emerald-400">${i.name}</h4><span class="text-xs font-black text-emerald-600">₹${((i.price || 0) * qty).toFixed(2)}</span></div>
-                        <div class="flex items-center gap-3 mt-2">
-                            <div class="flex items-center bg-emerald-100 dark:bg-emerald-900/40 rounded-lg px-2 py-1">
-                                <button onclick="updateQty(${i.id}, -1)" class="text-emerald-600 hover:text-emerald-700 px-2 font-bold">-</button>
-                                <span class="text-xs font-bold w-4 text-center">${qty}</span>
-                                <button onclick="updateQty(${i.id}, 1)" class="text-emerald-600 hover:text-emerald-700 px-2 font-bold">+</button>
-                            </div>
-                            <button onclick="toggleCartItem(null, ${i.id})" class="text-rose-500 text-xs ml-auto"><i class="fas fa-trash-can"></i></button>
-                        </div>
+                        <div class="flex justify-between items-start"><h4 class="font-bold text-sm text-emerald-700 dark:text-emerald-400">${i.name}</h4><span class="text-xs font-black text-emerald-600">₹${(i.price || 0).toFixed(2)}</span></div>
+                        <p class="text-[10px] text-emerald-600 font-bold italic">${i.scientific}</p>
                     </div>
-                </div>`;
-            }).join('') : '<div class="text-center py-10"><i class="fas fa-shopping-basket text-4xl text-emerald-200 dark:text-emerald-800 mb-4 block"></i><p class="text-slate-500 dark:text-slate-400 font-medium">Your cart is empty</p></div>';
-            document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
+                    <button onclick="toggleCartItem(null, ${i.id})" class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 p-2 rounded-lg transition-colors"><i class="fas fa-trash-can"></i></button>
+                </div>`).join('') : '<div class="text-center py-10"><i class="fas fa-shopping-basket text-4xl text-emerald-200 dark:text-emerald-800 mb-4 block"></i><p class="text-slate-500 dark:text-slate-400 font-medium">Your cart is empty</p></div>';
         }
 
         function updateCartBadge() {
             const b = document.getElementById('cartBadge');
-            // FIX: Sum values to get total count instead of displaying the object
-            const count = Object.values(window.appState.cart).reduce((a, b) => a + b, 0);
-            b.textContent = count; b.classList.toggle('hidden', !count);
+            b.textContent = window.appState.cart.length; b.classList.toggle('hidden', !window.appState.cart.length);
         }
 
         function applyCombinedFilters() {
@@ -379,7 +396,10 @@
             const type = localStorage.getItem('selectedFilter') || 'all';
             const filtered = window.appState.catalogData.filter(item => {
                 const matchesType = type === 'all' || item.type === type || (type === 'favorites' && window.appState.favorites.includes(item.id));
-                const matchesSearch = (item.name || "").toLowerCase().includes(term) || (item.uses || "").toLowerCase().includes(term) || (item.scientific || "").toLowerCase().includes(term);  
+                const matchesSearch =
+                    (item.name || "").toLowerCase().includes(term) ||
+                    (item.uses || "").toLowerCase().includes(term) ||
+                    (item.scientific || "").toLowerCase().includes(term);  
                 return matchesType && matchesSearch;
             });
             renderItems(filtered);
@@ -412,20 +432,8 @@
                 document.body.classList.add('dark');
                 document.getElementById('themeIcon').className = 'fas fa-sun';
             }
-            // Check if cart is an array and convert it back to object if necessary
-            let savedCart = localStorage.getItem('cart');
-            if (savedCart) {
-                try {
-                    let parsed = JSON.parse(savedCart);
-                    if (Array.isArray(parsed)) {
-                        window.appState.cart = {};
-                        parsed.forEach(id => window.appState.cart[id] = 1);
-                    } else {
-                        window.appState.cart = parsed;
-                    }
-                } catch(e) { window.appState.cart = {}; }
-            }
             window.fetchSheetData();
+            startLiveUpdates(); // Initiates background price fetching
             updateCartBadge();
         };
     </script>
