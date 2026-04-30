@@ -264,54 +264,71 @@
 
         function renderItems(items) {
     const container = document.getElementById('gridContainer');
+    const countDisplay = document.getElementById('itemCount');
+    
     if (!container) return;
     
     container.innerHTML = '';
-    document.getElementById('itemCount').textContent = items.length;
+    if (countDisplay) countDisplay.textContent = items.length;
 
     if (items.length === 0) {
-        container.innerHTML = `<div class="col-span-full text-center py-10 text-muted">No matching species found.</div>`;
+        container.innerHTML = `<div class="col-span-full text-center py-10 dark:text-white">No species found matching your criteria.</div>`;
         return;
     }
 
     items.forEach(item => {
-        // Ensure ID exists before rendering
-        if (!item.id) return;
+        try {
+            // 1. Validate required data
+            const id = item.id || Math.random();
+            const name = String(item.name || "Unknown");
+            const scientific = String(item.scientific || "");
+            const price = parseFloat(item.price) || 0;
+            const imgUrl = item.image && item.image.includes('http') ? item.image : 'https://via.placeholder.com/300?text=No+Image';
+            
+            const isFav = window.appState.favorites.includes(id);
+            const isInCart = window.appState.cart.includes(id);
 
-        const isFav = window.appState.favorites.includes(item.id);
-        const isInCart = window.appState.cart.includes(item.id);
-        
-        // Safety check for strings to prevent .toLowerCase() errors
-        const name = item.name || "Unknown Plant";
-        const scientific = item.scientific || "N/A";
-        const price = parseFloat(item.price) || 0;
-        const image = item.image || 'https://via.placeholder.com/300?text=No+Image';
-
-        const card = document.createElement('div');
-        card.className = "nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative";
-        card.onclick = () => openModal(item);
-        card.innerHTML = `
-            <div class="h-28 sm:h-36 md:h-56 overflow-hidden relative">
-                <img src="${image}" 
-                     onerror="this.src='https://via.placeholder.com/300?text=No+Image'"
-                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                <div class="absolute top-1 left-1 sm:top-3 sm:left-3 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">${(item.type || "Element").replace('_', ' ')}</div>
-                <div class="absolute top-1 right-1 sm:top-3 sm:right-3 flex flex-col gap-1">
-                    <button onclick="toggleFav(event, ${item.id})" id="fav-${item.id}" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90"><i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i></button>
-                    <button onclick="toggleCartItem(event, ${item.id})" id="cart-btn-${item.id}" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90"><i class="fas ${isInCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]"></i></button>
-                </div>
-            </div>
-            <div class="p-3 sm:p-4">
-                <div class="flex justify-between items-start mb-1 gap-2">
-                    <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">${name}</h3>
-                    <span class="text-xs sm:text-sm font-black text-emerald-600 whitespace-nowrap">₹${price.toFixed(2)}</span>
-                </div>
-                <p class="text-[9px] italic text-emerald-600 mb-2">${scientific}</p>
-                <p class="text-[10px] sm:text-xs text-muted-custom leading-relaxed line-clamp-2">${item.description || ""}</p>
-            </div>`;
-        container.appendChild(card);
+            // 2. Build HTML as a string first
+            const cardHtml = `
+                <div class="nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative" onclick="openModalById(${id})">
+                    <div class="h-28 sm:h-36 md:h-56 overflow-hidden relative">
+                        <img src="${imgUrl}" 
+                             loading="lazy"
+                             onerror="this.src='https://via.placeholder.com/300?text=Image+Error'"
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <div class="absolute top-1 left-1 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">
+                            ${String(item.type || "botanical").replace('_', ' ')}
+                        </div>
+                        <div class="absolute top-1 right-1 flex flex-col gap-1">
+                            <button onclick="event.stopPropagation(); toggleFav(event, ${id})" class="w-7 h-7 flex items-center justify-center rounded-full bg-white/90 shadow-sm">
+                                <i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i>
+                            </button>
+                            <button onclick="event.stopPropagation(); toggleCartItem(event, ${id})" class="w-7 h-7 flex items-center justify-center rounded-full bg-white/90 shadow-sm">
+                                <i class="fas ${isInCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-3 sm:p-4">
+                        <div class="flex justify-between items-start mb-1 gap-2">
+                            <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 truncate">${name}</h3>
+                            <span class="text-xs font-black text-emerald-600">₹${price.toFixed(2)}</span>
+                        </div>
+                        <p class="text-[9px] italic text-emerald-600 mb-1 truncate">${scientific}</p>
+                    </div>
+                </div>`;
+            
+            container.insertAdjacentHTML('beforeend', cardHtml);
+        } catch (err) {
+            console.error("Error rendering individual item:", err);
+        }
     });
 }
+
+// Helper to find item by ID for the modal
+window.openModalById = function(id) {
+    const item = window.appState.catalogData.find(i => i.id == id);
+    if (item) openModal(item);
+};
 
 function applyCombinedFilters() {
     const searchInput = document.getElementById('searchInput');
