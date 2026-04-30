@@ -204,7 +204,7 @@
         // Fetch and Robust Parsing[cite: 2]
       window.fetchSheetData = async function() {
     try {
-        const response = await fetch(SHEET_URL);
+        const response = await fetch(SHEET_URL + "&t=" + Date.now());
         const data = await response.text();
         
         const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
@@ -237,8 +237,38 @@
 
         // Check if data actually changed to prevent unnecessary re-renders
         if (JSON.stringify(newData) !== JSON.stringify(window.appState.catalogData)) {
-            window.appState.catalogData = newData;
-            applyCombinedFilters(); // Re-render the grid
+            let hasChanges = false;
+
+newData.forEach(newItem => {
+    const oldItem = window.appState.catalogData.find(i => i.id === newItem.id);
+
+    if (!oldItem) {
+        // New item added
+        window.appState.catalogData.push(newItem);
+        hasChanges = true;
+    } else {
+        // Check if something actually changed
+        if (
+            oldItem.price !== newItem.price ||
+            oldItem.name !== newItem.name ||
+            oldItem.description !== newItem.description ||
+            oldItem.image !== newItem.image
+        ) {
+            Object.assign(oldItem, newItem);
+            hasChanges = true;
+        }
+    }
+});
+
+// Remove deleted items
+window.appState.catalogData = window.appState.catalogData.filter(oldItem =>
+    newData.some(n => n.id === oldItem.id)
+);
+
+if (hasChanges) {
+    applyCombinedFilters();
+    console.log("Updated only changed items");
+} // Re-render the grid
             console.log("Catalog updated from Google Sheets.");
         }
     } catch (e) { 
@@ -344,7 +374,7 @@ window.openModalById = function(id) {
 function applyCombinedFilters() {
     // Mobile Fix: Ensure elements exist before accessing .value
     const searchEl = document.getElementById('searchInput');
-    const term = searchEl ? searchEl.value.toLowerCase() : "";
+    const term = document.getElementById('searchInput').value.toLowerCase();
     const type = localStorage.getItem('selectedFilter') || 'all';
     
     const filtered = window.appState.catalogData.filter(item => {
@@ -446,7 +476,11 @@ function applyCombinedFilters() {
 
     document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
 
-    list.innerHTML = items.length ? items.map(i => `
+    list.innerHTML = items.length ? items.map(i => {
+        const isFav = window.appState.favorites.includes(i.id);
+        const isInCart = window.appState.cart.includes(i.id);
+
+        return `
         <div class="flex items-center gap-4 p-3 bg-white/60 dark:bg-black/20 rounded-2xl border dark:border-white/10">
             <img src="${i.image}" 
                  onerror="this.src='https://via.placeholder.com/300?text=No+Image'" 
@@ -460,18 +494,27 @@ function applyCombinedFilters() {
 
                 <p class="text-[10px] text-emerald-600 font-bold italic">${i.scientific}</p>
 
-                <!-- ✅ ADDED DESCRIPTION FIX -->
                 <p class="text-[10px] text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2 mt-1">
                     ${i.description || 'No description available.'}
                 </p>
             </div>
 
+            <button onclick="event.stopPropagation(); toggleFav(event, ${i.id})"
+                class="w-7 h-7 flex items-center justify-center rounded-full bg-white/90 shadow-sm">
+                <i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i>
+            </button>
+
+            <button onclick="event.stopPropagation(); toggleCartItem(event, ${i.id})"
+                class="w-7 h-7 flex items-center justify-center rounded-full bg-white/90 shadow-sm">
+                <i class="fas ${isInCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]"></i>
+            </button>
+
             <button onclick="toggleCartItem(null, ${i.id})" 
                 class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 p-2 rounded-lg transition-colors">
                 <i class="fas fa-trash-can"></i>
             </button>
-        </div>
-    `).join('') : `
+        </div>`;
+    }).join('') : `
         <div class="text-center py-10">
             <i class="fas fa-shopping-basket text-4xl text-emerald-200 dark:text-emerald-800 mb-4 block"></i>
             <p class="text-slate-500 dark:text-slate-400 font-medium">Your cart is empty</p>
@@ -481,23 +524,6 @@ function applyCombinedFilters() {
         function updateCartBadge() {
             const b = document.getElementById('cartBadge');
             b.textContent = window.appState.cart.length; b.classList.toggle('hidden', !window.appState.cart.length);
-        }
-
-        function applyCombinedFilters() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const type = localStorage.getItem('selectedFilter') || 'all';
-            const filtered = window.appState.catalogData.filter(item => {
-                const matchesType = type === 'all' || item.type === type || (type === 'favorites' && window.appState.favorites.includes(item.id));
-                
-                // Null-safe search[cite: 2]
-                const matchesSearch =
-                    (item.name || "").toLowerCase().includes(term) ||
-                    (item.uses || "").toLowerCase().includes(term) ||
-                    (item.scientific || "").toLowerCase().includes(term);  
-
-                return matchesType && matchesSearch;
-            });
-            renderItems(filtered);
         }
 
         function filterItems(type) {
@@ -539,7 +565,7 @@ function applyCombinedFilters() {
     setInterval(() => {
         console.log("Polling Google Sheets for updates...");
         window.fetchSheetData();
-    }, 5000); 
+    }, 15000); 
 };
     </script>
 </body>
