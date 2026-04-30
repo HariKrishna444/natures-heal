@@ -198,7 +198,7 @@
         window.appState = {
             catalogData: [],
             favorites: JSON.parse(localStorage.getItem('favorites')) || [],
-            cart: JSON.parse(localStorage.getItem('cart')) || {} // Changed to object for qty
+            cart: JSON.parse(localStorage.getItem('cart')) || {} // Should be {} for qty
         };
 
         window.fetchSheetData = async function() {
@@ -369,6 +369,7 @@
 
         function updateCartBadge() {
             const b = document.getElementById('cartBadge');
+            // FIX: Sum values to get total count instead of displaying the object
             const count = Object.values(window.appState.cart).reduce((a, b) => a + b, 0);
             b.textContent = count; b.classList.toggle('hidden', !count);
         }
@@ -410,6 +411,19 @@
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark');
                 document.getElementById('themeIcon').className = 'fas fa-sun';
+            }
+            // Check if cart is an array and convert it back to object if necessary
+            let savedCart = localStorage.getItem('cart');
+            if (savedCart) {
+                try {
+                    let parsed = JSON.parse(savedCart);
+                    if (Array.isArray(parsed)) {
+                        window.appState.cart = {};
+                        parsed.forEach(id => window.appState.cart[id] = 1);
+                    } else {
+                        window.appState.cart = parsed;
+                    }
+                } catch(e) { window.appState.cart = {}; }
             }
             window.fetchSheetData();
             updateCartBadge();
