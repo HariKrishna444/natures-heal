@@ -202,11 +202,8 @@
         };
 
         // Fetch and Robust Parsing[cite: 2]
-       window.fetchSheetData = async function() {
+      window.fetchSheetData = async function() {
     try {
-        const container = document.getElementById('gridContainer');
-        container.innerHTML = `<div class="col-span-full text-center py-20"><i class="fas fa-spinner fa-spin text-3xl text-emerald-500"></i></div>`;
-
         const response = await fetch(SHEET_URL);
         const data = await response.text();
         
@@ -215,8 +212,8 @@
 
         const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
 
-        window.appState.catalogData = rows.slice(1).map(row => {
-            // MOBILE FIX: Use a simpler split that doesn't use Lookbehind RegEx
+        // Parse new data
+        const newData = rows.slice(1).map(row => {
             const cols = [];
             let current = '';
             let inQuotes = false;
@@ -238,10 +235,14 @@
             return obj;
         }).filter(i => i.id);
 
-        applyCombinedFilters();
+        // Check if data actually changed to prevent unnecessary re-renders
+        if (JSON.stringify(newData) !== JSON.stringify(window.appState.catalogData)) {
+            window.appState.catalogData = newData;
+            applyCombinedFilters(); // Re-render the grid
+            console.log("Catalog updated from Google Sheets.");
+        }
     } catch (e) { 
-        console.error("Fetch Error", e);
-        showToast("Failed to load catalog.", true);
+        console.error("Polling Error:", e);
     }
 };
         // UI Helpers
@@ -522,14 +523,24 @@ function applyCombinedFilters() {
             debounce = setTimeout(applyCombinedFilters, 300);
         };
 
-        window.onload = () => {
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark');
-                document.getElementById('themeIcon').className = 'fas fa-sun';
-            }
-            window.fetchSheetData();
-            updateCartBadge();
-        };
+       window.onload = () => {
+    // Apply theme from localStorage
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        const themeIcon = document.getElementById('themeIcon');
+        if (themeIcon) themeIcon.className = 'fas fa-sun';
+    }
+
+    // Initial Fetch
+    window.fetchSheetData();
+    updateCartBadge();
+
+    // POLLING MECHANISM: Check for updates every 30 seconds (30000 ms)
+    setInterval(() => {
+        console.log("Polling Google Sheets for updates...");
+        window.fetchSheetData();
+    }, 30000); 
+};
     </script>
 </body>
 </html>
