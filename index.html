@@ -427,20 +427,43 @@ function applyCombinedFilters() {
         function closeCart() { document.getElementById('cartSidebar').classList.remove('active'); document.getElementById('cartOverlay').style.display = 'none'; }
 
         function renderCartItems() {
-            const list = document.getElementById('cartItemsList');
-            const items = window.appState.catalogData.filter(i => window.appState.cart.includes(i.id));
-            const total = items.reduce((sum, item) => sum + (item.price || 0), 0);
-            document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
-            list.innerHTML = items.length ? items.map(i => `
-                <div class="flex items-center gap-4 p-3 bg-white/60 dark:bg-black/20 rounded-2xl border dark:border-white/10">
-                    <img src="${i.image}" onerror="this.src='https://via.placeholder.com/300?text=No+Image'" class="w-16 h-16 rounded-xl object-cover">
-                    <div class="flex-grow">
-                        <div class="flex justify-between items-start"><h4 class="font-bold text-sm text-emerald-700 dark:text-emerald-400">${i.name}</h4><span class="text-xs font-black text-emerald-600">₹${(i.price || 0).toFixed(2)}</span></div>
-                        <p class="text-[10px] text-emerald-600 font-bold italic">${i.scientific}</p>
-                    </div>
-                    <button onclick="toggleCartItem(null, ${i.id})" class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 p-2 rounded-lg transition-colors"><i class="fas fa-trash-can"></i></button>
-                </div>`).join('') : '<div class="text-center py-10"><i class="fas fa-shopping-basket text-4xl text-emerald-200 dark:text-emerald-800 mb-4 block"></i><p class="text-slate-500 dark:text-slate-400 font-medium">Your cart is empty</p></div>';
-        }
+    const list = document.getElementById('cartItemsList');
+    const items = window.appState.catalogData.filter(i => window.appState.cart.includes(i.id));
+    const total = items.reduce((sum, item) => sum + (item.price || 0), 0);
+
+    document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
+
+    list.innerHTML = items.length ? items.map(i => `
+        <div class="flex items-center gap-4 p-3 bg-white/60 dark:bg-black/20 rounded-2xl border dark:border-white/10">
+            <img src="${i.image}" 
+                 onerror="this.src='https://via.placeholder.com/300?text=No+Image'" 
+                 class="w-16 h-16 rounded-xl object-cover">
+
+            <div class="flex-grow">
+                <div class="flex justify-between items-start">
+                    <h4 class="font-bold text-sm text-emerald-700 dark:text-emerald-400">${i.name}</h4>
+                    <span class="text-xs font-black text-emerald-600">₹${(i.price || 0).toFixed(2)}</span>
+                </div>
+
+                <p class="text-[10px] text-emerald-600 font-bold italic">${i.scientific}</p>
+
+                <!-- ✅ ADDED DESCRIPTION FIX -->
+                <p class="text-[10px] text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2 mt-1">
+                    ${i.description || 'No description available.'}
+                </p>
+            </div>
+
+            <button onclick="toggleCartItem(null, ${i.id})" 
+                class="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 p-2 rounded-lg transition-colors">
+                <i class="fas fa-trash-can"></i>
+            </button>
+        </div>
+    `).join('') : `
+        <div class="text-center py-10">
+            <i class="fas fa-shopping-basket text-4xl text-emerald-200 dark:text-emerald-800 mb-4 block"></i>
+            <p class="text-slate-500 dark:text-slate-400 font-medium">Your cart is empty</p>
+        </div>`;
+}
 
         function updateCartBadge() {
             const b = document.getElementById('cartBadge');
