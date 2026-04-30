@@ -202,36 +202,49 @@
         };
 
         // Fetch and Robust Parsing[cite: 2]
-        window.fetchSheetData = async function() {
-            try {
-                document.getElementById('gridContainer').innerHTML = 
-                    `<div class="col-span-full text-center py-20"><i class="fas fa-spinner fa-spin text-3xl text-emerald-500"></i></div>`;
+       window.fetchSheetData = async function() {
+    try {
+        const container = document.getElementById('gridContainer');
+        if (container) {
+            container.innerHTML = `<div class="col-span-full text-center py-20"><i class="fas fa-spinner fa-spin text-3xl text-emerald-500"></i></div>`;
+        }
 
-                const response = await fetch(SHEET_URL);
-                const data = await response.text();
-                
-                const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
-                if (rows.length < 2) return;
+        const response = await fetch(SHEET_URL);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.text();
+        const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
+        
+        if (rows.length < 2) {
+            showToast("Catalog is empty.", true);
+            return;
+        }
 
-                const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
+        const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
 
-                window.appState.catalogData = rows.slice(1).map(row => {
-                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    let obj = {};
-                    headers.forEach((h, i) => {
-                        let val = cols[i]?.replace(/^"|"$/g, "").trim();
-                        if (h === "id" || h === "price") obj[h] = parseFloat(val) || 0;
-                        else obj[h] = val || "";
-                    });
-                    return obj;
-                }).filter(i => i.id);
+        window.appState.catalogData = rows.slice(1).map(row => {
+            // Simplified splitting for better mobile compatibility
+            const cols = row.split(',').map(c => c.replace(/^"|"$/g, "").trim());
+            let obj = {};
+            headers.forEach((h, i) => {
+                let val = cols[i] || "";
+                if (h === "id" || h === "price") {
+                    obj[h] = parseFloat(val) || 0;
+                } else {
+                    obj[h] = val;
+                }
+            });
+            return obj;
+        }).filter(i => i.id);
 
-                applyCombinedFilters();
-            } catch (e) { 
-                console.error("Sheet Fetch Error", e);
-                showToast("Failed to load catalog.", true);
-            }
-        };
+        applyCombinedFilters();
+    } catch (e) { 
+        console.error("Sheet Fetch Error:", e);
+        // Specifically check if it's a fetch error
+        showToast("Connection Error: Check your internet.", true);
+        document.getElementById('gridContainer').innerHTML = `<p class="col-span-full text-center text-rose-500">Failed to load data. Please refresh.</p>`;
+    }
+};
 
         // UI Helpers
         function showToast(msg, isError = false) {
