@@ -205,47 +205,45 @@
        window.fetchSheetData = async function() {
     try {
         const container = document.getElementById('gridContainer');
-        if (container) {
-            container.innerHTML = `<div class="col-span-full text-center py-20"><i class="fas fa-spinner fa-spin text-3xl text-emerald-500"></i></div>`;
-        }
+        container.innerHTML = `<div class="col-span-full text-center py-20"><i class="fas fa-spinner fa-spin text-3xl text-emerald-500"></i></div>`;
 
         const response = await fetch(SHEET_URL);
-        if (!response.ok) throw new Error('Network response was not ok');
-        
         const data = await response.text();
-        const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
         
-        if (rows.length < 2) {
-            showToast("Catalog is empty.", true);
-            return;
-        }
+        const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
+        if (rows.length < 2) return;
 
         const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
 
         window.appState.catalogData = rows.slice(1).map(row => {
-            // Simplified splitting for better mobile compatibility
-            const cols = row.split(',').map(c => c.replace(/^"|"$/g, "").trim());
+            // MOBILE FIX: Use a simpler split that doesn't use Lookbehind RegEx
+            const cols = [];
+            let current = '';
+            let inQuotes = false;
+            for (let char of row) {
+                if (char === '"') inQuotes = !inQuotes;
+                else if (char === ',' && !inQuotes) {
+                    cols.push(current.trim());
+                    current = '';
+                } else current += char;
+            }
+            cols.push(current.trim());
+
             let obj = {};
             headers.forEach((h, i) => {
-                let val = cols[i] || "";
-                if (h === "id" || h === "price") {
-                    obj[h] = parseFloat(val) || 0;
-                } else {
-                    obj[h] = val;
-                }
+                let val = (cols[i] || "").replace(/^"|"$/g, "");
+                if (h === "id" || h === "price") obj[h] = parseFloat(val) || 0;
+                else obj[h] = val;
             });
             return obj;
         }).filter(i => i.id);
 
         applyCombinedFilters();
     } catch (e) { 
-        console.error("Sheet Fetch Error:", e);
-        // Specifically check if it's a fetch error
-        showToast("Connection Error: Check your internet.", true);
-        document.getElementById('gridContainer').innerHTML = `<p class="col-span-full text-center text-rose-500">Failed to load data. Please refresh.</p>`;
+        console.error("Fetch Error", e);
+        showToast("Failed to load catalog.", true);
     }
 };
-
         // UI Helpers
         function showToast(msg, isError = false) {
             const t = document.getElementById('toast');
@@ -331,24 +329,28 @@ window.openModalById = function(id) {
 };
 
 function applyCombinedFilters() {
-    const searchInput = document.getElementById('searchInput');
-    const term = searchInput ? searchInput.value.toLowerCase().trim() : "";
+    // Mobile Fix: Ensure elements exist before accessing .value
+    const searchEl = document.getElementById('searchInput');
+    const term = searchEl ? searchEl.value.toLowerCase() : "";
     const type = localStorage.getItem('selectedFilter') || 'all';
-
+    
     const filtered = window.appState.catalogData.filter(item => {
         // Handle filter type
         const matchesType = type === 'all' || 
                            item.type === type || 
                            (type === 'favorites' && window.appState.favorites.includes(item.id));
         
-        // Safety check for search
-        const nameMatch = (item.name || "").toLowerCase().includes(term);
-        const scientificMatch = (item.scientific || "").toLowerCase().includes(term);
-        const usesMatch = (item.uses || "").toLowerCase().includes(term);
+        // Safety check: Use String() to prevent errors if a field is a number or null
+        const name = String(item.name || "").toLowerCase();
+        const uses = String(item.uses || "").toLowerCase();
+        const scientific = String(item.scientific || "").toLowerCase();
 
-        return matchesType && (nameMatch || scientificMatch || usesMatch);
+        const matchesSearch = name.indexOf(term) !== -1 || 
+                             uses.indexOf(term) !== -1 || 
+                             scientific.indexOf(term) !== -1;
+
+        return matchesType && matchesSearch;
     });
-    
     renderItems(filtered);
 }
         function openModal(item) {
