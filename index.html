@@ -307,12 +307,24 @@
                         </div>
                     </div>
                     <div class="p-3 sm:p-4">
-                        <div class="flex justify-between items-start mb-1 gap-2">
-                            <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 truncate">${name}</h3>
-                            <span class="text-xs font-black text-emerald-600">₹${price.toFixed(2)}</span>
-                        </div>
-                        <p class="text-[9px] italic text-emerald-600 mb-1 truncate">${scientific}</p>
-                    </div>
+    <div class="flex justify-between items-start mb-1 gap-2">
+        <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">
+            ${name}
+        </h3>
+        <span class="text-xs font-black text-emerald-600 whitespace-nowrap">
+            ₹${price.toFixed(2)}
+        </span>
+    </div>
+
+    <p class="text-[9px] italic text-emerald-600 mb-1">
+        ${scientific}
+    </p>
+
+    <!-- ✅ ADD THIS DESCRIPTION BLOCK -->
+    <p class="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">
+        ${item.description || 'No description available.'}
+    </p>
+</div>
                 </div>`;
             
             container.insertAdjacentHTML('beforeend', cardHtml);
