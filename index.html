@@ -32,7 +32,6 @@
         .modal-animate { animation: modalIn 0.3s ease-out; }
         @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* Toast Notification Styles */
         #toast {
             position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
             background: #10b981; color: white; padding: 1rem 2rem; border-radius: 1rem;
@@ -44,7 +43,6 @@
 <body>
     <div id="toast">Order Placed Successfully!</div>
 
-    <!-- Firebase Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
@@ -200,17 +198,16 @@
             cart: JSON.parse(localStorage.getItem('cart')) || []
         };
 
-        // Added cache-busting and background refresh logic
         window.fetchSheetData = async function(isBackground = false) {
             try {
-                // Only show spinner on manual refresh/first load
                 if (!isBackground) {
                     document.getElementById('gridContainer').innerHTML = 
                         `<div class="col-span-full text-center py-20"><i class="fas fa-spinner fa-spin text-3xl text-emerald-500"></i></div>`;
                 }
 
-                // Add timestamp to bypass browser cache and get real-time price updates
+                // Added cache-busting timestamp to ensure real-time data[cite: 3]
                 const response = await fetch(`${SHEET_URL}&cb=${new Date().getTime()}`);
+                if (!response.ok) throw new Error('Fetch failed');
                 const data = await response.text();
                 
                 const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
@@ -229,24 +226,18 @@
                     return obj;
                 }).filter(i => i.id);
 
-                // Update internal state
                 window.appState.catalogData = newData;
-
-                // Silently refresh UI
                 applyCombinedFilters();
                 if(document.getElementById('cartSidebar').classList.contains('active')) renderCartItems();
 
             } catch (e) { 
                 console.error("Sheet Fetch Error", e);
-                if (!isBackground) showToast("Failed to load catalog.", true);
+                if (!isBackground) showToast("Failed to load catalog.", true);[cite: 3]
             }
         };
 
-        // NEW: Auto-refresh function every 30 seconds
         function startLiveUpdates() {
-            setInterval(() => {
-                fetchSheetData(true);
-            }, 30000); 
+            setInterval(() => fetchSheetData(true), 30000);[cite: 3]
         }
 
         function showToast(msg, isError = false) {
@@ -276,9 +267,7 @@
                 card.onclick = () => openModal(item);
                 card.innerHTML = `
                     <div class="h-28 sm:h-36 md:h-56 overflow-hidden relative">
-                        <img src="${item.image}" 
-                             onerror="this.src='https://via.placeholder.com/300?text=No+Image'"
-                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                        <img src="${item.image}" onerror="this.src='https://via.placeholder.com/300?text=No+Image'" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                         <div class="absolute top-1 left-1 sm:top-3 sm:left-3 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">${(item.type || "").replace('_', ' ')}</div>
                         <div class="absolute top-1 right-1 sm:top-3 sm:right-3 flex flex-col gap-1">
                             <button onclick="toggleFav(event, ${item.id})" id="fav-${item.id}" class="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-white/90"><i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i></button>
@@ -298,34 +287,32 @@
         }
 
         function openModal(item) {
-            // Find current item in state to get live price update in modal
-            const currentItem = window.appState.catalogData.find(i => i.id === item.id) || item;
-            
+            const liveItem = window.appState.catalogData.find(i => i.id === item.id) || item;
             document.getElementById('modalContent').innerHTML = `
             <div class="relative max-h-[90vh] overflow-y-auto">
                 <div class="relative">
                     <div class="h-44 sm:h-56 md:h-72 w-full overflow-hidden">
-                        <img src="${currentItem.image}" onerror="this.src='https://via.placeholder.com/300?text=No+Image'" class="w-full h-full object-cover">
+                        <img src="${liveItem.image}" onerror="this.src='https://via.placeholder.com/300?text=No+Image'" class="w-full h-full object-cover">
                     </div>
                     <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/60 text-white w-9 h-9 rounded-full flex items-center justify-center z-10"><i class="fas fa-times"></i></button>
                 </div>
                 <div class="p-4 sm:p-6 md:p-8">
                     <div class="flex justify-between items-start gap-2 mb-2">
-                        <h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 leading-tight">${currentItem.name}</h2>
-                        <span class="text-base sm:text-xl font-black text-emerald-400 whitespace-nowrap">₹${(currentItem.price || 0).toFixed(2)}</span>
+                        <h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 leading-tight">${liveItem.name}</h2>
+                        <span class="text-base sm:text-xl font-black text-emerald-400 whitespace-nowrap">₹${(liveItem.price || 0).toFixed(2)}</span>
                     </div>
-                    <p class="text-xs sm:text-sm italic text-emerald-300 mb-5">${currentItem.scientific}</p>
+                    <p class="text-xs sm:text-sm italic text-emerald-300 mb-5">${liveItem.scientific}</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
                             <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Description</h4>
-                            <p class="text-xs sm:text-sm text-white leading-relaxed">${currentItem.description}</p>
+                            <p class="text-xs sm:text-sm text-white leading-relaxed">${liveItem.description}</p>
                         </div>
                         <div>
                             <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Key Benefits</h4>
-                            <ul class="space-y-1">${(currentItem.uses || "").split(',').map(u => `<li class="text-xs sm:text-sm text-white flex items-start"><i class="fas fa-circle text-[5px] text-emerald-500 mr-2 mt-2"></i>${u.trim()}</li>`).join('')}</ul>
+                            <ul class="space-y-1">${(liveItem.uses || "").split(',').map(u => `<li class="text-xs sm:text-sm text-white flex items-start"><i class="fas fa-circle text-[5px] text-emerald-500 mr-2 mt-2"></i>${u.trim()}</li>`).join('')}</ul>
                         </div>
                     </div>
-                    <button onclick="addToCart(${currentItem.id})" class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold text-sm sm:text-lg sticky bottom-2">Add to Cart</button>
+                    <button onclick="addToCart(${liveItem.id})" class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold text-sm sm:text-lg sticky bottom-2">Add to Cart</button>
                 </div>
             </div>`;
             document.getElementById('modal').classList.remove('hidden');
@@ -334,11 +321,8 @@
 
         function toggleFav(e, id) {
             e.stopPropagation();
-            window.appState.favorites = window.appState.favorites.includes(id) 
-                ? window.appState.favorites.filter(i => i !== id) 
-                : [...window.appState.favorites, id];
+            window.appState.favorites = window.appState.favorites.includes(id) ? window.appState.favorites.filter(i => i !== id) : [...window.appState.favorites, id];
             localStorage.setItem('favorites', JSON.stringify(window.appState.favorites));
-            
             const icon = document.querySelector(`#fav-${id} i`);
             if(icon) icon.className = window.appState.favorites.includes(id) ? 'fas text-rose-500 fa-heart text-[10px]' : 'far text-slate-400 fa-heart text-[10px]';
             if(localStorage.getItem('selectedFilter') === 'favorites') applyCombinedFilters();
@@ -346,11 +330,8 @@
 
         function toggleCartItem(e, id) {
             if(e) e.stopPropagation();
-            window.appState.cart = window.appState.cart.includes(id) 
-                ? window.appState.cart.filter(i => i !== id) 
-                : [...window.appState.cart, id];
+            window.appState.cart = window.appState.cart.includes(id) ? window.appState.cart.filter(i => i !== id) : [...window.appState.cart, id];
             localStorage.setItem('cart', JSON.stringify(window.appState.cart));
-            
             updateCartBadge();
             const btnIcon = document.querySelector(`#cart-btn-${id} i`);
             if(btnIcon) btnIcon.className = `fas ${window.appState.cart.includes(id) ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]`;
@@ -396,10 +377,7 @@
             const type = localStorage.getItem('selectedFilter') || 'all';
             const filtered = window.appState.catalogData.filter(item => {
                 const matchesType = type === 'all' || item.type === type || (type === 'favorites' && window.appState.favorites.includes(item.id));
-                const matchesSearch =
-                    (item.name || "").toLowerCase().includes(term) ||
-                    (item.uses || "").toLowerCase().includes(term) ||
-                    (item.scientific || "").toLowerCase().includes(term);  
+                const matchesSearch = (item.name || "").toLowerCase().includes(term) || (item.uses || "").toLowerCase().includes(term) || (item.scientific || "").toLowerCase().includes(term);  
                 return matchesType && matchesSearch;
             });
             renderItems(filtered);
@@ -432,8 +410,8 @@
                 document.body.classList.add('dark');
                 document.getElementById('themeIcon').className = 'fas fa-sun';
             }
-            window.fetchSheetData();
-            startLiveUpdates(); // Initiates background price fetching
+            fetchSheetData();
+            startLiveUpdates();[cite: 3]
             updateCartBadge();
         };
     </script>
