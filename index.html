@@ -38,6 +38,11 @@
             font-weight: 600; box-shadow: 0 10px 15px rgba(0,0,0,0.2); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000;
         }
         #toast.active { transform: translateX(-50%) translateY(0); }
+        
+        /* Polling Indicator Style */
+        #syncIndicator { font-size: 10px; display: flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 20px; background: rgba(0,0,0,0.2); }
+        .sync-active { color: #4ade80; }
+        .sync-idle { color: #cbd5e1; }
     </style>
 </head>
 <body>
@@ -69,7 +74,14 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center space-x-2">
                 <div class="bg-white p-2 rounded-lg"><i class="fas fa-leaf text-emerald-600 text-xl"></i></div>
-                <span class="text-2xl font-bold tracking-tight text-white">Nature's Heal</span>
+                <div>
+                    <span class="text-2xl font-bold tracking-tight text-white block">Nature's Heal</span>
+                    <!-- Sync Indicator UI -->
+                    <div id="syncIndicator" class="sync-idle">
+                        <i class="fas fa-circle text-[6px]" id="syncDot"></i>
+                        <span id="syncText">LIVE SYNCED</span>
+                    </div>
+                </div>
             </div>
             <nav class="hidden md:flex space-x-8 font-semibold">
                 <button data-filter="all" onclick="filterItems('all')" class="filter-btn text-white border-b-2 border-white pb-1">All Catalog</button>
@@ -124,9 +136,9 @@
                 <span class="text-2xl font-bold text-white">Nature's <span class="text-emerald-500">Heal</span></span>
             </div>
             <div class="flex justify-center space-x-6 mb-12 text-slate-400">
-                <a href="https://www.instagram.com/hari_krishna_ak/" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-instagram"></i></a>
-                <a href="https://www.facebook.com/hari.krishna.arvapalli/" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://www.youtube.com/@innovativespirits5261" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-youtube"></i></a>
+                <a href="https://www.instagram.com/hari_krishna_ak/" target="_blank" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-instagram"></i></a>
+                <a href="https://www.facebook.com/hari.krishna.arvapalli/" target="_blank" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.youtube.com/@innovativespirits5261" target="_blank" class="hover:text-emerald-500 transition-colors text-xl"><i class="fab fa-youtube"></i></a>
             </div>
             <div class="text-slate-500 text-xs font-bold tracking-widest uppercase">© 2026 NATURE'S HEAL ENCYCLOPEDIA</div>
         </div>
@@ -258,11 +270,22 @@
             )
         };
 
-        let lastRenderKey = "";
-
+        // --- POLLING LOGIC ---
         async function fetchSheetData() {
+            const indicator = document.getElementById('syncIndicator');
+            const dot = document.getElementById('syncDot');
+            const text = document.getElementById('syncText');
+
+            // Indicate syncing started
+            if (indicator) {
+                indicator.className = "sync-active flex items-center gap-1";
+                dot.classList.add('animate-ping');
+                text.innerText = "SYNCING...";
+            }
+
             try {
-                const response = await fetch(SHEET_URL);
+                // cachebuster 't' parameter forces fresh data from Google Servers[cite: 1]
+                const response = await fetch(`${SHEET_URL}&t=${new Date().getTime()}`);
                 const data = await response.text();
                 const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
                 if (rows.length < 2) return;
@@ -286,11 +309,23 @@
                     return obj;
                 }).filter(i => i.id);
 
+                // Only re-render if data has changed[cite: 1]
                 if (JSON.stringify(newData) !== JSON.stringify(window.appState.catalogData)) {
                     window.appState.catalogData = newData;
                     renderItems(getFilteredData());
                 }
-            } catch (e) { console.error("Fetch Error:", e); }
+
+                // Reset indicator UI
+                setTimeout(() => {
+                    indicator.className = "sync-idle flex items-center gap-1";
+                    dot.classList.remove('animate-ping');
+                    text.innerText = "LIVE SYNCED";
+                }, 1500);
+
+            } catch (e) { 
+                console.error("Fetch Error:", e);
+                text.innerText = "SYNC ERROR";
+            }
         }
 
         function getFilteredData() {
@@ -368,6 +403,7 @@
             updateCartBadge();
             renderCartItems();
             renderItems(getFilteredData());
+            showToast("Added to Cart");
         }
 
         function updateQty(id, change){
@@ -501,6 +537,7 @@
             fetchSheetData();
             updateCartBadge();
             
+            // Re-fetch data every 30 seconds[cite: 1]
             setInterval(fetchSheetData, 30000); 
         };
     </script>
