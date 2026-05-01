@@ -136,6 +136,23 @@
         <div id="modalContent" class="bg-emerald-950 rounded-[2rem] max-w-2xl w-full overflow-hidden shadow-2xl modal-animate border border-emerald-800"></div>
     </div>
 
+    <!-- User Details Modal -->
+    <div id="userFormModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4">
+        <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-6 text-emerald-700">Shipping Details</h2>
+            <div class="space-y-4">
+                <input id="name" type="text" placeholder="Full Name" class="w-full p-3 rounded-xl border dark:bg-slate-800 dark:border-slate-700 outline-none focus:border-emerald-500">
+                <input id="phone" type="tel" placeholder="Phone Number" class="w-full p-3 rounded-xl border dark:bg-slate-800 dark:border-slate-700 outline-none focus:border-emerald-500">
+                <input id="email" type="email" placeholder="Email Address" class="w-full p-3 rounded-xl border dark:bg-slate-800 dark:border-slate-700 outline-none focus:border-emerald-500">
+                <textarea id="address" placeholder="Complete Address" class="w-full p-3 rounded-xl border dark:bg-slate-800 dark:border-slate-700 h-28 outline-none focus:border-emerald-500"></textarea>
+                <div class="flex gap-4 pt-4">
+                    <button onclick="document.getElementById('userFormModal').classList.add('hidden')" class="flex-1 py-3 font-bold border rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</button>
+                    <button onclick="submitOrder(event)" class="flex-1 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700">Submit Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -159,83 +176,75 @@
 
         window.loginUser = async function() {
             try {
-                    const result = await signInWithPopup(auth, provider);
-                    return result.user;
-                } catch (err) {
-                    console.error(err);
-                    alert("Login failed");
-                    return null;
-                                }
+                const result = await signInWithPopup(auth, provider);
+                return result.user;
+            } catch (err) {
+                console.error(err);
+                alert("Login failed");
+                return null;
             }
+        }
 
-            window.placeOrder = async function() {
-
-    if(window.appState.cart.length === 0){
-        showToast("Cart is empty", true);
-        return;
-    }
-
-    const user = auth.currentUser;
-
-    if(!user){
-        const loggedInUser = await loginUser();
-        if(!loggedInUser) return;
-    }
-
-    document.getElementById('userFormModal').classList.remove('hidden');
-}
+        window.placeOrder = async function() {
+            if(window.appState.cart.length === 0){
+                showToast("Cart is empty", true);
+                return;
+            }
+            const user = auth.currentUser;
+            if(!user){
+                const loggedInUser = await loginUser();
+                if(!loggedInUser) return;
+            }
+            document.getElementById('userFormModal').classList.remove('hidden');
+        }
 
         window.submitOrder = async function(event){
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            const address = document.getElementById('address').value;
 
-    const name = document.getElementById('name').value;
-    const phone = document.getElementById('phone').value;
-    const email = document.getElementById('email').value;
-    const address = document.getElementById('address').value;
+            if(!name || !phone || !email || !address){
+                showToast("Please fill all details", true);
+                return;
+            }
 
-    // ✅ VALIDATION
-    if(!name || !phone || !email || !address){
-        showToast("Please fill all details", true);
-        return;
-    }
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerText = "Processing...";
 
-    // ✅ BUTTON DISABLE
-    const btn = event.target;
-    btn.disabled = true;
-    btn.innerText = "Processing...";
+            const items = window.appState.cart.map(c => {
+                const product = window.appState.catalogData.find(i => i.id === c.id);
+                return { name: product.name, price: product.price, qty: c.qty };
+            });
 
-    const items = window.appState.cart.map(c => {
-        const product = window.appState.catalogData.find(i => i.id === c.id);
-        return {...product, qty: c.qty};
-    });
+            const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
 
-    const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            try{
+                await addDoc(collection(db, "orders"), {
+                    items,
+                    total,
+                    user: {name, phone, email, address},
+                    created_at: serverTimestamp()
+                });
 
-    try{
-        await addDoc(collection(db, "orders"), {
-            items,
-            total,
-            user: {name, phone, email, address},
-            created_at: serverTimestamp()
-        });
+                showToast("Order placed successfully!");
+                window.appState.cart = [];
+                localStorage.setItem('cart', JSON.stringify([]));
 
-        showToast("Order placed successfully!");
-        window.appState.cart = [];
-        localStorage.setItem('cart', JSON.stringify([]));
+                renderCartItems();
+                updateCartBadge();
+                document.getElementById('userFormModal').classList.add('hidden');
+                closeCart();
 
-        renderCartItems();
-        updateCartBadge();
-
-        document.getElementById('userFormModal').classList.add('hidden');
-
-    } catch(e){
-        console.error(e);
-        showToast("Error placing order", true);
-    } finally {
-        // ✅ ENABLE BUTTON BACK
-        btn.disabled = false;
-        btn.innerText = "Submit Order";
-    }
-}
+            } catch(e){
+                console.error(e);
+                showToast("Error placing order", true);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Submit Order";
+            }
+        }
     </script>
 
     <script>
@@ -245,15 +254,11 @@
             catalogData: [],
             favorites: JSON.parse(localStorage.getItem('favorites')) || [],
             cart: (JSON.parse(localStorage.getItem('cart')) || []).map(i =>
-    typeof i === "number" ? {id: i, qty: 1} : i
-)
+                typeof i === "number" ? {id: i, qty: 1} : i
+            )
         };
 
         let lastRenderKey = "";
-
-        function getRenderKey(items) {
-            return items.map(i => i.id + ":" + (i.image || "")).join("|");
-        }
 
         async function fetchSheetData() {
             try {
@@ -303,10 +308,6 @@
         }
 
         function renderItems(items) {
-            const key = getRenderKey(items);
-            if (key === lastRenderKey) return; 
-            lastRenderKey = key;
-
             const container = document.getElementById('gridContainer');
             const countDisplay = document.getElementById('itemCount');
             if (!container) return;
@@ -315,7 +316,7 @@
             if (countDisplay) countDisplay.textContent = items.length;
 
             if (items.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-10 dark:text-white">No species found matching criteria.</div>`;
+                container.innerHTML = `<div class="col-span-full text-center py-10 dark:text-white">No species found.</div>`;
                 return;
             }
 
@@ -326,10 +327,7 @@
                 const cardHtml = `
                     <div class="nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative" onclick="openModalById(${item.id})">
                         <div class="h-28 sm:h-36 md:h-56 overflow-hidden relative">
-                            <img src="${item.image}" 
-                                 loading="lazy" decoding="async"
-                                 onerror="this.src='https://via.placeholder.com/300?text=No+Image'"
-                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <img src="${item.image}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                             <div class="absolute top-1 left-1 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">
                                 ${String(item.type || "botanical").replace('_', ' ')}
                             </div>
@@ -337,7 +335,7 @@
                                 <button onclick="event.stopPropagation(); toggleFav(event, ${item.id})" class="w-7 h-7 flex items-center justify-center rounded-full bg-white/90">
                                     <i class="${isFav ? 'fas text-rose-500' : 'far text-slate-400'} fa-heart text-[10px]"></i>
                                 </button>
-                                <button onclick="event.stopPropagation(); toggleCartItem(event, ${item.id})" class="w-7 h-7 flex items-center justify-center rounded-full bg-white/90">
+                                <button onclick="event.stopPropagation(); addToCartSimple(${item.id})" class="w-7 h-7 flex items-center justify-center rounded-full bg-white/90">
                                     <i class="fas ${isInCart ? 'fa-shopping-cart text-emerald-600' : 'fa-cart-plus text-slate-400'} text-[10px]"></i>
                                 </button>
                             </div>
@@ -347,7 +345,7 @@
                                 <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">${item.name}</h3>
                                 <span class="text-xs font-black text-emerald-600 whitespace-nowrap">₹${(item.price || 0).toFixed(2)}</span>
                             </div>
-                            <p class="text-[9px] italic text-emerald-600 mb-1">${item.scientific}</p>
+                            <p class="text-[9px] italic text-emerald-600 mb-1">${item.scientific || ''}</p>
                             <p class="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">${item.description || ''}</p>
                         </div>
                     </div>`;
@@ -359,49 +357,76 @@
             e.stopPropagation();
             window.appState.favorites = window.appState.favorites.includes(id) ? window.appState.favorites.filter(i => i !== id) : [...window.appState.favorites, id];
             localStorage.setItem('favorites', JSON.stringify(window.appState.favorites));
-            lastRenderKey = ""; 
             renderItems(getFilteredData());
         }
 
-        function toggleCartItem(e, id) {
-    if(e) e.stopPropagation();
+        function addToCartSimple(id) {
+            let item = window.appState.cart.find(i => i.id === id);
+            if(item) item.qty += 1;
+            else window.appState.cart.push({id, qty: 1});
+            localStorage.setItem('cart', JSON.stringify(window.appState.cart));
+            updateCartBadge();
+            renderCartItems();
+            renderItems(getFilteredData());
+        }
 
-    let cart = window.appState.cart;
-    let item = cart.find(i => i.id === id);
+        function updateQty(id, change){
+            let item = window.appState.cart.find(i => i.id === id);
+            if(!item) return;
+            item.qty += change;
+            if(item.qty <= 0) window.appState.cart = window.appState.cart.filter(i => i.id !== id);
+            localStorage.setItem('cart', JSON.stringify(window.appState.cart));
+            renderCartItems();
+            updateCartBadge();
+            renderItems(getFilteredData());
+        }
 
-    if(item){
-        item.qty += 1;
-    } else {
-        cart.push({id: id, qty: 1});
-    }
+        function renderCartItems() {
+            const list = document.getElementById('cartItemsList');
+            const items = window.appState.cart.map(c => {
+                const product = window.appState.catalogData.find(i => i.id === c.id);
+                return product ? {...product, qty: c.qty} : null;
+            }).filter(i => i);
 
-    window.appState.cart = cart;
-    localStorage.setItem('cart', JSON.stringify(cart));
+            const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
 
-    updateCartBadge();
-    renderCartItems();
-    lastRenderKey = "";
-    renderItems(getFilteredData());
-}
-
-        function openModalById(id) { const item = window.appState.catalogData.find(i => i.id == id); if (item) openModal(item); }
-        function openModal(item) {
-            document.getElementById('modalContent').innerHTML = `
-            <div class="relative max-h-[90vh] overflow-y-auto">
-                <div class="relative"><div class="h-44 sm:h-56 md:h-72 w-full overflow-hidden"><img src="${item.image}" class="w-full h-full object-cover"></div>
-                <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/60 text-white w-9 h-9 rounded-full flex items-center justify-center z-10"><i class="fas fa-times"></i></button></div>
-                <div class="p-4 sm:p-6 md:p-8">
-                    <div class="flex justify-between items-start gap-2 mb-2"><h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 leading-tight">${item.name}</h2><span class="text-base sm:text-xl font-black text-emerald-400">₹${(item.price || 0).toFixed(2)}</span></div>
-                    <p class="text-xs sm:text-sm italic text-emerald-300 mb-5">${item.scientific}</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div><h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Description</h4><p class="text-xs sm:text-sm text-white leading-relaxed">${item.description || 'No description available.'}</p></div>
-                        <div><h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Key Benefits</h4><ul class="space-y-1">${(item.uses || "").split(',').map(u => `<li class="text-xs sm:text-sm text-white flex items-start"><i class="fas fa-circle text-[5px] text-emerald-500 mr-2 mt-2"></i>${u.trim()}</li>`).join('')}</ul></div>
+            list.innerHTML = items.length ? items.map(i => `
+                <div class="flex items-center gap-4 p-3 rounded-xl border dark:border-slate-700">
+                    <img src="${i.image}" class="w-16 h-16 rounded-xl object-cover">
+                    <div class="flex-grow">
+                        <h4 class="font-bold text-sm">${i.name}</h4>
+                        <div class="flex items-center gap-2 mt-2">
+                            <button onclick="updateQty(${i.id}, -1)" class="w-6 h-6 flex items-center justify-center bg-gray-200 dark:bg-slate-700 rounded">-</button>
+                            <span class="text-xs font-bold">${i.qty}</span>
+                            <button onclick="updateQty(${i.id}, 1)" class="w-6 h-6 flex items-center justify-center bg-gray-200 dark:bg-slate-700 rounded">+</button>
+                        </div>
                     </div>
-                    <button onclick="addToCart(${item.id})" class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold">Add to Cart</button>
+                    <p class="text-xs font-bold">₹${(i.price * i.qty).toFixed(0)}</p>
                 </div>
-            </div>`;
-            document.getElementById('modal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+            `).join('') : `<p class="text-center py-10 opacity-50">Cart empty</p>`;
+        }
+
+        function openModalById(id) {
+            const item = window.appState.catalogData.find(i => i.id == id);
+            if (item) {
+                document.getElementById('modalContent').innerHTML = `
+                <div class="relative max-h-[90vh] overflow-y-auto">
+                    <div class="relative"><div class="h-44 sm:h-56 md:h-72 w-full overflow-hidden"><img src="${item.image}" class="w-full h-full object-cover"></div>
+                    <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/60 text-white w-9 h-9 rounded-full flex items-center justify-center z-10"><i class="fas fa-times"></i></button></div>
+                    <div class="p-4 sm:p-6 md:p-8 text-white">
+                        <div class="flex justify-between items-start gap-2 mb-2"><h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 leading-tight">${item.name}</h2><span class="text-base sm:text-xl font-black text-emerald-400">₹${(item.price || 0).toFixed(2)}</span></div>
+                        <p class="text-xs sm:text-sm italic text-emerald-300 mb-5">${item.scientific || ''}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div><h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Description</h4><p class="text-xs sm:text-sm text-white leading-relaxed">${item.description || 'No description available.'}</p></div>
+                            <div><h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Key Benefits</h4><ul class="space-y-1">${(item.uses || "").split(',').map(u => `<li class="text-xs sm:text-sm text-white flex items-start"><i class="fas fa-circle text-[5px] text-emerald-500 mr-2 mt-2"></i>${u.trim()}</li>`).join('')}</ul></div>
+                        </div>
+                        <button onclick="addToCartSimple(${item.id}); closeModal(); toggleCartSidebar();" class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold">Add to Cart</button>
+                    </div>
+                </div>`;
+                document.getElementById('modal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
         }
 
         function filterItems(type) {
@@ -412,111 +437,72 @@
             });
             const mobileDropdown = document.getElementById('mobileFilter');
             if(mobileDropdown) mobileDropdown.value = type;
-            lastRenderKey = "";
             renderItems(getFilteredData());
         }
 
-        function renderCartItems() {
-    const list = document.getElementById('cartItemsList');
-
-    const items = window.appState.cart.map(c => {
-        const product = window.appState.catalogData.find(i => i.id === c.id);
-        return {...product, qty: c.qty};
-    });
-
-    const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
-
-    list.innerHTML = items.length ? items.map(i => `
-        <div class="flex items-center gap-4 p-3 rounded-xl border">
-            <img src="${i.image}" class="w-16 h-16 rounded-xl object-cover">
-
-            <div class="flex-grow">
-                <h4 class="font-bold">${i.name}</h4>
-                <p class="text-xs">₹${i.price}</p>
-
-                <div class="flex items-center gap-2 mt-2">
-                    <button onclick="updateQty(${i.id}, -1)" class="px-2 bg-gray-200 rounded">-</button>
-                    <span>${i.qty}</span>
-                    <button onclick="updateQty(${i.id}, 1)" class="px-2 bg-gray-200 rounded">+</button>
-                </div>
-            </div>
-        </div>
-    `).join('') : `<p class="text-center">Cart empty</p>`;
-}
-function updateQty(id, change){
-    let cart = window.appState.cart;
-    let item = cart.find(i => i.id === id);
-
-    if(!item) return;
-
-    item.qty += change;
-
-    if(item.qty <= 0){
-        cart = cart.filter(i => i.id !== id);
-    }
-
-    window.appState.cart = cart;
-    localStorage.setItem('cart', JSON.stringify(cart));
-
-    renderCartItems();
-    updateCartBadge();
-}
-        function addToCart(id) { toggleCartItem(null, id); closeModal(); toggleCartSidebar(); }
-
         function toggleCartSidebar() {
-    const sidebar = document.getElementById('cartSidebar');
-    const overlay = document.getElementById('cartOverlay');
+            const sidebar = document.getElementById('cartSidebar');
+            const overlay = document.getElementById('cartOverlay');
+            if (sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+                overlay.style.display = 'none';
+            } else {
+                renderCartItems();
+                sidebar.classList.add('active');
+                overlay.style.display = 'block';
+            }
+        }
 
-    if (sidebar.classList.contains('active')) {
-        sidebar.classList.remove('active');
-        overlay.style.display = 'none';
-    } else {
-        renderCartItems();
-        sidebar.classList.add('active');
-        overlay.style.display = 'block';
-    }
-}
-        function closeCart() { document.getElementById('cartSidebar').classList.remove('active'); document.getElementById('cartOverlay').style.display = 'none'; }
-        function updateCartBadge() { const b = document.getElementById('cartBadge'); b.textContent = window.appState.cart.reduce((sum, i) => sum + i.qty, 0); b.classList.toggle('hidden', !window.appState.cart.length); }
-        function toggleTheme() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); document.getElementById('themeIcon').className = isDark ? 'fas fa-sun' : 'fas fa-moon'; localStorage.setItem('theme', isDark ? 'dark' : 'light'); }
+        function closeCart() {
+            document.getElementById('cartSidebar').classList.remove('active');
+            document.getElementById('cartOverlay').style.display = 'none';
+        }
+
+        function updateCartBadge() {
+            const b = document.getElementById('cartBadge');
+            const count = window.appState.cart.reduce((sum, i) => sum + i.qty, 0);
+            b.textContent = count;
+            b.classList.toggle('hidden', count === 0);
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            document.getElementById('themeIcon').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
         function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
-        function showToast(msg, isError = false) { const t = document.getElementById('toast'); t.textContent = msg; t.style.background = isError ? '#ef4444' : '#10b981'; t.classList.add('active'); setTimeout(() => t.classList.remove('active'), 3000); }
+        
+        function showToast(msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.background = isError ? '#ef4444' : '#10b981';
+            t.classList.add('active');
+            setTimeout(() => t.classList.remove('active'), 3000);
+        }
 
+        // Search Debounce
         let debounce;
         document.getElementById('searchInput').oninput = () => {
             clearTimeout(debounce);
             debounce = setTimeout(() => {
-                lastRenderKey = "";
                 renderItems(getFilteredData());
             }, 300);
         };
 
         window.onload = () => {
-            if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark');
+                document.getElementById('themeIcon').className = 'fas fa-sun';
+            }
+            const savedFilter = localStorage.getItem('selectedFilter') || 'all';
+            filterItems(savedFilter);
             fetchSheetData();
             updateCartBadge();
             
-            setInterval(() => {
-                if ('requestIdleCallback' in window) {
-                    requestIdleCallback(() => fetchSheetData());
-                } else {
-                    fetchSheetData();
-                }
-            }, 25000); 
+            setInterval(fetchSheetData, 30000); 
         };
     </script>
-    <div id="userFormModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-  <div class="bg-white p-6 rounded-xl w-96">
-    <h2 class="text-xl font-bold mb-4">Enter Details</h2>
-
-    <input id="name" placeholder="Name" class="w-full mb-2 p-2 border">
-    <input id="phone" placeholder="Phone" class="w-full mb-2 p-2 border">
-    <input id="email" placeholder="Email" class="w-full mb-2 p-2 border">
-    <textarea id="address" placeholder="Address" class="w-full mb-2 p-2 border"></textarea>
-
-    <button onclick="submitOrder(event)" class="bg-green-600 text-white px-4 py-2 w-full">Submit Order</button>
-  </div>
-</div>
 </body>
 </html>
