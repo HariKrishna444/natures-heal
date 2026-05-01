@@ -1,87 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - Nature's Heal</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nature's Heal: Login</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
-<style>
-body {
-    background: #ffffff;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-.login-card {
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-}
-</style>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #ffffff;
+        }
+    </style>
 </head>
 
-<body class="flex items-center justify-center min-h-screen">
+<body class="flex items-center justify-center min-h-screen p-4">
 
-<div class="login-card bg-white p-8 rounded-3xl w-full max-w-md text-center border">
-    
-    <h1 class="text-3xl font-bold text-emerald-600 mb-2">Nature's Heal</h1>
-    <p class="text-gray-500 mb-6">Login to continue</p>
+    <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md border">
+        
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <div class="bg-emerald-600 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <i class="fas fa-leaf text-white text-xl"></i>
+            </div>
+            <h2 class="text-3xl font-black text-slate-800">Welcome Back</h2>
+            <p class="text-slate-500">Sign in to continue</p>
+        </div>
 
-    <!-- Google Login Button -->
-    <button onclick="googleLogin()" 
-        class="w-full flex items-center justify-center gap-3 border py-3 rounded-xl hover:bg-gray-100 transition font-semibold">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5">
-        Continue with Google
-    </button>
+        <!-- Login Form -->
+        <div class="space-y-4">
+            <div class="relative">
+                <i class="fas fa-envelope absolute left-4 top-4 text-slate-400"></i>
+                <input id="email" type="email" placeholder="Email Address"
+                    class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:border-emerald-500 outline-none">
+            </div>
 
-    <p class="text-xs text-gray-400 mt-6">
-        We only use your basic profile info for checkout.
-    </p>
-</div>
+            <div class="relative">
+                <i class="fas fa-lock absolute left-4 top-4 text-slate-400"></i>
+                <input id="password" type="password" placeholder="Password"
+                    class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:border-emerald-500 outline-none">
+            </div>
 
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+            <button onclick="login()" 
+                class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-emerald-700 transition">
+                LOGIN
+            </button>
+        </div>
 
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "naturesheal.firebaseapp.com",
-    projectId: "naturesheal",
-    storageBucket: "naturesheal.firebasestorage.app",
-    messagingSenderId: "429407436276",
-    appId: "1:429407436276:web:2cb0470eecbf9ed349cda1"
-};
+        <!-- Back -->
+        <button onclick="goBack()" 
+            class="w-full mt-6 text-slate-400 text-sm font-bold flex items-center justify-center gap-2 hover:text-emerald-600">
+            <i class="fas fa-arrow-left"></i> Back to Catalog
+        </button>
+    </div>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+    <script>
+        function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-window.googleLogin = async function() {
-    try {
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
+            if (!email || !password) {
+                alert("Please enter email and password");
+                return;
+            }
 
-        // Save to localStorage
-        localStorage.setItem('user_name', user.displayName);
-        localStorage.setItem('user_email', user.email);
-        localStorage.setItem('user_photo', user.photoURL);
+            // Fake login (replace with Firebase if needed)
+            const name = email.split('@')[0];
 
-        // Redirect logic
-        const redirect = localStorage.getItem('redirect_after_login');
+            localStorage.setItem('user_name', name);
+            localStorage.setItem('user_email', email);
+            localStorage.setItem('user_photo', 'https://i.pravatar.cc/150?u=' + email);
 
-        if (redirect === 'checkout') {
-            localStorage.removeItem('redirect_after_login');
-            window.location.href = 'index.html';
-        } else {
-            window.location.href = 'index.html';
+            // Redirect back after login
+            const redirect = localStorage.getItem('redirect_after_login');
+
+            if (redirect === 'checkout') {
+                localStorage.removeItem('redirect_after_login');
+                window.location.href = "index.html";
+            } else {
+                window.location.href = "index.html";
+            }
         }
 
-    } catch (error) {
-        alert("Login failed. Try again.");
-        console.error(error);
-    }
-};
-</script>
+        function goBack() {
+            window.location.href = "index.html";
+        }
+    </script>
 
 </body>
 </html>
