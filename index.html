@@ -179,31 +179,43 @@
 
     // Authentication Guard
     const userName = localStorage.getItem('user_name');
-    const userEmail = localStorage.getItem('user_email');
-    const userPhoto = localStorage.getItem('user_photo');
+const userEmail = localStorage.getItem('user_email');
+const userPhoto = localStorage.getItem('user_photo');
 
-    if (!userName) {
-        window.location.href = 'login.html';
-    } else {
-        document.getElementById('userNameDisplay').textContent = userName;
-        document.getElementById('userImg').src = userPhoto;
-        // Pre-fill the order form
-        document.getElementById('name').value = userName;
-        document.getElementById('email').value = userEmail;
-    }
+if (userName) {
+    // Logged in
+    document.getElementById('userNameDisplay').textContent = userName;
+    document.getElementById('userImg').src = userPhoto;
+
+    document.getElementById('name').value = userName;
+    document.getElementById('email').value = userEmail;
+} else {
+    // Guest mode
+    document.getElementById('userNameDisplay').textContent = "Guest";
+    document.getElementById('userImg').src = "https://i.pravatar.cc/40";
+}
 
     window.logout = function() {
-        localStorage.clear();
-        window.location.href = 'login.html';
-    }
+    localStorage.clear();
+    location.reload(); // stay on index as guest
+}
 
     window.placeOrder = function() {
-        if(window.appState.cart.length === 0){
-            showToast("Cart is empty", true);
-            return;
-        }
-        document.getElementById('userFormModal').classList.remove('hidden');
+    const userName = localStorage.getItem('user_name');
+
+    if (!userName) {
+        localStorage.setItem('redirect_after_login', 'checkout');
+        window.location.href = 'login.html';
+        return;
     }
+
+    if(window.appState.cart.length === 0){
+        showToast("Cart is empty", true);
+        return;
+    }
+
+    document.getElementById('userFormModal').classList.remove('hidden');
+}
 
     window.submitOrder = async function(event){
         const name = document.getElementById('name').value;
