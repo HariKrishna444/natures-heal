@@ -3,120 +3,84 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login | Nature's Heal</title>
+<title>Login - Nature's Heal</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
 <style>
 body {
+    background: #ffffff;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    background: linear-gradient(135deg, #064e3b, #10b981);
 }
-.glass {
-    backdrop-filter: blur(20px);
-    background: rgba(255,255,255,0.1);
-}
-.fade-in {
-    animation: fadeIn 0.6s ease;
-}
-@keyframes fadeIn {
-    from {opacity:0; transform: translateY(20px);}
-    to {opacity:1; transform: translateY(0);}
+
+.login-card {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 </style>
 </head>
 
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="flex items-center justify-center min-h-screen">
 
-<div class="glass p-8 rounded-3xl w-full max-w-md shadow-2xl fade-in text-white">
+<div class="login-card bg-white p-8 rounded-3xl w-full max-w-md text-center border">
+    
+    <h1 class="text-3xl font-bold text-emerald-600 mb-2">Nature's Heal</h1>
+    <p class="text-gray-500 mb-6">Login to continue</p>
 
-    <!-- Logo -->
-    <div class="text-center mb-6">
-        <i class="fas fa-leaf text-4xl mb-2"></i>
-        <h1 class="text-2xl font-bold">Nature's Heal</h1>
-        <p class="text-sm opacity-80">Login to continue</p>
-    </div>
-
-    <!-- Form -->
-    <div class="space-y-4">
-        <input id="name" type="text" placeholder="Full Name"
-            class="w-full p-3 rounded-xl bg-white/20 placeholder-white/70 outline-none focus:ring-2 focus:ring-white">
-
-        <input id="email" type="email" placeholder="Email Address"
-            class="w-full p-3 rounded-xl bg-white/20 placeholder-white/70 outline-none focus:ring-2 focus:ring-white">
-
-        <input id="photo" type="text" placeholder="Profile Image URL (optional)"
-            class="w-full p-3 rounded-xl bg-white/20 placeholder-white/70 outline-none focus:ring-2 focus:ring-white">
-
-        <button onclick="login()"
-            class="w-full bg-white text-emerald-700 py-3 rounded-xl font-bold hover:bg-emerald-50 transition">
-            Login
-        </button>
-    </div>
-
-    <!-- Divider -->
-    <div class="flex items-center my-6">
-        <div class="flex-grow h-px bg-white/30"></div>
-        <span class="px-3 text-sm">OR</span>
-        <div class="flex-grow h-px bg-white/30"></div>
-    </div>
-
-    <!-- Google Login (Mock) -->
-    <button onclick="googleLogin()"
-        class="w-full flex items-center justify-center gap-2 bg-white text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-100 transition">
-        <i class="fab fa-google"></i> Continue with Google
+    <!-- Google Login Button -->
+    <button onclick="googleLogin()" 
+        class="w-full flex items-center justify-center gap-3 border py-3 rounded-xl hover:bg-gray-100 transition font-semibold">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5">
+        Continue with Google
     </button>
 
-    <!-- Back -->
-    <p class="text-center mt-6 text-sm">
-        <a href="index.html" class="underline">← Back to Home</a>
+    <p class="text-xs text-gray-400 mt-6">
+        We only use your basic profile info for checkout.
     </p>
 </div>
 
-<script>
-function login() {
-    const name = document.getElementById('name').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const photo = document.getElementById('photo').value.trim() || "https://i.pravatar.cc/150";
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
-    if (!name || !email) {
-        alert("Please fill all details");
-        return;
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "naturesheal.firebaseapp.com",
+    projectId: "naturesheal",
+    storageBucket: "naturesheal.firebasestorage.app",
+    messagingSenderId: "429407436276",
+    appId: "1:429407436276:web:2cb0470eecbf9ed349cda1"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+window.googleLogin = async function() {
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        // Save to localStorage
+        localStorage.setItem('user_name', user.displayName);
+        localStorage.setItem('user_email', user.email);
+        localStorage.setItem('user_photo', user.photoURL);
+
+        // Redirect logic
+        const redirect = localStorage.getItem('redirect_after_login');
+
+        if (redirect === 'checkout') {
+            localStorage.removeItem('redirect_after_login');
+            window.location.href = 'index.html';
+        } else {
+            window.location.href = 'index.html';
+        }
+
+    } catch (error) {
+        alert("Login failed. Try again.");
+        console.error(error);
     }
-
-    // Save to localStorage
-    localStorage.setItem('user_name', name);
-    localStorage.setItem('user_email', email);
-    localStorage.setItem('user_photo', photo);
-
-    redirectUser();
-}
-
-// Mock Google login
-function googleLogin() {
-    const fakeName = "Google User";
-    const fakeEmail = "user@gmail.com";
-    const fakePhoto = "https://i.pravatar.cc/150?img=12";
-
-    localStorage.setItem('user_name', fakeName);
-    localStorage.setItem('user_email', fakeEmail);
-    localStorage.setItem('user_photo', fakePhoto);
-
-    redirectUser();
-}
-
-// Redirect after login
-function redirectUser() {
-    const redirect = localStorage.getItem('redirect_after_login');
-
-    if (redirect === 'checkout') {
-        localStorage.removeItem('redirect_after_login');
-        window.location.href = 'index.html';
-    } else {
-        window.location.href = 'index.html';
-    }
-}
+};
 </script>
 
 </body>
