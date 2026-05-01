@@ -37,7 +37,6 @@
 <body>
     <div id="toast">Success!</div>
 
-    <!-- Firebase Order Management -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
@@ -87,7 +86,6 @@
 
     <button id="themeToggle" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i></button>
 
-    <!-- Cart UI -->
     <div id="cartOverlay" onclick="closeCart()"></div>
     <div id="cartSidebar">
         <div class="flex flex-col h-full p-6">
@@ -106,7 +104,6 @@
         </div>
     </div>
 
-    <!-- Header -->
     <header class="sticky top-0 z-40 shadow-md">
         <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center space-x-2">
@@ -139,7 +136,6 @@
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 py-12">
         <section class="hero-banner p-6 md:p-12 mb-16 text-white shadow-xl">
             <div class="max-w-2xl relative z-10">
@@ -156,7 +152,6 @@
         <div id="gridContainer" class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8"></div>
     </main>
 
-    <!-- Footer -->
     <footer class="py-16 px-4 border-t border-slate-800">
         <div class="max-w-7xl mx-auto text-center">
             <div class="flex items-center justify-center space-x-3 mb-6">
@@ -172,7 +167,6 @@
         </div>
     </footer>
 
-    <!-- Modal Template -->
     <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm hidden">
         <div id="modalContent" class="bg-emerald-950 rounded-[2rem] max-w-2xl w-full overflow-hidden shadow-2xl border border-emerald-800"></div>
     </div>
@@ -198,7 +192,12 @@
                     let obj = {};
                     headers.forEach((h, i) => {
                         let val = (cols[i] || "").replace(/^"|"$/g, "").trim();
-                        obj[h] = (h === "id" || h === "price") ? parseFloat(val) || 0 : val;
+                        // Handle price and id conversion
+                        if(h === "id" || h === "price") {
+                            obj[h] = parseFloat(val) || 0;
+                        } else {
+                            obj[h] = val;
+                        }
                     });
                     return obj;
                 }).filter(i => i.id);
@@ -236,7 +235,9 @@
                     </div>
                     <div class="p-4">
                         <h3 class="font-bold text-emerald-700 dark:text-emerald-400 truncate">${item.name}</h3>
-                        <p class="text-xs italic text-emerald-600 mb-2">${item.scientific}</p>
+                        <p class="text-xs italic text-emerald-600 mb-1">${item.scientific}</p>
+                        <!-- Added Description Preview -->
+                        <p class="text-[10px] text-slate-500 line-clamp-2 mb-2">${item.description || ''}</p>
                         <p class="font-black text-emerald-600">₹${(item.price || 0).toFixed(2)}</p>
                     </div>
                 </div>`;
@@ -275,18 +276,42 @@
         function openModalById(id) {
             const item = window.appState.catalogData.find(i => i.id === id);
             if (!item) return;
+
+            // Process benefits as a bulleted list[cite: 3]
+            const benefitsList = (item.benefits || item.uses || "No benefits listed.")
+                .split(',')
+                .map(b => `<li class="flex items-start gap-2 mb-1"><i class="fas fa-check-circle text-emerald-500 mt-1 text-[10px]"></i> ${b.trim()}</li>`)
+                .join('');
+
             document.getElementById('modalContent').innerHTML = `
                 <div class="relative max-h-[90vh] overflow-y-auto">
-                    <img src="${item.image}" class="w-full h-48 object-cover">
-                    <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/60 text-white w-8 h-8 rounded-full"><i class="fas fa-times"></i></button>
-                    <div class="p-8 text-white">
-                        <h2 class="text-2xl font-bold text-emerald-400 mb-2">${item.name}</h2>
-                        <p class="italic mb-4">${item.scientific}</p>
-                        <p class="mb-6">${item.description || 'No description available.'}</p>
-                        <button onclick="toggleCart(${item.id}); closeModal(); toggleCartSidebar()" class="w-full bg-emerald-500 py-3 rounded-xl font-bold">Add to Cart</button>
+                    <img src="${item.image}" class="w-full h-48 sm:h-64 object-cover">
+                    <button onclick="closeModal()" class="absolute top-4 right-4 bg-black/60 text-white w-8 h-8 rounded-full z-10"><i class="fas fa-times"></i></button>
+                    <div class="p-6 sm:p-8 text-white">
+                        <div class="flex justify-between items-start mb-2">
+                            <h2 class="text-2xl font-bold text-emerald-400">${item.name}</h2>
+                            <span class="text-xl font-black text-emerald-400">₹${(item.price || 0).toFixed(2)}</span>
+                        </div>
+                        <p class="italic text-emerald-300 mb-6">${item.scientific}</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div>
+                                <h3 class="text-xs font-bold uppercase text-emerald-500 mb-2">Description</h3>
+                                <p class="text-sm leading-relaxed text-slate-300">${item.description || 'No description available.'}</p>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold uppercase text-emerald-500 mb-2">Key Benefits</h3>
+                                <ul class="text-sm text-slate-300">${benefitsList}</ul>
+                            </div>
+                        </div>
+
+                        <button onclick="toggleCart(${item.id}); closeModal(); toggleCartSidebar()" class="w-full bg-emerald-500 py-4 rounded-2xl font-bold hover:bg-emerald-600 transition-colors">
+                            Add to Cart
+                        </button>
                     </div>
                 </div>`;
             document.getElementById('modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
 
         function filterItems(type) {
@@ -298,11 +323,23 @@
         function closeCart() { document.getElementById('cartSidebar').classList.remove('active'); document.getElementById('cartOverlay').style.display = 'none'; }
         function updateCartBadge() { const b = document.getElementById('cartBadge'); b.textContent = window.appState.cart.length; b.classList.toggle('hidden', !window.appState.cart.length); }
         function toggleTheme() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); document.getElementById('themeIcon').className = isDark ? 'fas fa-sun' : 'fas fa-moon'; }
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
         function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('active'); setTimeout(() => t.classList.remove('active'), 3000); }
 
         document.getElementById('searchInput').oninput = () => renderItems(getFilteredData());
-        window.onload = () => { fetchSheetData(); updateCartBadge(); };
+        
+        window.onload = () => { 
+            fetchSheetData(); 
+            updateCartBadge(); 
+            // Polling mechanism every 15 seconds[cite: 1]
+            setInterval(() => {
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(() => fetchSheetData());
+                } else {
+                    fetchSheetData();
+                }
+            }, 20000);
+        };
     </script>
 </body>
 </html>
