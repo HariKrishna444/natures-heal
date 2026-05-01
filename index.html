@@ -31,6 +31,7 @@
         #themeToggle { position: fixed; bottom: 2rem; right: 2rem; z-index: 50; width: 50px; height: 50px; border-radius: 50%; background: #10b981; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
         #toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: white; padding: 1rem 2rem; border-radius: 1rem; font-weight: 600; box-shadow: 0 10px 15px rgba(0,0,0,0.2); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000; }
         #toast.active { transform: translateX(-50%) translateY(0); }
+        .filter-btn.active { border-bottom: 2px solid white; color: white; opacity: 1; }
     </style>
 </head>
 <body>
@@ -111,12 +112,12 @@
                 <span class="text-2xl font-bold text-white">Nature's Heal</span>
             </div>
             <nav class="hidden md:flex space-x-6 font-semibold">
-                <button onclick="filterItems('all')" class="filter-btn text-white border-b-2 border-white pb-1">All</button>
-                <button onclick="filterItems('leaf')" class="filter-btn text-emerald-100">Leaves</button>
-                <button onclick="filterItems('fruit')" class="filter-btn text-emerald-100">Fruits</button>
-                <button onclick="filterItems('wild fruit')" class="filter-btn text-emerald-100">Wild Fruits</button>
-                <button onclick="filterItems('seed')" class="filter-btn text-emerald-100">Seeds</button>
-                <button onclick="filterItems('favorites')" class="filter-btn text-emerald-100">⭐ Favorites</button>
+                <button onclick="filterItems('all')" id="btn-all" class="filter-btn text-emerald-100 pb-1">All</button>
+                <button onclick="filterItems('leaf')" id="btn-leaf" class="filter-btn text-emerald-100 pb-1">Leaves</button>
+                <button onclick="filterItems('fruit')" id="btn-fruit" class="filter-btn text-emerald-100 pb-1">Fruits</button>
+                <button onclick="filterItems('wild fruit')" id="btn-wild-fruit" class="filter-btn text-emerald-100 pb-1">Wild Fruits</button>
+                <button onclick="filterItems('seed')" id="btn-seed" class="filter-btn text-emerald-100 pb-1">Seeds</button>
+                <button onclick="filterItems('favorites')" id="btn-favorites" class="filter-btn text-emerald-100 pb-1">⭐ Favorites</button>
             </nav>
             <div class="flex items-center gap-3">
                 <button onclick="toggleCartSidebar()" class="relative p-2 text-white">
@@ -176,7 +177,7 @@
     <script>
         const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-oDJG-YtvMsbQuQP7Xea38B2ovpgWMJA6s4GYiJ0R3RLVCJhljuwwTc0MJWzJCRWv2EF/pub?output=csv`;
         
-        let lastDataHash = 0; // ✅ Lightweight hash[cite: 1]
+        let lastDataHash = 0; 
 
         window.appState = {
             catalogData: [],
@@ -189,7 +190,6 @@
                 const response = await fetch(SHEET_URL, { cache: "no-cache" });
                 const data = await response.text();
 
-                // ✅ Optimized re-render check[cite: 1]
                 const newHash = data.length;
                 if (newHash === lastDataHash) return;
                 lastDataHash = newHash;
@@ -198,7 +198,7 @@
                 const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
                 
                 window.appState.catalogData = rows.slice(1).map(row => {
-                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    const cols = row.split(/,(?=(?:(?:[^2]*"){2})*[^"]*$)/);
                     let obj = {};
                     headers.forEach((h, i) => {
                         let val = (cols[i] || "").replace(/^"|"$/g, "").trim();
@@ -212,11 +212,18 @@
         }
 
         function getFilteredData() {
-            const term = (document.getElementById('searchInput')?.value || "").toLowerCase();
-            const type = (localStorage.getItem('selectedFilter') || 'all').toLowerCase();
+            const term = (document.getElementById('searchInput')?.value || "").toLowerCase().trim();
+            const selectedType = (localStorage.getItem('selectedFilter') || 'all').toLowerCase().trim();
+            
             return window.appState.catalogData.filter(i => {
-                const itemType = (i.type || "").toLowerCase();
-                const matchType = type === 'all' || itemType === type || (type === 'favorites' && window.appState.favorites.includes(i.id));
+                const itemType = (i.type || "").toLowerCase().trim();
+                
+                // Flexible match for "wild fruit" vs "wildfruit" vs "wild-fruit"
+                const matchType = selectedType === 'all' || 
+                                 itemType === selectedType || 
+                                 (selectedType === 'wild fruit' && itemType.includes('wild')) ||
+                                 (selectedType === 'favorites' && window.appState.favorites.includes(i.id));
+                
                 const matchSearch = i.name.toLowerCase().includes(term) || i.scientific.toLowerCase().includes(term);
                 return matchType && matchSearch;
             });
@@ -225,6 +232,12 @@
         function renderItems(items) {
             const container = document.getElementById('gridContainer');
             document.getElementById('itemCount').textContent = items.length;
+            
+            if (items.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500">No botanical items found in this category.</div>`;
+                return;
+            }
+
             container.innerHTML = items.map(item => {
                 const isFav = window.appState.favorites.includes(item.id);
                 const inCart = window.appState.cart.includes(item.id);
@@ -249,6 +262,24 @@
             }).join('');
         }
 
+        function filterItems(type) {
+            localStorage.setItem('selectedFilter', type);
+            
+            // Sync mobile select if needed
+            const mobileSelect = document.getElementById('mobileFilter');
+            if (mobileSelect) mobileSelect.value = type;
+
+            // Visual active state for buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(`btn-${type.replace(' ', '-')}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            renderItems(getFilteredData());
+        }
+
+        // --- Core Utility Functions ---
         function toggleFav(id) {
             window.appState.favorites = window.appState.favorites.includes(id) ? window.appState.favorites.filter(i => i !== id) : [...window.appState.favorites, id];
             localStorage.setItem('favorites', JSON.stringify(window.appState.favorites));
@@ -305,15 +336,6 @@
             document.body.style.overflow = 'hidden';
         }
 
-        function filterItems(type) {
-            localStorage.setItem('selectedFilter', type);
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('border-b-2', 'border-white');
-                btn.classList.add('text-emerald-100');
-            });
-            renderItems(getFilteredData());
-        }
-
         function toggleCartSidebar() { renderCartItems(); document.getElementById('cartSidebar').classList.add('active'); document.getElementById('cartOverlay').style.display = 'block'; }
         function closeCart() { document.getElementById('cartSidebar').classList.remove('active'); document.getElementById('cartOverlay').style.display = 'none'; }
         function updateCartBadge() { const b = document.getElementById('cartBadge'); b.textContent = window.appState.cart.length; b.classList.toggle('hidden', !window.appState.cart.length); }
@@ -324,17 +346,14 @@
         document.getElementById('searchInput').oninput = () => renderItems(getFilteredData());
         
         window.onload = () => { 
+            const savedFilter = localStorage.getItem('selectedFilter') || 'all';
+            filterItems(savedFilter);
             fetchSheetData(); 
             updateCartBadge(); 
-            // ✅ Smart Polling: Inactive Tab Protection[cite: 1, 3]
             setInterval(() => {
                 if (document.hidden) return; 
-                if ('requestIdleCallback' in window) {
-                    requestIdleCallback(() => fetchSheetData());
-                } else {
-                    fetchSheetData();
-                }
-            }, 20000); 
+                fetchSheetData();
+            }, 25000); 
         };
     </script>
 </body>
