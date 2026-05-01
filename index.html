@@ -71,6 +71,13 @@
                 <div class="bg-white p-2 rounded-lg"><i class="fas fa-leaf text-emerald-600 text-xl"></i></div>
                 <span class="text-2xl font-bold tracking-tight text-white">Nature's Heal</span>
             </div>
+            <div class="flex items-center gap-4 order-last md:order-none">
+            <div id="userInfo" class="flex items-center gap-3 bg-emerald-800/50 p-1 pr-4 rounded-full border border-emerald-700">
+                <img id="userImg" src="" class="w-8 h-8 rounded-full border-2 border-white">
+                <span id="userNameDisplay" class="text-white text-sm font-bold hidden md:inline">User</span>
+                <button onclick="logout()" class="text-emerald-200 hover:text-white text-xs font-bold ml-2">LOGOUT</button>
+            </div>
+        </div>
             <nav class="hidden md:flex space-x-8 font-semibold">
                 <button data-filter="all" onclick="filterItems('all')" class="filter-btn text-white border-b-2 border-white pb-1">All Catalog</button>
                 <button data-filter="leaf" onclick="filterItems('leaf')" class="filter-btn text-emerald-100 hover:text-white pb-1">Leaves</button>
@@ -155,97 +162,95 @@
 
     <!-- Firebase Integration -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
-            authDomain: "naturesheal.firebaseapp.com",
-            projectId: "naturesheal",
-            storageBucket: "naturesheal.firebasestorage.app",
-            messagingSenderId: "429407436276",
-            appId: "1:429407436276:web:2cb0470eecbf9ed349cda1",
-            measurementId: "G-Y6FTZY92QP"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
+        authDomain: "naturesheal.firebaseapp.com",
+        projectId: "naturesheal",
+        storageBucket: "naturesheal.firebasestorage.app",
+        messagingSenderId: "429407436276",
+        appId: "1:429407436276:web:2cb0470eecbf9ed349cda1"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        window.loginUser = async function() {
-            try {
-                const result = await signInWithPopup(auth, provider);
-                return result.user;
-            } catch (err) {
-                console.error(err);
-                alert("Login failed");
-                return null;
-            }
+    // Authentication Guard
+    const userName = localStorage.getItem('user_name');
+    const userEmail = localStorage.getItem('user_email');
+    const userPhoto = localStorage.getItem('user_photo');
+
+    if (!userName) {
+        window.location.href = 'login.html';
+    } else {
+        document.getElementById('userNameDisplay').textContent = userName;
+        document.getElementById('userImg').src = userPhoto;
+        // Pre-fill the order form
+        document.getElementById('name').value = userName;
+        document.getElementById('email').value = userEmail;
+    }
+
+    window.logout = function() {
+        localStorage.clear();
+        window.location.href = 'login.html';
+    }
+
+    window.placeOrder = function() {
+        if(window.appState.cart.length === 0){
+            showToast("Cart is empty", true);
+            return;
+        }
+        document.getElementById('userFormModal').classList.remove('hidden');
+    }
+
+    window.submitOrder = async function(event){
+        const name = document.getElementById('name').value;
+        const phone = document.getElementById('phone').value;
+        const email = document.getElementById('email').value;
+        const address = document.getElementById('address').value;
+
+        if(!name || !phone || !email || !address){
+            showToast("Please fill all details", true);
+            return;
         }
 
-        window.placeOrder = async function() {
-            if(window.appState.cart.length === 0){
-                showToast("Cart is empty", true);
-                return;
-            }
-            const user = auth.currentUser;
-            if(!user){
-                const loggedInUser = await loginUser();
-                if(!loggedInUser) return;
-            }
-            document.getElementById('userFormModal').classList.remove('hidden');
-        }
+        const btn = event.target;
+        btn.disabled = true;
+        btn.innerText = "Processing...";
 
-        window.submitOrder = async function(event){
-            const name = document.getElementById('name').value;
-            const phone = document.getElementById('phone').value;
-            const email = document.getElementById('email').value;
-            const address = document.getElementById('address').value;
+        const items = window.appState.cart.map(c => {
+            const product = window.appState.catalogData.find(i => i.id === c.id);
+            return { name: product.name, price: product.price, qty: c.qty };
+        });
 
-            if(!name || !phone || !email || !address){
-                showToast("Please fill all details", true);
-                return;
-            }
+        const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
 
-            const btn = event.target;
-            btn.disabled = true;
-            btn.innerText = "Processing...";
-
-            const items = window.appState.cart.map(c => {
-                const product = window.appState.catalogData.find(i => i.id === c.id);
-                return { name: product.name, price: product.price, qty: c.qty };
+        try{
+            await addDoc(collection(db, "orders"), {
+                items,
+                total,
+                user: {name, phone, email, address},
+                created_at: serverTimestamp()
             });
 
-            const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
-
-            try{
-                await addDoc(collection(db, "orders"), {
-                    items,
-                    total,
-                    user: {name, phone, email, address},
-                    created_at: serverTimestamp()
-                });
-
-                showToast("Order placed successfully!");
-                window.appState.cart = [];
-                localStorage.setItem('cart', JSON.stringify([]));
-
-                renderCartItems();
-                updateCartBadge();
-                document.getElementById('userFormModal').classList.add('hidden');
-                closeCart();
-
-            } catch(e){
-                console.error(e);
-                showToast("Error placing order", true);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Submit Order";
-            }
+            showToast("Order placed successfully!");
+            window.appState.cart = [];
+            localStorage.setItem('cart', JSON.stringify([]));
+            renderCartItems();
+            updateCartBadge();
+            document.getElementById('userFormModal').classList.add('hidden');
+            closeCart();
+        } catch(e){
+            console.error(e);
+            showToast("Error placing order", true);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Submit Order";
         }
-    </script>
+    }
+</script>
 
     <script>
         const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-oDJG-YtvMsbQuQP7Xea38B2ovpgWMJA6s4GYiJ0R3RLVCJhljuwwTc0MJWzJCRWv2EF/pub?output=csv`;
