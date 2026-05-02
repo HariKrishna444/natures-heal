@@ -203,6 +203,7 @@ Cancel
         </button>
     </div>
 </div>
+    
     <!-- Firebase Integration -->
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
@@ -243,7 +244,7 @@ if (userName) {
     document.getElementById('name').value = userName;
     document.getElementById('email').value = userEmail;
     document.getElementById('ordersTabBtn').classList.remove('hidden');
-    document.getElementById('placeOrderBtn').disabled = window.appState.cart.length === 0;
+    document.getElementById('placeOrderBtn').disabled =!(window.appState && window.appState.cart && window.appState.cart.length);
 } else {
     // Guest mode
     document.getElementById('userNameDisplay').textContent = "Guest";
@@ -377,6 +378,7 @@ const items = window.appState.cart.map(c => {
             localStorage.setItem('cart', JSON.stringify([]));
             renderCartItems();
             updateCartBadge();
+            
 
             document.getElementById('userFormModal').classList.add('hidden');
             closeCart();
@@ -550,6 +552,7 @@ const items = window.appState.cart.map(c => {
             updateCartBadge();
             renderCartItems();
             renderItems(getFilteredData());
+            updatePlaceOrderButton();
         }
 
         function updateQty(id, change){
@@ -561,6 +564,7 @@ const items = window.appState.cart.map(c => {
             renderCartItems();
             updateCartBadge();
             renderItems(getFilteredData());
+            updatePlaceOrderButton();
         }
 
        function renderCartItems() {
@@ -751,6 +755,14 @@ const items = window.appState.cart.map(c => {
             b.textContent = count;
             b.classList.toggle('hidden', count === 0);
         }
+        function updatePlaceOrderButton() {
+    const btn = document.getElementById('placeOrderBtn');
+    if (!btn) return;
+
+    const hasItems = window.appState.cart && window.appState.cart.length > 0;
+    btn.disabled = !hasItems;
+    btn.classList.toggle("opacity-50", !hasItems);
+}
 
         function toggleTheme() {
             document.body.classList.toggle('dark');
@@ -843,22 +855,23 @@ window.closeOrders = function () {
     document.getElementById('ordersModal').classList.add('hidden');
 };
 
-        window.onload = () => {
-            if (localStorage.getItem('theme') === 'dark') {
-                document.body.classList.add('dark');
-                document.getElementById('themeIcon').className = 'fas fa-sun';
-                document.body.style.overflow = '';
-                
-                
-            }
-            const savedFilter = localStorage.getItem('selectedFilter') || 'all';
-            filterItems(savedFilter);
-            fetchSheetData();
-            updateCartBadge();
-            
-            setInterval(fetchSheetData, 30000); 
-        };
-        
+       window.onload = () => {
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('themeIcon').className = 'fas fa-sun';
+        document.body.style.overflow = '';
+    }
+
+    const savedFilter = localStorage.getItem('selectedFilter') || 'all';
+    filterItems(savedFilter);
+
+    fetchSheetData();
+    updateCartBadge();
+    updatePlaceOrderButton(); // ✅ ADD THIS LINE
+
+    setInterval(fetchSheetData, 30000); 
+};
+     
     </script>
 </body>
 </html>
