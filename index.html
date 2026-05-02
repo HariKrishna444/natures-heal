@@ -830,9 +830,13 @@ if (!email || !uid) {
         list.innerHTML = html;
 
     } catch (e) {
-        console.error(e);
-        list.innerHTML = "Error loading orders";
-    }
+    console.error("Orders fetch failed:", e);
+    list.innerHTML = `
+        <p class="text-red-500 text-sm">
+            Error loading orders: ${e.message}
+        </p>
+    `;
+}
 };
 
 window.closeOrders = function () {
