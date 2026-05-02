@@ -38,7 +38,6 @@
         #cartOverlay {
     position: fixed;
     inset: 0;
-    display: none;
     background: rgba(0,0,0,0.6);
     backdrop-filter: blur(4px);
     z-index: 90;
@@ -613,11 +612,14 @@ const items = window.appState.cart.map(c => {
         }
 
        function renderCartItems() {
-    const list = document.getElementById('cartItemsList');
-    const items = window.appState.cart.map(c => {
-        const product = window.appState.catalogData.find(i => i.id === c.id);
+    const items = window.appState.cart
+    .map(c => {
+        const product = window.appState.catalogData.find(
+            i => String(i.id) === String(c.id)
+        );
         return product ? { ...product, qty: c.qty } : null;
-    }).filter(i => i);
+    })
+    .filter(Boolean);
 
     const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
     document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
