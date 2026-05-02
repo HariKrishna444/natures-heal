@@ -158,7 +158,9 @@ function saveUser(user) {
 
 // ---------------- AUTO LOGIN ----------------
 onAuthStateChanged(auth, (user) => {
-  if (user) saveUser(user);
+  if (user && !localStorage.getItem('user_name')) {
+    saveUser(user);
+  }
 });
 </script>
 
