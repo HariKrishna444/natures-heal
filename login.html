@@ -34,16 +34,18 @@
             <div class="relative">
                 <i class="fas fa-envelope absolute left-4 top-4 text-slate-400"></i>
                 <input id="email" type="email" placeholder="Email Address"
-                    class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:border-emerald-500 outline-none">
+                    class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:border-emerald-500 outline-none"
+                    onkeypress="handleEnter(event)">
             </div>
 
             <div class="relative">
                 <i class="fas fa-lock absolute left-4 top-4 text-slate-400"></i>
                 <input id="password" type="password" placeholder="Password"
-                    class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:border-emerald-500 outline-none">
+                    class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:border-emerald-500 outline-none"
+                    onkeypress="handleEnter(event)">
             </div>
 
-            <button onclick="login()" 
+            <button id="loginBtn" onclick="login()" 
                 class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-emerald-700 transition">
                 LOGIN
             </button>
@@ -57,31 +59,45 @@
     </div>
 
     <script>
-        function login() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        function handleEnter(e) {
+            if (e.key === "Enter") login();
+        }
 
+        function login() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const btn = document.getElementById('loginBtn');
+
+            // Basic validation
             if (!email || !password) {
                 alert("Please enter email and password");
                 return;
             }
 
-            // Fake login (replace with Firebase if needed)
-            const name = email.split('@')[0];
-
-            localStorage.setItem('user_name', name);
-            localStorage.setItem('user_email', email);
-            localStorage.setItem('user_photo', 'https://i.pravatar.cc/150?u=' + email);
-
-            // Redirect back after login
-            const redirect = localStorage.getItem('redirect_after_login');
-
-            if (redirect === 'checkout') {
-                localStorage.removeItem('redirect_after_login');
-                window.location.href = "index.html";
-            } else {
-                window.location.href = "index.html";
+            if (!email.includes("@")) {
+                alert("Enter a valid email");
+                return;
             }
+
+            // Disable button while processing
+            btn.disabled = true;
+            btn.innerText = "Logging in...";
+
+            setTimeout(() => {
+                const name = email.split('@')[0];
+
+                localStorage.setItem('user_name', name);
+                localStorage.setItem('user_email', email);
+                localStorage.setItem('user_photo', 'https://i.pravatar.cc/150?u=' + email);
+
+                // Redirect logic
+                const redirect = localStorage.getItem('redirect_after_login');
+
+                localStorage.removeItem('redirect_after_login');
+
+                window.location.href = "index.html";
+
+            }, 800); // simulate login delay
         }
 
         function goBack() {
