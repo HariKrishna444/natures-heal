@@ -72,7 +72,7 @@
     <button id="themeToggle" onclick="toggleTheme()" title="Toggle Night Mode">
         <i class="fas fa-moon" id="themeIcon"></i>
     </button>
-    <button onclick="installApp()"
+    <button id="installBtn" onclick="installApp()"
 class="fixed bottom-20 right-2 bg-emerald-600 text-white px-4 py-2 rounded-full shadow-lg z-50">
     Install App
 </button>
@@ -988,23 +988,46 @@ window.closeOrders = function () {
 }
      if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js")
+    navigator.serviceWorker
+      .register("/natures-heal/sw.js", {
+        scope: "/natures-heal/"
+      })
       .then(reg => console.log("SW registered:", reg.scope))
       .catch(err => console.log("SW failed:", err));
   });
 }
 
-      let deferredPrompt;
+     let deferredPrompt;
+
+const installBtn = document.getElementById("installBtn");
+
+// hide button helper
+function hideInstallButton() {
+    if (installBtn) installBtn.style.display = "none";
+}
+
+// show only if install possible
+function showInstallButton() {
+    if (installBtn) installBtn.style.display = "block";
+}
+
+// If already installed (PWA standalone mode)
+if (window.matchMedia('(display-mode: standalone)').matches) {
+    hideInstallButton();
+}
 
 window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
+
     console.log("PWA install ready");
+    showInstallButton();
 });
 
 function installApp() {
     if (!deferredPrompt) {
-        showToast("Install not available. Open in Chrome browser.", true);
+        showToast("Install not available", true);
+        hideInstallButton(); // 👈 important fix
         return;
     }
 
@@ -1012,9 +1035,20 @@ function installApp() {
 
     deferredPrompt.userChoice.then((choice) => {
         console.log("User choice:", choice);
+
         deferredPrompt = null;
+        hideInstallButton(); // 👈 hide after interaction
     });
 }
+
+// extra safety: if install never triggers
+setTimeout(() => {
+    if (!deferredPrompt) {
+        hideInstallButton();
+    }
+}, 5000);
+
+        
       window.onload = () => {
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark');
