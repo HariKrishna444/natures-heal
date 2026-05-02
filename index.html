@@ -120,6 +120,7 @@
                     <option value="wild_fruit">🫐 Wild Fruits</option>
                     <option value="seed">🌰 Seeds</option>
                     <option value="favorites">⭐ Collection</option>
+                    <option value="orders">📦 My Orders</option>
                 </select>
             </div>
         </div>
@@ -723,6 +724,10 @@ const items = window.appState.cart.map(c => {
         }
 
         function filterItems(type) {
+            if (type === "orders") {
+        openOrders();
+        return;
+    }
             localStorage.setItem('selectedFilter', type);
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 const isActive = btn.dataset.filter === type;
