@@ -1,109 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nature's Heal: Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - Nature's Heal</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js"></script>
 
-    <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #ffffff;
-        }
-    </style>
+<style>
+body { background: #fff; font-family: 'Plus Jakarta Sans', sans-serif; }
+</style>
 </head>
 
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md border">
-        
-        <!-- Logo -->
-        <div class="text-center mb-8">
-            <div class="bg-emerald-600 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <i class="fas fa-leaf text-white text-xl"></i>
-            </div>
-            <h2 class="text-3xl font-black text-slate-800">Welcome Back</h2>
-            <p class="text-slate-500">Sign in to continue</p>
-        </div>
+<div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border space-y-4">
 
-        <!-- Login Form -->
-        <div class="space-y-4">
-            <div class="relative">
-                <i class="fas fa-envelope absolute left-4 top-4 text-slate-400"></i>
-                <input id="email" type="email" placeholder="Email Address"
-                    class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:border-emerald-500 outline-none"
-                    onkeypress="handleEnter(event)">
-            </div>
+<h2 class="text-2xl font-bold text-center">Login</h2>
 
-            <div class="relative">
-                <i class="fas fa-lock absolute left-4 top-4 text-slate-400"></i>
-                <input id="password" type="password" placeholder="Password"
-                    class="w-full pl-12 pr-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 focus:border-emerald-500 outline-none"
-                    onkeypress="handleEnter(event)">
-            </div>
+<!-- Email -->
+<input id="email" type="email" placeholder="Email"
+class="w-full p-3 border rounded-xl">
 
-            <button id="loginBtn" onclick="login()" 
-                class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold shadow-lg hover:bg-emerald-700 transition">
-                LOGIN
-            </button>
-        </div>
+<input id="password" type="password" placeholder="Password"
+class="w-full p-3 border rounded-xl">
 
-        <!-- Back -->
-        <button onclick="goBack()" 
-            class="w-full mt-6 text-slate-400 text-sm font-bold flex items-center justify-center gap-2 hover:text-emerald-600">
-            <i class="fas fa-arrow-left"></i> Back to Catalog
-        </button>
-    </div>
+<button onclick="emailLogin()" class="w-full bg-emerald-600 text-white py-3 rounded-xl">
+Login with Email
+</button>
 
-    <script>
-        function handleEnter(e) {
-            if (e.key === "Enter") login();
-        }
+<!-- Google -->
+<button onclick="googleLogin()" class="w-full border py-3 rounded-xl">
+Login with Google
+</button>
 
-        function login() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const btn = document.getElementById('loginBtn');
+<!-- OTP -->
+<input id="phone" type="tel" placeholder="+91XXXXXXXXXX"
+class="w-full p-3 border rounded-xl">
 
-            // Basic validation
-            if (!email || !password) {
-                alert("Please enter email and password");
-                return;
-            }
+<div id="recaptcha"></div>
 
-            if (!email.includes("@")) {
-                alert("Enter a valid email");
-                return;
-            }
+<button onclick="sendOTP()" class="w-full bg-blue-600 text-white py-3 rounded-xl">
+Send OTP
+</button>
 
-            // Disable button while processing
-            btn.disabled = true;
-            btn.innerText = "Logging in...";
+<input id="otp" placeholder="Enter OTP"
+class="w-full p-3 border rounded-xl">
 
-            setTimeout(() => {
-                const name = email.split('@')[0];
+<button onclick="verifyOTP()" class="w-full bg-green-600 text-white py-3 rounded-xl">
+Verify OTP
+</button>
 
-                localStorage.setItem('user_name', name);
-                localStorage.setItem('user_email', email);
-                localStorage.setItem('user_photo', 'https://i.pravatar.cc/150?u=' + email);
+</div>
 
-                // Redirect logic
-                const redirect = localStorage.getItem('redirect_after_login');
+<script>
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "naturesheal.firebaseapp.com",
+  projectId: "naturesheal"
+};
 
-                localStorage.removeItem('redirect_after_login');
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 
-                window.location.href = "index.html";
+// ✅ Auto persistence
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
-            }, 800); // simulate login delay
-        }
+// ------------------ EMAIL LOGIN ------------------
+function emailLogin() {
+  const email = email.value;
+  const password = password.value;
 
-        function goBack() {
-            window.location.href = "index.html";
-        }
-    </script>
+  auth.signInWithEmailAndPassword(email, password)
+    .then(res => saveUser(res.user))
+    .catch(err => alert(err.message));
+}
+
+// ------------------ GOOGLE LOGIN ------------------
+function googleLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  auth.signInWithPopup(provider)
+    .then(res => saveUser(res.user))
+    .catch(err => alert(err.message));
+}
+
+// ------------------ OTP LOGIN ------------------
+window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha', {
+  size: 'invisible'
+});
+
+function sendOTP() {
+  const phone = document.getElementById('phone').value;
+
+  auth.signInWithPhoneNumber(phone, window.recaptchaVerifier)
+    .then(result => {
+      window.confirmationResult = result;
+      alert("OTP sent");
+    })
+    .catch(err => alert(err.message));
+}
+
+function verifyOTP() {
+  const code = document.getElementById('otp').value;
+
+  confirmationResult.confirm(code)
+    .then(res => saveUser(res.user))
+    .catch(err => alert("Invalid OTP"));
+}
+
+// ------------------ SAVE USER ------------------
+function saveUser(user) {
+  localStorage.setItem('user_name', user.displayName || "User");
+  localStorage.setItem('user_email', user.email || "");
+  localStorage.setItem('user_photo', user.photoURL || "");
+
+  redirectUser();
+}
+
+// ------------------ REDIRECT ------------------
+function redirectUser() {
+  const redirect = localStorage.getItem('redirect_after_login');
+  localStorage.removeItem('redirect_after_login');
+
+  window.location.href = "index.html";
+}
+
+// ------------------ AUTO LOGIN ------------------
+auth.onAuthStateChanged(user => {
+  if (user) {
+    saveUser(user);
+  }
+});
+</script>
 
 </body>
 </html>
