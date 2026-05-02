@@ -244,6 +244,9 @@ if (userName) {
     document.getElementById('email').value = userEmail;
     document.getElementById('ordersTabBtn').classList.remove('hidden');
     document.getElementById('placeOrderBtn').disabled = window.appState.cart.length === 0;
+    setTimeout(() => {
+    openOrders();   // auto-load orders after login
+}, 500);
 } else {
     // Guest mode
     document.getElementById('userNameDisplay').textContent = "Guest";
@@ -778,14 +781,22 @@ const items = window.appState.cart.map(c => {
             }, 300);
         };
 
-      window.openOrders = async function () {
+     window.openOrders = async function () {
 
-    const email = localStorage.getItem("user_email");
     const uid = localStorage.getItem("user_uid");
 
-if (!email || !uid) {
-    showToast("Please login", true);
-    return;
+    if (!uid) {
+        showToast("Please login", true);
+        return;
+    }
+
+         if (!window.orderInterval) {
+    window.orderInterval = setInterval(() => {
+        const modal = document.getElementById('ordersModal');
+        if (!modal.classList.contains('hidden')) {
+            openOrders();
+        }
+    }, 15000);
 }
 
     document.getElementById('ordersModal').classList.remove('hidden');
@@ -803,7 +814,10 @@ if (!email || !uid) {
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            list.innerHTML = `<p class="text-center opacity-50">No orders found</p>`;
+            list.innerHTML = `
+                <p class="text-center opacity-50">
+                    No orders found yet
+                </p>`;
             return;
         }
 
@@ -813,15 +827,20 @@ if (!email || !uid) {
             const data = doc.data();
 
             html += `
-                <div class="border p-4 rounded-xl">
+                <div class="border p-4 rounded-xl mb-3 bg-white dark:bg-slate-800">
                     <div class="flex justify-between mb-2">
-                        <span class="font-bold">₹${data.total}</span>
+                        <span class="font-bold text-emerald-600">
+                            ₹${data.total}
+                        </span>
                         <span class="text-xs opacity-60">
                             ${data.created_at ? data.created_at.toDate().toLocaleString() : "Just now"}
                         </span>
                     </div>
-                    <ul class="text-sm">
-                        ${data.items.map(i => `<li>• ${escapeHTML(i.name)} x ${i.qty}</li>`).join('')}
+
+                    <ul class="text-sm space-y-1">
+                        ${data.items.map(i => `
+                            <li>• ${escapeHTML(i.name)} x ${i.qty}</li>
+                        `).join('')}
                     </ul>
                 </div>
             `;
@@ -835,8 +854,14 @@ if (!email || !uid) {
     }
 };
 
-window.closeOrders = function () {
+
+            window.closeOrders = function () {
     document.getElementById('ordersModal').classList.add('hidden');
+
+    if (window.orderInterval) {
+        clearInterval(window.orderInterval);
+        window.orderInterval = null;
+    }
 };
 
         window.onload = () => {
