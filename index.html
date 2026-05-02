@@ -32,6 +32,9 @@
     width: 100%;
     max-width: 400px;
     height: 100vh;
+            
+    display: flex;
+    flex-direction: column;
 
     background: var(--bg-card);
     color: var(--text-main);
@@ -41,6 +44,9 @@
     box-shadow: -10px 0 30px rgba(0,0,0,0.2);
     border-left: 1px solid var(--border-color);
 }
+        #cartItemsList {
+        min-height: 0; /* important for flex scrolling on mobile */
+        }
         #cartSidebar.active { right: 0; }
         #cartOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 90; display: none; }
         footer { background-color: var(--footer-bg); }
@@ -69,16 +75,28 @@
                 <h2 class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Shopping Cart</h2>
                 <button onclick="closeCart()" class="text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <div id="cartItemsList" class="flex-grow overflow-y-auto space-y-4 pr-2"></div>
-            <div class="mt-6 pt-6 border-t border-emerald-200 dark:border-emerald-800">
-                <div class="flex justify-between items-center mb-4 px-2">
-                   <span class="font-bold text-emerald-600 dark:text-emerald-400">Total Amount:</span>
-                    <span id="cartTotal" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹0.00</span>
-                </div>
-                <button id="placeOrderBtn" onclick="placeOrder()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all flex justify-center items-center gap-2"><span>Place Order</span></button>
-            </div>
-        </div>
+            <div id="cartItemsList"
+     class="flex-1 overflow-y-auto space-y-4 pr-2 pb-4">
+</div>
+
+<!-- Sticky footer -->
+<div class="mt-auto pt-4 border-t border-emerald-200 dark:border-emerald-800 bg-[var(--bg-card)]">
+    <div class="flex justify-between items-center mb-4 px-2">
+        <span class="font-bold text-emerald-600 dark:text-emerald-400">
+            Total Amount:
+        </span>
+        <span id="cartTotal"
+              class="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+            ₹0.00
+        </span>
     </div>
+
+    <button id="placeOrderBtn"
+            onclick="placeOrder()"
+            class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all flex justify-center items-center gap-2">
+        <span>Place Order</span>
+    </button>
+</div>
 
     <header class="sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap justify-between items-center gap-4">
