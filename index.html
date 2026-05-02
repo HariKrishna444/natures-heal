@@ -85,6 +85,7 @@
                 <button data-filter="wild_fruit" onclick="filterItems('wild_fruit')" class="filter-btn text-emerald-100 hover:text-white pb-1">Wild Fruits</button>
                 <button data-filter="seed" onclick="filterItems('seed')" class="filter-btn text-emerald-100 hover:text-white pb-1">Seeds</button>
                 <button data-filter="favorites" onclick="filterItems('favorites')" class="filter-btn text-emerald-100 hover:text-white pb-1">Collection ⭐</button>
+                <button id="ordersTabBtn" onclick="openOrders()" class="filter-btn text-emerald-100 hover:text-white pb-1 hidden"> Orders 📦</button>
             </nav>
             <div class="relative flex items-center gap-3">
                 <button onclick="toggleCartSidebar()" class="relative p-2 text-white hover:text-emerald-200">
@@ -159,11 +160,28 @@
             </div>
         </div>
     </div>
-
+<!-- Orders Modal -->
+<div id="ordersModal" class="hidden fixed inset-0 bg-black/70 z-[120] flex justify-center items-center p-4">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
+        <h2 class="text-2xl font-bold mb-6 text-emerald-600">My Orders</h2>
+        <div id="ordersList" class="space-y-4"></div>
+        <button onclick="closeOrders()" class="mt-6 w-full py-3 bg-gray-200 dark:bg-slate-700 rounded-xl font-bold">
+            Close
+        </button>
+    </div>
+</div>
     <!-- Firebase Integration -->
     <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+    import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  serverTimestamp,
+  getDocs,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
@@ -176,6 +194,7 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    window.db = db;
 
     // Authentication Guard
     const userName = localStorage.getItem('user_name');
@@ -189,6 +208,7 @@ if (userName) {
 
     document.getElementById('name').value = userName;
     document.getElementById('email').value = userEmail;
+    document.getElementById('ordersTabBtn').classList.remove('hidden');
 } else {
     // Guest mode
     document.getElementById('userNameDisplay').textContent = "Guest";
@@ -218,50 +238,73 @@ if (userName) {
 }
 
     window.submitOrder = async function(event){
-        const name = document.getElementById('name').value;
-        const phone = document.getElementById('phone').value;
-        const email = document.getElementById('email').value;
-        const address = document.getElementById('address').value;
+    const btn = event.target;
+    if (btn.disabled) return;
 
-        if(!name || !phone || !email || !address){
-            showToast("Please fill all details", true);
-            return;
-        }
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const address = document.getElementById('address').value.trim();
 
-        const btn = event.target;
-        btn.disabled = true;
-        btn.innerText = "Processing...";
+    if (!name) return showToast("Enter your name", true);
+    if (!phone) return showToast("Enter phone number", true);
+    if (!email) return showToast("Enter email", true);
+    if (!address) return showToast("Enter address", true);
 
-        const items = window.appState.cart.map(c => {
-            const product = window.appState.catalogData.find(i => i.id === c.id);
-            return { name: product.name, price: product.price, qty: c.qty };
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailRegex.test(email)) return showToast("Invalid email", true);
+
+    const phoneRegex = /^(\+91)?[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) return showToast("Invalid phone number", true);
+
+    const sanitize = str => str.replace(/[<>"'`]/g, "").trim();
+
+    const safeName = sanitize(name);
+    const safeAddress = sanitize(address);
+
+    btn.disabled = true;
+    btn.innerText = "Processing...";
+
+    const items = window.appState.cart.map(c => {
+        const product = window.catalogMap.get(c.id);
+        return product ? { name: product.name, price: product.price, qty: c.qty } : null;
+    }).filter(Boolean);
+
+    if (!items.length) {
+        showToast("Cart error. Try again.", true);
+        return;
+    }
+
+    const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
+
+    try{
+        await addDoc(collection(db, "orders"), {
+            items,
+            total,
+            user: {
+                name: safeName,
+                phone,
+                email,
+                address: safeAddress
+            },
+            created_at: serverTimestamp()
         });
 
-        const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
-
-        try{
-            await addDoc(collection(db, "orders"), {
-                items,
-                total,
-                user: {name, phone, email, address},
-                created_at: serverTimestamp()
-            });
-
-            showToast("Order placed successfully!");
-            window.appState.cart = [];
-            localStorage.setItem('cart', JSON.stringify([]));
-            renderCartItems();
-            updateCartBadge();
-            document.getElementById('userFormModal').classList.add('hidden');
-            closeCart();
-        } catch(e){
-            console.error(e);
-            showToast("Error placing order", true);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "Submit Order";
-        }
+        showToast("Order placed successfully!");
+        window.appState.cart = [];
+        localStorage.setItem('cart', JSON.stringify([]));
+        renderCartItems();
+        updateCartBadge();
+        document.getElementById('userFormModal').classList.add('hidden');
+        closeCart();
+    } catch(e){
+        console.error(e);
+        showToast("Error placing order", true);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Submit Order";
     }
+}
 </script>
 
     <script>
@@ -303,7 +346,7 @@ if (userName) {
                     return obj;
                 }).filter(i => i.id);
 
-                if (JSON.stringify(newData) !== JSON.stringify(window.appState.catalogData)) {
+              if (newData.length !== window.appState.catalogData.length) {
                     window.appState.catalogData = newData;
                     renderItems(getFilteredData());
                 }
@@ -323,10 +366,33 @@ if (userName) {
                 return matchesType && matchesSearch;
             });
         }
+        const escapeHTML = str =>
+  String(str || "").replace(/[&<>"']/g, tag => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[tag]));
+      const safeURL = url => {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== "https:") return "https://via.placeholder.com/300x200?text=No+Image";
 
+    // Optional: block suspicious domains
+    if (u.hostname.includes("javascript") || u.hostname.length > 100) {
+      return "fallback.png";
+    }
+
+    return u.href;
+  } catch {
+    return "https://via.placeholder.com/300x200?text=No+Image";
+  }
+};
         function renderItems(items) {
             const container = document.getElementById('gridContainer');
             const countDisplay = document.getElementById('itemCount');
+            
             if (!container) return;
             
             container.innerHTML = '';
@@ -344,7 +410,7 @@ if (userName) {
                 const cardHtml = `
                     <div class="nature-card card-gradient rounded-3xl overflow-hidden cursor-pointer group relative" onclick="openModalById(${item.id})">
                         <div class="h-28 sm:h-36 md:h-56 overflow-hidden relative">
-                            <img src="${item.image}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <img src="${safeURL(item.image)}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                             <div class="absolute top-1 left-1 bg-white/90 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase text-emerald-700">
                                 ${String(item.type || "botanical").replace('_', ' ')}
                             </div>
@@ -359,11 +425,11 @@ if (userName) {
                         </div>
                         <div class="p-3 sm:p-4">
                             <div class="flex justify-between items-start mb-1 gap-2">
-                                <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">${item.name}</h3>
+                                <h3 class="text-xs sm:text-base font-bold text-emerald-700 dark:text-emerald-400 leading-tight">${escapeHTML(item.name)}</h3>
                                 <span class="text-xs font-black text-emerald-600 whitespace-nowrap">₹${(item.price || 0).toFixed(2)}</span>
                             </div>
-                            <p class="text-[9px] italic text-emerald-600 mb-1">${item.scientific || ''}</p>
-                            <p class="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">${item.description || ''}</p>
+                            <p class="text-[9px] italic text-emerald-600 mb-1">${escapeHTML(item.scientific)}</p>
+                            <p class="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">${escapeHTML(item.description)}</p>
                         </div>
                     </div>`;
                 container.insertAdjacentHTML('beforeend', cardHtml);
@@ -410,7 +476,7 @@ if (userName) {
 
             list.innerHTML = items.length ? items.map(i => `
                 <div class="flex items-center gap-4 p-3 rounded-xl border dark:border-slate-700">
-                    <img src="${i.image}" class="w-16 h-16 rounded-xl object-cover">
+                    <img src="${safeURL(i.image)}" class="w-16 h-16 rounded-xl object-cover">
                     <div class="flex-grow">
                         <h4 class="font-bold text-sm">${i.name}</h4>
                         <div class="flex items-center gap-2 mt-2">
@@ -422,27 +488,88 @@ if (userName) {
                     <p class="text-xs font-bold">₹${(i.price * i.qty).toFixed(0)}</p>
                 </div>
             `).join('') : `<p class="text-center py-10 opacity-50">Cart empty</p>`;
+          
         }
 
         function openModalById(id) {
             const item = window.appState.catalogData.find(i => i.id == id);
             if (item) {
                 document.getElementById('modalContent').innerHTML = `
-                <div class="relative max-h-[90vh] overflow-y-auto">
-                    <div class="relative"><div class="h-44 sm:h-56 md:h-72 w-full overflow-hidden"><img src="${item.image}" class="w-full h-full object-cover"></div>
-                    <button onclick="closeModal()" class="absolute top-3 right-3 bg-black/60 text-white w-9 h-9 rounded-full flex items-center justify-center z-10"><i class="fas fa-times"></i></button></div>
-                    <div class="p-4 sm:p-6 md:p-8 text-white">
-                        <div class="flex justify-between items-start gap-2 mb-2"><h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 leading-tight">${item.name}</h2><span class="text-base sm:text-xl font-black text-emerald-400">₹${(item.price || 0).toFixed(2)}</span></div>
-                        <p class="text-xs sm:text-sm italic text-emerald-300 mb-5">${item.scientific || ''}</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div><h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Description</h4><p class="text-xs sm:text-sm text-white leading-relaxed">${item.description || 'No description available.'}</p></div>
-                            <div><h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">Key Benefits</h4><ul class="space-y-1">${(item.uses || "").split(',').map(u => `<li class="text-xs sm:text-sm text-white flex items-start"><i class="fas fa-circle text-[5px] text-emerald-500 mr-2 mt-2"></i>${u.trim()}</li>`).join('')}</ul></div>
-                        </div>
-                        <button onclick="addToCartSimple(${item.id}); closeModal(); toggleCartSidebar();" class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold">Add to Cart</button>
-                    </div>
-                </div>`;
+<div class="relative max-h-[90vh] overflow-y-auto">
+    
+    <!-- Image -->
+    <div class="relative">
+        <div class="h-44 sm:h-56 md:h-72 w-full overflow-hidden">
+           <img src="${safeURL(item.image)}" class="w-full h-full object-cover">
+        </div>
+        <button onclick="closeModal()" 
+            class="absolute top-3 right-3 bg-black/60 text-white w-9 h-9 rounded-full flex items-center justify-center z-10">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+
+    <!-- Content -->
+    <div class="p-4 sm:p-6 md:p-8 text-white">
+
+        <!-- Title + Price -->
+        <div class="flex justify-between items-start gap-2 mb-2">
+            <h2 class="text-lg sm:text-2xl md:text-3xl font-bold text-emerald-400 leading-tight">
+                ${escapeHTML(item.name)}
+            </h2>
+            <span class="text-base sm:text-xl font-black text-emerald-400">
+                ₹${(item.price || 0).toFixed(2)}
+            </span>
+        </div>
+
+        <!-- Scientific Name -->
+        <p class="text-xs sm:text-sm italic text-emerald-300 mb-5">
+            ${escapeHTML(item.scientific || '')}
+        </p>
+
+        <!-- Description + Uses -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+            <!-- Description -->
+            <div>
+                <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">
+                    Description
+                </h4>
+                <p class="text-xs sm:text-sm text-white leading-relaxed">
+                    ${escapeHTML(item.description || 'No description available.')}
+                </p>
+            </div>
+
+            <!-- Uses -->
+            <div>
+                <h4 class="text-[10px] font-bold uppercase text-emerald-500 mb-2">
+                    Key Benefits
+                </h4>
+                <ul class="space-y-1">
+                    ${(item.uses || "")
+                        .split(',')
+                        .filter(u => u.trim() !== "")
+                        .map(u => `
+                            <li class="text-xs sm:text-sm text-white flex items-start">
+                                <i class="fas fa-circle text-[5px] text-emerald-500 mr-2 mt-2"></i>
+                                ${escapeHTML(u.trim())}
+                            </li>
+                        `).join('')}
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- CTA -->
+        <button onclick="addToCartSimple(${item.id}); closeModal(); toggleCartSidebar();" 
+            class="w-full bg-[#10b981] text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition">
+            Add to Cart
+        </button>
+
+    </div>
+</div>
+`;
                 document.getElementById('modal').classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
+                document.body.style.overflow = '';
             }
         }
 
@@ -489,7 +616,7 @@ if (userName) {
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
 
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = 'auto'; }
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = ''; }
         
         function showToast(msg, isError = false) {
             const t = document.getElementById('toast');
@@ -508,6 +635,60 @@ if (userName) {
             }, 300);
         };
 
+        window.openOrders = async function () {
+    const email = localStorage.getItem('user_email');
+
+    if (!email) {
+        showToast("Please login to view orders", true);
+        return;
+    }
+
+    document.getElementById('ordersModal').classList.remove('hidden');
+
+    const list = document.getElementById('ordersList');
+    list.innerHTML = "Loading...";
+
+    try {
+        const q = query(collection(window.db, "orders"), where("user.email", "==", email));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            list.innerHTML = `<p class="text-center opacity-50">No orders found</p>`;
+            return;
+        }
+
+        let html = "";
+
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+
+            html += `
+                <div class="border p-4 rounded-xl">
+                    <div class="flex justify-between mb-2">
+                        <span class="font-bold">₹${data.total}</span>
+                        <span class="text-xs opacity-60">
+                            ${data.created_at?.toDate().toLocaleString()}
+                        </span>
+                    </div>
+                    <ul class="text-sm">
+                       ${data.items.map(i => `<li>• ${escapeHTML(i.name)} x ${i.qty}</li>`)}
+                    </ul>
+                </div>
+            `;
+        });
+
+        list.innerHTML = html;
+
+    } catch (e) {
+        console.error(e);
+        list.innerHTML = "Error loading orders";
+    }
+};
+
+window.closeOrders = function () {
+    document.getElementById('ordersModal').classList.add('hidden');
+};
+
         window.onload = () => {
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark');
@@ -520,6 +701,7 @@ if (userName) {
             
             setInterval(fetchSheetData, 30000); 
         };
+        
     </script>
 </body>
 </html>
