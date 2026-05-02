@@ -816,18 +816,25 @@ payNow(totalAmount, {
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
 
-        function payNow(totalAmount, orderData) {
+       function payNow(totalAmount, orderData) {
 
     fetch("/create-order", {
         method: "POST",
         body: JSON.stringify({ amount: totalAmount }),
         headers: { "Content-Type": "application/json" }
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) throw new Error("Server error in create-order");
+        return res.json();
+    })
     .then(order => {
 
+        if (!order || !order.id) {
+            throw new Error("Invalid order response from server");
+        }
+
         const options = {
-            key: "rzp_test_SkZ2ZeOudkj7PI", // your KEY_ID
+            key: "rzp_test_SkZ2ZeOudkj7PI",
             amount: order.amount,
             currency: "INR",
             name: "Nature's Heal",
@@ -835,26 +842,25 @@ payNow(totalAmount, {
             order_id: order.id,
 
             handler: function (response) {
-                // ✅ PAYMENT SUCCESS
                 console.log("Payment success:", response);
-
-                // now save order in Firebase
                 saveOrderAfterPayment(response, orderData);
             },
 
-            theme: {
-                color: "#10b981"
-            }
+            theme: { color: "#10b981" }
         };
 
         const rzp = new Razorpay(options);
 
         rzp.on("payment.failed", function (response) {
+            console.log("Payment failed:", response);
             alert("Payment Failed");
-            console.log(response.error);
         });
 
         rzp.open();
+    })
+    .catch(err => {
+        console.error("Razorpay error:", err);
+        showToast("Payment setup failed: " + err.message, true);
     });
 }
 
