@@ -6,6 +6,7 @@
     <meta http-equiv="Cache-Control" content="max-age=31536000">
     <title>Nature's Heal: Leaves & Fruits Encyclopedia</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap');
@@ -261,16 +262,19 @@ Cancel
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
     window.db = db;
+    window.addDoc = addDoc;
+    window.collection = collection;
+    window.serverTimestamp = serverTimestamp;
     window.query = query;
     window.where = where;
     window.getDocs = getDocs;
-    window.collection = collection;
 
     // Authentication Guard
     const userName = localStorage.getItem('user_name');
-const userEmail = localStorage.getItem('user_email');
-const userPhoto = localStorage.getItem('user_photo');
+    const userEmail = localStorage.getItem('user_email');
+    const userPhoto = localStorage.getItem('user_photo');
 
 if (userName) {
     // Logged in
@@ -393,19 +397,20 @@ const items = window.appState.cart.map(c => {
     const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
 
     try{
-        await addDoc(collection(db, "orders"), {
-            items,
-            total,
-            user: {
-                name: safeName,
-                phone,
-                email,
-                address: safeAddress
-            },
-            user_uid: uid,
-            user_email: email, // 🔥 add this
-            created_at: serverTimestamp()
-        });
+        const totalAmount = total * 100; // convert to paise
+
+payNow(totalAmount, {
+    items,
+    total,
+    user: {
+        name: safeName,
+        phone,
+        email,
+        address: safeAddress
+    },
+    user_uid: uid,
+    user_email: email
+});
 
         showToast("🎉 Order placed successfully!");
 
@@ -811,6 +816,48 @@ const items = window.appState.cart.map(c => {
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
 
+        function payNow(totalAmount, orderData) {
+
+    fetch("/create-order", {
+        method: "POST",
+        body: JSON.stringify({ amount: totalAmount }),
+        headers: { "Content-Type": "application/json" }
+    })
+    .then(res => res.json())
+    .then(order => {
+
+        const options = {
+            key: "rzp_test_SkZ2ZeOudkj7PI", // your KEY_ID
+            amount: order.amount,
+            currency: "INR",
+            name: "Nature's Heal",
+            description: "Herbal Product Order",
+            order_id: order.id,
+
+            handler: function (response) {
+                // ✅ PAYMENT SUCCESS
+                console.log("Payment success:", response);
+
+                // now save order in Firebase
+                saveOrderAfterPayment(response, orderData);
+            },
+
+            theme: {
+                color: "#10b981"
+            }
+        };
+
+        const rzp = new Razorpay(options);
+
+        rzp.on("payment.failed", function (response) {
+            alert("Payment Failed");
+            console.log(response.error);
+        });
+
+        rzp.open();
+    });
+}
+
         function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = ''; }
         
         function showToast(msg, isError = false) {
@@ -902,8 +949,38 @@ if (!email || !uid) {
 
 window.closeOrders = function () {
     document.getElementById('ordersModal').classList.add('hidden');
-    document.body.style.overflow = ''; // ✅ restore scrolling
+    document.body.style.overflow = '';
 };
+
+        async function saveOrderAfterPayment(paymentResponse, orderData) {
+    try {
+        await addDoc(collection(db, "orders"), {
+            ...orderData,
+            payment: {
+                id: paymentResponse.razorpay_payment_id,
+                order_id: paymentResponse.razorpay_order_id,
+                signature: paymentResponse.razorpay_signature
+            },
+            created_at: serverTimestamp()
+        });
+
+        showToast("🎉 Payment successful & order saved!");
+
+        window.appState.cart.length = 0;
+        localStorage.setItem('cart', JSON.stringify([]));
+
+        renderCartItems();
+        updateCartBadge();
+
+        document.getElementById('userFormModal').classList.add('hidden');
+        closeCart();
+        openOrders();
+
+    } catch (e) {
+        console.error(e);
+        showToast("Payment succeeded but order save failed", true);
+    }
+}
 
        window.onload = () => {
     if (localStorage.getItem('theme') === 'dark') {
@@ -911,7 +988,7 @@ window.closeOrders = function () {
         document.getElementById('themeIcon').className = 'fas fa-sun';
         document.body.style.overflow = '';
     }
-
+};
     const savedFilter = localStorage.getItem('selectedFilter') || 'all';
     filterItems(savedFilter);
 
