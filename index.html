@@ -871,6 +871,7 @@ if (!email || !uid) {
 
 window.closeOrders = function () {
     document.getElementById('ordersModal').classList.add('hidden');
+    document.body.style.overflow = ''; // ✅ restore scrolling
 };
 
        window.onload = () => {
