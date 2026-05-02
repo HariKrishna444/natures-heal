@@ -25,19 +25,7 @@
         header { background-color: var(--header-bg) !important; border-bottom: 1px solid var(--border-color); }
         .nature-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .nature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
-        #cartSidebar {
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 100%;
-    max-width: 400px;
-
-    height: 100vh; /* ❌ replace this */
-    height: 100dvh; /* ✅ add this */
-
-    display: flex;
-    flex-direction: column;
-}        #cartSidebar .flex {
+              #cartSidebar .flex {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -49,8 +37,32 @@
         #cartSidebar {
     padding-bottom: env(safe-area-inset-bottom);
 }
-        #cartSidebar.active { right: 0; }
-        #cartOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 90; display: none; }
+        #cartOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 90;
+    display: none;
+}
+       #cartSidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 400px;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+#cartSidebar.active {
+    transform: translateX(0);
+}
         footer { background-color: var(--footer-bg); }
         #themeToggle { position: fixed; bottom: 2rem; right: 2rem; z-index: 50; width: 50px; height: 50px; border-radius: 50%; background: #10b981; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
         .modal-animate { animation: modalIn 0.3s ease-out; }
