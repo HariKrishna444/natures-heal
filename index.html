@@ -982,21 +982,21 @@ window.closeOrders = function () {
     }
 }
 
-       window.onload = () => {
+      window.onload = () => {
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark');
         document.getElementById('themeIcon').className = 'fas fa-sun';
-        document.body.style.overflow = '';
     }
-};
+
     const savedFilter = localStorage.getItem('selectedFilter') || 'all';
     filterItems(savedFilter);
 
     fetchSheetData();
     updateCartBadge();
-    updatePlaceOrderButton(); // ✅ ADD THIS LINE
+    updatePlaceOrderButton();
 
-    setInterval(fetchSheetData, 30000); 
+    setInterval(fetchSheetData, 30000);
+};
     </script>
 </body>
 </html>
