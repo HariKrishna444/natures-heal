@@ -1013,12 +1013,17 @@ window.addEventListener("beforeinstallprompt", (e) => {
 });
 
 function installApp() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(() => {
-            deferredPrompt = null;
-        });
+    if (!deferredPrompt) {
+        showToast("Install not available. Open in Chrome browser.", true);
+        return;
     }
+
+    deferredPrompt.prompt();
+
+    deferredPrompt.userChoice.then((choice) => {
+        console.log("User choice:", choice);
+        deferredPrompt = null;
+    });
 }
       window.onload = () => {
     if (localStorage.getItem('theme') === 'dark') {
