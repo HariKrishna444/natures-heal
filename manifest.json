@@ -1,7 +1,8 @@
 {
   "name": "Nature's Heal",
   "short_name": "NatureHeal",
-  "start_url": "/",
+  "start_url": "/natures-heal/",
+  "scope": "/natures-heal/"
   "display": "standalone",
   "background_color": "#064e3b",
   "theme_color": "#059669",
