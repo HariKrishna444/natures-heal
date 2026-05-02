@@ -25,7 +25,22 @@
         header { background-color: var(--header-bg) !important; border-bottom: 1px solid var(--border-color); }
         .nature-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .nature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
-        #cartSidebar { position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px; height: 100vh; background: var(--cart-bg); z-index: 100; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -10px 0 30px rgba(0,0,0,0.1); border-left: 1px solid var(--border-color); }
+        #cartSidebar {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 100%;
+    max-width: 400px;
+    height: 100vh;
+
+    background: var(--bg-card);
+    color: var(--text-main);
+
+    z-index: 100;
+    transition: right 0.4s ease;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+    border-left: 1px solid var(--border-color);
+}
         #cartSidebar.active { right: 0; }
         #cartOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 90; display: none; }
         footer { background-color: var(--footer-bg); }
@@ -51,13 +66,13 @@
     <div id="cartSidebar">
         <div class="flex flex-col h-full p-6">
             <div class="flex justify-between items-center mb-8 border-b border-emerald-200 dark:border-emerald-800 pb-4">
-                <h2 class="text-2xl font-bold text-emerald-600">Shopping Cart</h2>
+                <h2 class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">Shopping Cart</h2>
                 <button onclick="closeCart()" class="text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
             </div>
             <div id="cartItemsList" class="flex-grow overflow-y-auto space-y-4 pr-2"></div>
             <div class="mt-6 pt-6 border-t border-emerald-200 dark:border-emerald-800">
                 <div class="flex justify-between items-center mb-4 px-2">
-                    <span class="font-bold text-slate-600 dark:text-emerald-600">Total Amount:</span>
+                    <span class="font-bold text-slate-700 dark:text-slate-300">Total Amount:</span>
                     <span id="cartTotal" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹0.00</span>
                 </div>
                 <button id="placeOrderBtn" onclick="placeOrder()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all flex justify-center items-center gap-2"><span>Place Order</span></button>
@@ -182,6 +197,7 @@
   query,
   where
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
@@ -244,8 +260,12 @@ if (userName) {
 }
     window.submitOrder = async function(event){
     const btn = event.target;
-    if (btn.dataset.loading === "true") return;
-    btn.dataset.loading = "true";
+
+if (btn.disabled || btn.dataset.loading === "true") return;
+
+btn.disabled = true;
+btn.dataset.loading = "true";
+btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
 
     const name = document.getElementById('name').value.trim();
     const phone = document.getElementById('phone').value.trim();
@@ -319,6 +339,7 @@ const items = window.appState.cart.map(c => {
                 email,
                 address: safeAddress
             },
+            user_uid: uid,
             user_email: email, // 🔥 add this
             created_at: serverTimestamp()
         });
@@ -516,33 +537,75 @@ const items = window.appState.cart.map(c => {
             renderItems(getFilteredData());
         }
 
-        function renderCartItems() {
-            const list = document.getElementById('cartItemsList');
-            const items = window.appState.cart.map(c => {
-                const product = window.appState.catalogData.find(i => i.id === c.id);
-                return product ? {...product, qty: c.qty} : null;
-            }).filter(i => i);
+       function renderCartItems() {
+    const list = document.getElementById('cartItemsList');
+    const items = window.appState.cart.map(c => {
+        const product = window.appState.catalogData.find(i => i.id === c.id);
+        return product ? { ...product, qty: c.qty } : null;
+    }).filter(i => i);
 
-            const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
+    const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
 
-            list.innerHTML = items.length ? items.map(i => `
-                <div class="flex items-center gap-4 p-3 rounded-xl border dark:border-slate-700">
-                    <img src="${safeURL(i.image)}" class="w-16 h-16 rounded-xl object-cover">
-                    <div class="flex-grow">
-                        <h4 class="font-bold text-sm">${i.name}</h4>
-                        <div class="flex items-center gap-2 mt-2">
-                            <button onclick="updateQty(${i.id}, -1)" class="w-6 h-6 flex items-center justify-center bg-gray-200 dark:bg-slate-700 rounded">-</button>
-                            <span class="text-xs font-bold">${i.qty}</span>
-                            <button onclick="updateQty(${i.id}, 1)" class="w-6 h-6 flex items-center justify-center bg-gray-200 dark:bg-slate-700 rounded">+</button>
-                        </div>
-                    </div>
-                    <p class="text-xs font-bold">₹${(i.price * i.qty).toFixed(0)}</p>
+    if (items.length === 0) {
+        list.innerHTML = `
+            <div class="text-center py-10 text-slate-500 dark:text-slate-400">
+                <i class="fas fa-shopping-cart text-3xl mb-3 opacity-40"></i>
+                <p class="font-semibold">Your cart is empty</p>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = items.map(i => `
+        <div class="flex items-center gap-4 p-4 rounded-2xl 
+            bg-slate-50 dark:bg-slate-800 
+            border border-slate-200 dark:border-slate-700">
+
+            <!-- Image -->
+            <img src="${safeURL(i.image)}"
+                class="w-16 h-16 rounded-xl object-cover border border-slate-200 dark:border-slate-600">
+
+            <!-- Info -->
+            <div class="flex-grow">
+                <h4 class="font-bold text-sm text-slate-800 dark:text-white">
+                    ${i.name}
+                </h4>
+
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    ₹${i.price} each
+                </p>
+
+                <!-- Quantity controls -->
+                <div class="flex items-center gap-2 mt-2">
+
+                    <button onclick="updateQty(${i.id}, -1)"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center 
+                        bg-red-500 hover:bg-red-600 text-white font-bold transition">
+                        −
+                    </button>
+
+                    <span class="text-sm font-bold px-2 text-slate-800 dark:text-white">
+                        ${i.qty}
+                    </span>
+
+                    <button onclick="updateQty(${i.id}, 1)"
+                        class="w-8 h-8 rounded-lg flex items-center justify-center 
+                        bg-emerald-500 hover:bg-emerald-600 text-white font-bold transition">
+                        +
+                    </button>
                 </div>
-            `).join('') : `<p class="text-center py-10 opacity-50">Cart empty</p>`;
-          
-        }
+            </div>
 
+            <!-- Price -->
+            <div class="text-right">
+                <p class="font-bold text-emerald-600 dark:text-emerald-400">
+                    ₹${(i.price * i.qty).toFixed(2)}
+                </p>
+            </div>
+        </div>
+    `).join('');
+}
         function openModalById(id) {
             const item = window.appState.catalogData.find(i => i.id == id);
             if (item) {
@@ -621,7 +684,7 @@ const items = window.appState.cart.map(c => {
 </div>
 `;
                 document.getElementById('modal').classList.remove('hidden');
-                document.body.style.overflow = '';
+                document.body.style.overflow = 'hidden';
             }
         }
 
@@ -643,6 +706,7 @@ const items = window.appState.cart.map(c => {
                 sidebar.classList.remove('active');
                 overlay.style.display = 'none';
             } else {
+                document.body.style.overflow = 'hidden';
                 renderCartItems();
                 sidebar.classList.add('active');
                 overlay.style.display = 'block';
@@ -652,6 +716,7 @@ const items = window.appState.cart.map(c => {
         function closeCart() {
             document.getElementById('cartSidebar').classList.remove('active');
             document.getElementById('cartOverlay').style.display = 'none';
+            document.body.style.overflow = '';
         }
 
         function updateCartBadge() {
@@ -687,21 +752,28 @@ const items = window.appState.cart.map(c => {
             }, 300);
         };
 
-        window.openOrders = async function () {
-    const email = localStorage.getItem('user_email');
+      window.openOrders = async function () {
 
-    if (!email) {
-        showToast("Please login to view orders", true);
+    const email = localStorage.getItem("user_email");
+    const uid = localStorage.getItem("user_uid");
+
+    if (!email || !uid) {
+        showToast("Please login", true);
         return;
     }
 
     document.getElementById('ordersModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 
     const list = document.getElementById('ordersList');
     list.innerHTML = "Loading...";
 
     try {
-        const q = query(collection(window.db, "orders"), where("user_email", "==", email));
+        const q = query(
+            collection(window.db, "orders"),
+            where("user_uid", "==", uid)
+        );
+
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
@@ -719,11 +791,11 @@ const items = window.appState.cart.map(c => {
                     <div class="flex justify-between mb-2">
                         <span class="font-bold">₹${data.total}</span>
                         <span class="text-xs opacity-60">
-                           ${data.created_at ? data.created_at.toDate().toLocaleString() : "Just now"}
+                            ${data.created_at ? data.created_at.toDate().toLocaleString() : "Just now"}
                         </span>
                     </div>
                     <ul class="text-sm">
-                       ${data.items.map(i => `<li>• ${escapeHTML(i.name)} x ${i.qty}</li>`)}
+                        ${data.items.map(i => `<li>• ${escapeHTML(i.name)} x ${i.qty}</li>`).join('')}
                     </ul>
                 </div>
             `;
@@ -745,6 +817,9 @@ window.closeOrders = function () {
             if (localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark');
                 document.getElementById('themeIcon').className = 'fas fa-sun';
+                document.body.style.overflow = '';
+                
+                
             }
             const savedFilter = localStorage.getItem('selectedFilter') || 'all';
             filterItems(savedFilter);
