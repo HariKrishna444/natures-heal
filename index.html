@@ -164,10 +164,25 @@
         <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl w-full max-w-md">
             <h2 class="text-2xl font-bold mb-6 text-emerald-700">Shipping Details</h2>
             <div class="space-y-4">
-                <input id="name" type="text" placeholder="Full Name" class="w-full p-3 rounded-xl border dark:bg-slate-800 dark:border-slate-700 outline-none focus:border-emerald-500">
-                <input id="phone" type="tel" placeholder="Phone Number" class="w-full p-3 rounded-xl border dark:bg-slate-800 dark:border-slate-700 outline-none focus:border-emerald-500">
-                <input id="email" type="email" placeholder="Email Address" class="w-full p-3 rounded-xl border dark:bg-slate-800 dark:border-slate-700 outline-none focus:border-emerald-500">
-                <textarea id="address" placeholder="Complete Address" class="w-full p-3 rounded-xl border dark:bg-slate-800 dark:border-slate-700 h-28 outline-none focus:border-emerald-500"></textarea>
+                <input id="name" type="text" placeholder="Full Name"
+class="w-full p-3 rounded-xl border outline-none focus:border-emerald-500
+bg-white dark:bg-slate-800 text-slate-900 dark:text-white
+placeholder-slate-400 dark:placeholder-slate-500 border-slate-300 dark:border-slate-700">
+
+<input id="phone" type="tel" placeholder="Phone Number"
+class="w-full p-3 rounded-xl border outline-none focus:border-emerald-500
+bg-white dark:bg-slate-800 text-slate-900 dark:text-white
+placeholder-slate-400 dark:placeholder-slate-500 border-slate-300 dark:border-slate-700">
+
+<input id="email" type="email" placeholder="Email Address"
+class="w-full p-3 rounded-xl border outline-none focus:border-emerald-500
+bg-white dark:bg-slate-800 text-slate-900 dark:text-white
+placeholder-slate-400 dark:placeholder-slate-500 border-slate-300 dark:border-slate-700">
+
+<textarea id="address" placeholder="Complete Address"
+class="w-full p-3 rounded-xl border h-28 outline-none focus:border-emerald-500
+bg-white dark:bg-slate-800 text-slate-900 dark:text-white
+placeholder-slate-400 dark:placeholder-slate-500 border-slate-300 dark:border-slate-700"></textarea>
                 <div class="flex gap-4 pt-4">
                     <button onclick="document.getElementById('userFormModal').classList.add('hidden')" class="flex-1 py-3 font-bold border rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">Cancel</button>
                     <button onclick="submitOrder(event)" class="flex-1 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700">Submit Order</button>
@@ -261,11 +276,19 @@ if (userName) {
     window.submitOrder = async function(event){
     const btn = event.target;
 
-if (btn.disabled || btn.dataset.loading === "true") return;
+    if (btn.disabled || btn.dataset.loading === "true") return;
 
-btn.disabled = true;
-btn.dataset.loading = "true";
-btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
+    const uid = localStorage.getItem('user_uid'); // 👈 here
+
+    // ✅ ADD THIS BLOCK RIGHT HERE
+    if (!uid) {
+        stopLoading(btn);
+        return showToast("User session expired. Please login again.", true);
+    }
+
+    btn.disabled = true;
+    btn.dataset.loading = "true";
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
 
     const name = document.getElementById('name').value.trim();
     const phone = document.getElementById('phone').value.trim();
