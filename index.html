@@ -988,7 +988,7 @@ window.closeOrders = function () {
 }
       if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-        nnavigator.serviceWorker.register("/natures-heal/sw.js")
+        navigator.serviceWorker.register("/natures-heal/sw.js")
         .then(reg => console.log("SW registered:", reg.scope))
         .catch(err => console.log("SW failed:", err));
     });
