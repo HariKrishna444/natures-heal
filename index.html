@@ -396,41 +396,29 @@ const items = window.appState.cart.map(c => {
 
     const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
 
-    try{
-        const totalAmount = total * 100; // convert to paise
+    try {
+    const totalAmount = total * 100;
 
-payNow(totalAmount, {
-    items,
-    total,
-    user: {
-        name: safeName,
-        phone,
-        email,
-        address: safeAddress
-    },
-    user_uid: uid,
-    user_email: email
-});
+    payNow(totalAmount, {
+        items,
+        total,
+        user: {
+            name: safeName,
+            phone,
+            email,
+            address: safeAddress
+        },
+        user_uid: uid,
+        user_email: email
+    });
 
-        showToast("🎉 Order placed successfully!");
+    // ❌ DO NOTHING ELSE HERE
+    return;
 
-        setTimeout(() => {
-            window.appState.cart.length = 0;
-            localStorage.setItem('cart', JSON.stringify([]));
-            renderCartItems();
-            updateCartBadge();
-            
-
-            document.getElementById('userFormModal').classList.add('hidden');
-            closeCart();
-
-            openOrders(); // ✅ correct
-        }, 800);
-
-    } catch(e){
-        console.error(e);
-        showToast("Error placing order", true);
-    } finally {
+} catch (e) {
+    console.error(e);
+    showToast("Error starting payment", true);
+} finally {
         btn.disabled = false;
         btn.innerHTML = "Submit Order";
         btn.dataset.loading = "false";
