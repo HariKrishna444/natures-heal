@@ -232,11 +232,14 @@ Cancel
     window.query = query;
     window.where = where;
     window.collection = collection;
+    window.getDocs = getDocs;
+    window.addDoc = addDoc;
+    window.serverTimestamp = serverTimestamp;
 
     // Authentication Guard
     const userName = localStorage.getItem('user_name');
-const userEmail = localStorage.getItem('user_email');
-const userPhoto = localStorage.getItem('user_photo');
+    const userEmail = localStorage.getItem('user_email');
+    const userPhoto = localStorage.getItem('user_photo');
 
 if (userName) {
     // Logged in
@@ -784,27 +787,14 @@ const items = window.appState.cart.map(c => {
             }, 300);
         };
 
-     window.openOrders = async function () {
+    window.openOrders = async function () {
 
     const uid = localStorage.getItem("user_uid");
-    const q = window.firestoreQuery(
-    window.firestoreCollection(window.db, "orders"),
-    window.firestoreWhere("user_uid", "==", uid)
-);
 
     if (!uid) {
         showToast("Please login", true);
         return;
     }
-
-         if (!window.orderInterval) {
-    window.orderInterval = setInterval(() => {
-        const modal = document.getElementById('ordersModal');
-        if (!modal.classList.contains('hidden')) {
-            openOrders();
-        }
-    }, 15000);
-}
 
     document.getElementById('ordersModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -813,18 +803,16 @@ const items = window.appState.cart.map(c => {
     list.innerHTML = "Loading...";
 
     try {
-        const q = window.query(
-    window.collection(window.db, "orders"),
-    window.where("user_uid", "==", uid)
-);
 
-        const querySnapshot = await getDocs(q);
+        const q = window.query(
+            window.collection(window.db, "orders"),
+            window.where("user_uid", "==", uid)
+        );
+
+        const querySnapshot = await window.getDocs(q);
 
         if (querySnapshot.empty) {
-            list.innerHTML = `
-                <p class="text-center opacity-50">
-                    No orders found yet
-                </p>`;
+            list.innerHTML = `<p class="text-center opacity-50">No orders found yet</p>`;
             return;
         }
 
@@ -836,9 +824,7 @@ const items = window.appState.cart.map(c => {
             html += `
                 <div class="border p-4 rounded-xl mb-3 bg-white dark:bg-slate-800">
                     <div class="flex justify-between mb-2">
-                        <span class="font-bold text-emerald-600">
-                            ₹${data.total}
-                        </span>
+                        <span class="font-bold text-emerald-600">₹${data.total}</span>
                         <span class="text-xs opacity-60">
                             ${data.created_at ? data.created_at.toDate().toLocaleString() : "Just now"}
                         </span>
@@ -856,11 +842,10 @@ const items = window.appState.cart.map(c => {
         list.innerHTML = html;
 
     } catch (e) {
-    console.error("Orders Error:", e);
-    list.innerHTML = "Error: " + e.message;
-}
+        console.error(e);
+        list.innerHTML = "Error: " + e.message;
+    }
 };
-
 
             window.closeOrders = function () {
     document.getElementById('ordersModal').classList.add('hidden');
