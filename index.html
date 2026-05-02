@@ -9,6 +9,7 @@
     <meta name="theme-color" content="#059669">
     <link rel="apple-touch-icon" href="icon_192.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
@@ -449,41 +450,22 @@ const items = window.appState.cart.map(c => {
         async function fetchSheetData() {
     try {
         const response = await fetch(SHEET_URL);
-        const data = await response.text();
-        const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
+        const csvText = await response.text();
 
-        if (rows.length < 2) return;
+        const result = Papa.parse(csvText, {
+            header: true,
+            skipEmptyLines: true
+        });
 
-        const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
+        const newData = result.data.map(item => ({
+            ...item,
+            id: parseFloat(item.id),
+            price: parseFloat(item.price)
+        })).filter(i => i.id);
 
-        const newData = rows.slice(1).map(row => {
-            const cols = [];
-            let current = '', inQuotes = false;
+        window.appState.catalogData = newData;
 
-            for (let char of row) {
-                if (char === '"') inQuotes = !inQuotes;
-                else if (char === ',' && !inQuotes) {
-                    cols.push(current.trim());
-                    current = '';
-                } else current += char;
-            }
-            cols.push(current.trim());
-
-            let obj = {};
-            headers.forEach((h, i) => {
-                let val = (cols[i] || "").replace(/^"|"$/g, "");
-                if (h === "id" || h === "price") obj[h] = parseFloat(val) || 0;
-                else obj[h] = val;
-            });
-
-            return obj;
-        }).filter(i => i.id);
-
-        // ✅ ONLY re-render if data actually changed
-        if (JSON.stringify(window.appState.catalogData) !== JSON.stringify(newData)) {
-            window.appState.catalogData = newData;
-            renderItems(getFilteredData());
-        }
+        renderItems(getFilteredData());
 
     } catch (e) {
         console.error("Fetch Error:", e);
