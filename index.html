@@ -25,43 +25,24 @@
         header { background-color: var(--header-bg) !important; border-bottom: 1px solid var(--border-color); }
         .nature-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
         .nature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
-              #cartSidebar .flex {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-        #cartItemsList {
-    flex: 1;
-    overflow-y: auto;
-}
-    
-        #cartOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(4px);
-    z-index: 90;
-    display: none;
-}
-       #cartSidebar {
+        #cartSidebar {
     position: fixed;
     top: 0;
-    right: 0;
+    right: -100%;
     width: 100%;
     max-width: 400px;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--bg-card);
-    z-index: 1000;
+    height: 100vh;
 
-    transform: translateX(100%);
-    transition: transform 0.3s ease-in-out;
-}
+    background: var(--bg-card);
+    color: var(--text-main);
 
-#cartSidebar.active {
-    transform: translateX(0);
+    z-index: 100;
+    transition: right 0.4s ease;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.2);
+    border-left: 1px solid var(--border-color);
 }
+        #cartSidebar.active { right: 0; }
+        #cartOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 90; display: none; }
         footer { background-color: var(--footer-bg); }
         #themeToggle { position: fixed; bottom: 2rem; right: 2rem; z-index: 50; width: 50px; height: 50px; border-radius: 50%; background: #10b981; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
         .modal-animate { animation: modalIn 0.3s ease-out; }
@@ -72,25 +53,6 @@
             font-weight: 600; box-shadow: 0 10px 15px rgba(0,0,0,0.2); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000;
         }
         #toast.active { transform: translateX(-50%) translateY(0); }
-        html, body {
-    height: 100%;
-    overflow-x: hidden;
-}
-        body.modal-open {
-    overflow: hidden;
-}
-        .modal {
-    opacity: 0;
-    transform: scale(0.95);
-    pointer-events: none;
-    transition: all 0.25s ease;
-}
-
-.modal.show {
-    opacity: 1;
-    transform: scale(1);
-    pointer-events: auto;
-}
     </style>
 </head>
 <body>
@@ -108,12 +70,11 @@
                 <button onclick="closeCart()" class="text-slate-500 dark:text-slate-400 hover:text-rose-500 transition-colors"><i class="fas fa-times text-xl"></i></button>
             </div>
             <div id="cartItemsList" class="flex-grow overflow-y-auto space-y-4 pr-2"></div>
-              <div class="mt-6 pt-6 border-t border-emerald-200 dark:border-emerald-800 flex-shrink-0">
-    
-    <div class="flex justify-between items-center mb-4 px-2">
-        <span class="font-bold text-emerald-600 dark:text-emerald-400">Total Amount:</span>
-        <span id="cartTotal" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹0.00</span>
-    </div>
+            <div class="mt-6 pt-6 border-t border-emerald-200 dark:border-emerald-800">
+                <div class="flex justify-between items-center mb-4 px-2">
+                   <span class="font-bold text-emerald-600 dark:text-emerald-400">Total Amount:</span>
+                    <span id="cartTotal" class="text-2xl font-black text-emerald-600 dark:text-emerald-400">₹0.00</span>
+                </div>
                 <button id="placeOrderBtn" onclick="placeOrder()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-emerald-700 transition-all flex justify-center items-center gap-2"><span>Place Order</span></button>
             </div>
         </div>
@@ -233,7 +194,7 @@ Cancel
         </div>
     </div>
 <!-- Orders Modal -->
-<div id="ordersModal" class="hidden fixed inset-0 bg-black/70 z-[120] flex justify-center items-center p-4 overflow-y-auto">
+<div id="ordersModal" class="hidden fixed inset-0 bg-black/70 z-[120] flex justify-center items-center p-4">
     <div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
         <h2 class="text-2xl font-bold mb-6 text-emerald-600">My Orders</h2>
         <div id="ordersList" class="space-y-4"></div>
@@ -268,17 +229,11 @@ Cancel
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     window.db = db;
-    window.query = query;
-    window.where = where;
-    window.collection = collection;
-    window.getDocs = getDocs;
-    window.addDoc = addDoc;
-    window.serverTimestamp = serverTimestamp;
 
     // Authentication Guard
     const userName = localStorage.getItem('user_name');
-    const userEmail = localStorage.getItem('user_email');
-    const userPhoto = localStorage.getItem('user_photo');
+const userEmail = localStorage.getItem('user_email');
+const userPhoto = localStorage.getItem('user_photo');
 
 if (userName) {
     // Logged in
@@ -289,9 +244,6 @@ if (userName) {
     document.getElementById('email').value = userEmail;
     document.getElementById('ordersTabBtn').classList.remove('hidden');
     document.getElementById('placeOrderBtn').disabled = window.appState.cart.length === 0;
-    setTimeout(() => {
-    openOrders();   // auto-load orders after login
-}, 500);
 } else {
     // Guest mode
     document.getElementById('userNameDisplay').textContent = "Guest";
@@ -389,10 +341,10 @@ if (!address) {
 );
 
 const items = window.appState.cart.map(c => {
-    const product = window.appState.catalogData.find(
-        i => String(i.id) === String(c.id)
-    );
-    return product ? { ...product, qty: c.qty } : null;
+    const product = catalogMap.get(c.id);
+    return product
+        ? { name: product.name, price: product.price, qty: c.qty }
+        : null;
 }).filter(Boolean);
     if (!items.length) {
     showToast("Cart error. Try again.", true);
@@ -612,14 +564,11 @@ const items = window.appState.cart.map(c => {
         }
 
        function renderCartItems() {
-    const items = window.appState.cart
-    .map(c => {
-        const product = window.appState.catalogData.find(
-            i => String(i.id) === String(c.id)
-        );
+    const list = document.getElementById('cartItemsList');
+    const items = window.appState.cart.map(c => {
+        const product = window.appState.catalogData.find(i => i.id === c.id);
         return product ? { ...product, qty: c.qty } : null;
-    })
-    .filter(Boolean);
+    }).filter(i => i);
 
     const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
     document.getElementById('cartTotal').textContent = `₹${total.toFixed(2)}`;
@@ -829,35 +778,32 @@ const items = window.appState.cart.map(c => {
             }, 300);
         };
 
-    window.openOrders = async function () {
+      window.openOrders = async function () {
 
+    const email = localStorage.getItem("user_email");
     const uid = localStorage.getItem("user_uid");
 
-    if (!uid) {
-        showToast("Please login", true);
-        return;
-    }
+if (!email || !uid) {
+    showToast("Please login", true);
+    return;
+}
 
-    const modal = document.getElementById('ordersModal');
-
-    modal.classList.remove('hidden');
-    modal.classList.add('show');
-    document.body.classList.add('modal-open');
+    document.getElementById('ordersModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 
     const list = document.getElementById('ordersList');
     list.innerHTML = "Loading...";
 
     try {
-
-        const q = window.query(
-            window.collection(window.db, "orders"),
-            window.where("user_uid", "==", uid)
+        const q = query(
+            collection(window.db, "orders"),
+            where("user_uid", "==", uid)
         );
 
-        const querySnapshot = await window.getDocs(q);
+        const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
-            list.innerHTML = `<p class="text-center opacity-50">No orders found yet</p>`;
+            list.innerHTML = `<p class="text-center opacity-50">No orders found</p>`;
             return;
         }
 
@@ -867,18 +813,15 @@ const items = window.appState.cart.map(c => {
             const data = doc.data();
 
             html += `
-                <div class="border p-4 rounded-xl mb-3 bg-white dark:bg-slate-800">
+                <div class="border p-4 rounded-xl">
                     <div class="flex justify-between mb-2">
-                        <span class="font-bold text-emerald-600">₹${data.total}</span>
+                        <span class="font-bold">₹${data.total}</span>
                         <span class="text-xs opacity-60">
                             ${data.created_at ? data.created_at.toDate().toLocaleString() : "Just now"}
                         </span>
                     </div>
-
-                    <ul class="text-sm space-y-1">
-                        ${data.items.map(i => `
-                            <li>• ${escapeHTML(i.name)} x ${i.qty}</li>
-                        `).join('')}
+                    <ul class="text-sm">
+                        ${data.items.map(i => `<li>• ${escapeHTML(i.name)} x ${i.qty}</li>`).join('')}
                     </ul>
                 </div>
             `;
@@ -888,23 +831,12 @@ const items = window.appState.cart.map(c => {
 
     } catch (e) {
         console.error(e);
-        list.innerHTML = "Error: " + e.message;
+        list.innerHTML = "Error loading orders";
     }
 };
 
-           window.closeOrders = function () {
-    const modal = document.getElementById('ordersModal');
-
-    modal.classList.add('hidden');
-    modal.classList.remove('show');
-    document.body.classList.remove('modal-open');
-
-    // ✅ restore scrolling
-    document.body.classList.remove('modal-open');
-    if (window.orderInterval) {
-        clearInterval(window.orderInterval);
-        window.orderInterval = null;
-    }
+window.closeOrders = function () {
+    document.getElementById('ordersModal').classList.add('hidden');
 };
 
         window.onload = () => {
@@ -922,22 +854,7 @@ const items = window.appState.cart.map(c => {
             
             setInterval(fetchSheetData, 30000); 
         };
-        document.addEventListener("click", function (e) {
-    const modalIds = ["ordersModal", "userFormModal", "modal"];
-
-    modalIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el || el.classList.contains("hidden")) return;
-
-        // close only when clicking backdrop
-        if (e.target === el) {
-            el.classList.add("hidden");
-            el.classList.remove("show");
-
-            document.body.classList.remove("modal-open");
-        }
-    });
-});
+        
     </script>
 </body>
 </html>
