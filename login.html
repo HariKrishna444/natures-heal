@@ -156,6 +156,7 @@ window.verifyOTP = async function () {
 function saveUser(user) {
   localStorage.setItem('user_name', user.displayName || "User");
   localStorage.setItem('user_email', user.email || "");
+  localStorage.setItem('user_uid', user.uid);
   localStorage.setItem('user_photo', user.photoURL || "");
 
   window.location.href = "index.html";
