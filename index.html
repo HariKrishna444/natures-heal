@@ -868,12 +868,21 @@ const items = window.appState.cart.map(c => {
         function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = ''; }
         
         function showToast(msg, isError = false) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.style.background = isError ? '#ef4444' : '#10b981';
-            t.classList.add('active');
-            setTimeout(() => t.classList.remove('active'), 3000);
-        }
+    const t = document.getElementById('toast');
+
+    t.textContent = msg;
+    t.style.background = isError ? '#ef4444' : '#10b981';
+    t.classList.add('active');
+
+    // detect mobile
+    const isMobile = window.innerWidth <= 768;
+
+    const hideTime = (isMobile && isError) ? 1000 : 3000;
+
+    setTimeout(() => {
+        t.classList.remove('active');
+    }, hideTime);
+}
 
         // Search Debounce
         let debounce;
@@ -1025,19 +1034,25 @@ window.addEventListener("beforeinstallprompt", (e) => {
 });
 
 function installApp() {
+    const btn = document.querySelector('button[onclick="installApp()"]');
+
     if (!deferredPrompt) {
         showToast("Install not available", true);
-        hideInstallButton(); // 👈 important fix
+
+        // hide button on mobile
+        if (window.innerWidth <= 768 && btn) {
+            setTimeout(() => {
+                btn.style.display = "none";
+            }, 1000);
+        }
+
         return;
     }
 
     deferredPrompt.prompt();
 
-    deferredPrompt.userChoice.then((choice) => {
-        console.log("User choice:", choice);
-
+    deferredPrompt.userChoice.then(() => {
         deferredPrompt = null;
-        hideInstallButton(); // 👈 hide after interaction
     });
 }
 
