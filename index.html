@@ -31,9 +31,9 @@
     right: -100%;
     width: 100%;
     max-width: 400px;
-    height: 100vh;
-            
+
     display: flex;
+    height: 100dvh; 
     flex-direction: column;
 
     background: var(--bg-card);
@@ -70,7 +70,7 @@
 
     <div id="cartOverlay" onclick="closeCart()"></div>
     <div id="cartSidebar">
-    <div class="flex flex-col h-full p-6">
+    <div class="flex flex-col h-full max-h-screen p-6">
 
         <div class="flex justify-between items-center mb-6 border-b pb-4">
     
@@ -90,11 +90,11 @@
 </div>
 
         <div id="cartItemsList"
-             class="flex-1 overflow-y-auto space-y-4 pr-2 pb-4">
-        </div>
+     class="flex-1 overflow-y-auto space-y-4 pr-2 pb-4 min-h-0">
+      </div>
 
         <!-- Sticky footer -->
-        <div class="mt-auto pt-4 border-t">
+        <div class="sticky bottom-0 bg-[var(--bg-card)] pt-4 border-t z-10">
             <div class="flex justify-between mb-4">
                 <span>Total Amount:</span>
                 <span id="cartTotal">₹0.00</span>
