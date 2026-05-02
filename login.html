@@ -3,64 +3,88 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - Nature's Heal</title>
+<title>Nature's Heal: Login</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
 <style>
-body { background: #fff; font-family: 'Plus Jakarta Sans', sans-serif; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
 </style>
 </head>
 
 <body class="flex items-center justify-center min-h-screen p-4">
 
-<div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md border space-y-4">
+<div class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md space-y-4">
 
-<h2 class="text-2xl font-bold text-center">Login</h2>
+<!-- LOGO -->
+<div class="text-center mb-6">
+    <div class="bg-emerald-600 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <i class="fas fa-leaf text-white text-xl"></i>
+    </div>
+    <h2 class="text-3xl font-black text-slate-800">Welcome Back</h2>
+    <p class="text-slate-500">Sign in to complete your order</p>
+</div>
 
-<!-- EMAIL LOGIN -->
+<!-- EMAIL -->
 <input id="email" type="email" placeholder="Email"
 class="w-full p-3 border rounded-xl">
 
 <input id="password" type="password" placeholder="Password"
 class="w-full p-3 border rounded-xl">
 
-<button onclick="emailLogin()" class="w-full bg-emerald-600 text-white py-3 rounded-xl">
+<button onclick="emailLogin()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold">
 Login with Email
 </button>
 
-<!-- GOOGLE LOGIN -->
-<button onclick="googleLogin()" class="w-full border py-3 rounded-xl">
-Login with Google
+<!-- GOOGLE LOGIN (ICON ONLY STYLE) -->
+<button onclick="googleLogin()" 
+class="w-full flex items-center justify-center gap-3 border py-3 rounded-xl font-semibold hover:bg-gray-100">
+
+    <i class="fab fa-google text-red-500 text-lg"></i>
+    <span>Continue with Google</span>
+
 </button>
 
-<!-- PHONE INPUT WITH +91 PREFIX -->
+<!-- PHONE INPUT -->
 <div class="flex">
-  <span class="px-3 flex items-center bg-gray-100 border rounded-l-xl">+91</span>
+  <span class="px-3 flex items-center bg-gray-100 border rounded-l-xl">
+    <i class="fas fa-phone text-green-600"></i>
+  </span>
   <input id="phone" type="tel" placeholder="9876543210" maxlength="10"
     class="w-full p-3 border border-l-0 rounded-r-xl">
 </div>
 
 <div id="recaptcha"></div>
 
-<button onclick="sendOTP()" class="w-full bg-blue-600 text-white py-3 rounded-xl">
-Send OTP
+<!-- SEND OTP (PHONE ICON ADDED) -->
+<button onclick="sendOTP()" 
+class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+
+    <i class="fas fa-mobile-alt"></i>
+    Send OTP
+
 </button>
 
+<!-- OTP INPUT -->
 <input id="otp" placeholder="Enter OTP"
 class="w-full p-3 border rounded-xl">
 
-<button onclick="verifyOTP()" class="w-full bg-green-600 text-white py-3 rounded-xl">
-Verify OTP
+<button onclick="verifyOTP()" 
+class="w-full bg-green-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+
+    <i class="fas fa-check-circle"></i>
+    Verify OTP
+
 </button>
 
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
+import {
+  getAuth,
+  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
@@ -72,7 +96,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
+  apiKey: "YOUR_API_KEY",
   authDomain: "naturesheal.firebaseapp.com",
   projectId: "naturesheal"
 };
@@ -80,108 +104,63 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// ✅ Persist login
 setPersistence(auth, browserLocalPersistence);
 
-// ---------------- EMAIL LOGIN ----------------
+// EMAIL
 window.emailLogin = async function () {
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value.trim();
-
-  if (!email || !password) {
-    return alert("Enter email & password");
-  }
+  const email = email.value;
+  const password = password.value;
 
   try {
     const res = await signInWithEmailAndPassword(auth, email, password);
     saveUser(res.user);
   } catch (err) {
-    if (
-      err.code === "auth/invalid-credential" ||
-      err.code === "auth/user-not-found"
-    ) {
-      try {
-        const res = await createUserWithEmailAndPassword(auth, email, password);
-        saveUser(res.user);
-      } catch (signupErr) {
-        alert(signupErr.message);
-      }
-    } else {
-      alert(err.message);
-    }
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+    saveUser(res.user);
   }
 };
 
-// ---------------- GOOGLE LOGIN ----------------
+// GOOGLE
 window.googleLogin = async function () {
   const provider = new GoogleAuthProvider();
-
-  try {
-    const res = await signInWithPopup(auth, provider);
-    saveUser(res.user);
-  } catch (err) {
-    alert(err.message);
-  }
+  const res = await signInWithPopup(auth, provider);
+  saveUser(res.user);
 };
 
-// ---------------- OTP LOGIN ----------------
+// OTP
 let confirmationResult;
 
-// ✅ Correct reCAPTCHA init
 window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha', {
   size: 'invisible'
 });
 
 window.sendOTP = async function () {
-  let phone = document.getElementById('phone').value.trim();
+  let phone = document.getElementById('phone').value.replace(/\D/g, "");
 
-  // Clean input
-  phone = phone.replace(/\D/g, "");
-
-  if (phone.length !== 10) {
-    return alert("Enter valid 10-digit number");
-  }
+  if (phone.length !== 10) return alert("Invalid number");
 
   phone = "+91" + phone;
 
-  try {
-    confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
-    alert("OTP sent");
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
-  }
+  confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
+  alert("OTP sent");
 };
 
 window.verifyOTP = async function () {
-  const code = document.getElementById('otp').value.trim();
+  const code = document.getElementById('otp').value;
 
-  if (!code) return alert("Enter OTP");
-
-  try {
-    const res = await confirmationResult.confirm(code);
-    saveUser(res.user);
-  } catch {
-    alert("Invalid OTP");
-  }
+  const res = await confirmationResult.confirm(code);
+  saveUser(res.user);
 };
 
-// ---------------- SAVE USER ----------------
+// SAVE USER
 function saveUser(user) {
   localStorage.setItem('user_name', user.displayName || "User");
   localStorage.setItem('user_email', user.email || "");
   localStorage.setItem('user_photo', user.photoURL || "");
 
-  const redirect = localStorage.getItem('redirect_after_login');
-
-  if (redirect === 'checkout') {
-    localStorage.removeItem('redirect_after_login');
-  }
-
   window.location.href = "index.html";
 }
 
-// ---------------- AUTO LOGIN ----------------
 onAuthStateChanged(auth, (user) => {
   if (user && !localStorage.getItem('user_name')) {
     saveUser(user);
