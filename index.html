@@ -229,6 +229,9 @@ Cancel
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     window.db = db;
+    window.query = query;
+    window.where = where;
+    window.collection = collection;
 
     // Authentication Guard
     const userName = localStorage.getItem('user_name');
@@ -784,6 +787,10 @@ const items = window.appState.cart.map(c => {
      window.openOrders = async function () {
 
     const uid = localStorage.getItem("user_uid");
+    const q = window.firestoreQuery(
+    window.firestoreCollection(window.db, "orders"),
+    window.firestoreWhere("user_uid", "==", uid)
+);
 
     if (!uid) {
         showToast("Please login", true);
@@ -806,10 +813,10 @@ const items = window.appState.cart.map(c => {
     list.innerHTML = "Loading...";
 
     try {
-        const q = query(
-            collection(window.db, "orders"),
-            where("user_uid", "==", uid)
-        );
+        const q = window.query(
+    window.collection(window.db, "orders"),
+    window.where("user_uid", "==", uid)
+);
 
         const querySnapshot = await getDocs(q);
 
