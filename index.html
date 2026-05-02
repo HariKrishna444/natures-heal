@@ -57,6 +57,21 @@
     height: 100%;
     overflow-x: hidden;
 }
+        body.modal-open {
+    overflow: hidden;
+}
+        .modal {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+    transition: all 0.25s ease;
+}
+
+.modal.show {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
     </style>
 </head>
 <body>
@@ -800,8 +815,11 @@ const items = window.appState.cart.map(c => {
         return;
     }
 
-    document.getElementById('ordersModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    const modal = document.getElementById('ordersModal');
+
+    modal.classList.remove('hidden');
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
 
     const list = document.getElementById('ordersList');
     list.innerHTML = "Loading...";
@@ -852,11 +870,14 @@ const items = window.appState.cart.map(c => {
 };
 
            window.closeOrders = function () {
-    document.getElementById('ordersModal').classList.add('hidden');
+    const modal = document.getElementById('ordersModal');
+
+    modal.classList.add('hidden');
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
 
     // ✅ restore scrolling
-    document.body.style.overflow = '';
-
+    document.body.classList.remove('modal-open');
     if (window.orderInterval) {
         clearInterval(window.orderInterval);
         window.orderInterval = null;
@@ -878,7 +899,22 @@ const items = window.appState.cart.map(c => {
             
             setInterval(fetchSheetData, 30000); 
         };
-        
+        document.addEventListener("click", function (e) {
+    const modalIds = ["ordersModal", "userFormModal", "modal"];
+
+    modalIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el || el.classList.contains("hidden")) return;
+
+        // close only when clicking backdrop
+        if (e.target === el) {
+            el.classList.add("hidden");
+            el.classList.remove("show");
+
+            document.body.classList.remove("modal-open");
+        }
+    });
+});
     </script>
 </body>
 </html>
