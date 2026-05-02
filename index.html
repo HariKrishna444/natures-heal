@@ -818,7 +818,7 @@ payNow(totalAmount, {
 
        function payNow(totalAmount, orderData) {
 
-    fetch("/create-order", {
+    fetch("https://us-central1-naturesheal.cloudfunctions.net/createOrder", {
         method: "POST",
         body: JSON.stringify({ amount: totalAmount }),
         headers: { "Content-Type": "application/json" }
