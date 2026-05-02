@@ -230,6 +230,10 @@ Cancel
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     window.db = db;
+    window.query = query;
+    window.where = where;
+    window.getDocs = getDocs;
+    window.collection = collection;
 
     // Authentication Guard
     const userName = localStorage.getItem('user_name');
@@ -808,9 +812,9 @@ if (!email || !uid) {
 
     try {
         const q = query(
-            collection(window.db, "orders"),
-            where("user_uid", "==", uid)
-        );
+    collection(window.db, "orders"),
+    where("user_uid", "==", uid)
+);
 
         const querySnapshot = await getDocs(q);
 
