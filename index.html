@@ -842,9 +842,25 @@ payNow(totalAmount, {
             order_id: order.id,
 
             handler: function (response) {
-                console.log("Payment success:", response);
-                saveOrderAfterPayment(response, orderData);
-            },
+    console.log("Payment success:", response);
+    saveOrderAfterPayment(response, orderData);
+
+    // UI actions AFTER payment success
+    showToast("🎉 Payment Successful!", false);
+
+    setTimeout(() => {
+        window.appState.cart.length = 0;
+        localStorage.setItem('cart', JSON.stringify([]));
+
+        renderCartItems();
+        updateCartBadge();
+
+        document.getElementById('userFormModal').classList.add('hidden');
+        closeCart();
+
+        openOrders();
+    }, 1500); // 1.5–2 sec delay as you wanted
+},
 
             theme: { color: "#10b981" }
         };
@@ -969,8 +985,6 @@ window.closeOrders = function () {
             },
             created_at: serverTimestamp()
         });
-
-        showToast("🎉 Payment successful & order saved!");
 
         window.appState.cart.length = 0;
         localStorage.setItem('cart', JSON.stringify([]));
