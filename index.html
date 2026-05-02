@@ -38,7 +38,8 @@
         #cartOverlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    display: none;
+    background: rgba(0,0,0,0.6);
     backdrop-filter: blur(4px);
     z-index: 90;
     display: none;
@@ -52,6 +53,7 @@
     height: 100dvh;
     display: flex;
     flex-direction: column;
+    background-color: var(--bg-card);
     z-index: 1000;
 
     transform: translateX(100%);
@@ -388,10 +390,10 @@ if (!address) {
 );
 
 const items = window.appState.cart.map(c => {
-    const product = catalogMap.get(c.id);
-    return product
-        ? { name: product.name, price: product.price, qty: c.qty }
-        : null;
+    const product = window.appState.catalogData.find(
+        i => String(i.id) === String(c.id)
+    );
+    return product ? { ...product, qty: c.qty } : null;
 }).filter(Boolean);
     if (!items.length) {
     showToast("Cart error. Try again.", true);
