@@ -849,9 +849,9 @@ const items = window.appState.cart.map(c => {
         list.innerHTML = html;
 
     } catch (e) {
-        console.error(e);
-        list.innerHTML = "Error loading orders";
-    }
+    console.error("Orders Error:", e);
+    list.innerHTML = "Error: " + e.message;
+}
 };
 
 
