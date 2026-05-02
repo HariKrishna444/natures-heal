@@ -986,12 +986,15 @@ window.closeOrders = function () {
         showToast("Payment succeeded but order save failed", true);
     }
 }
-      if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/natures-heal/sw.js")
-        .then(reg => console.log("SW registered:", reg.scope))
-        .catch(err => console.log("SW failed:", err));
-    });
+     if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/natures-heal/sw.js", {
+        scope: "/natures-heal/"
+      })
+      .then(reg => console.log("SW registered:", reg.scope))
+      .catch(err => console.log("SW failed:", err));
+  });
 }
 
       let deferredPrompt;
