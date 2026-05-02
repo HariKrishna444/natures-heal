@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="max-age=31536000">
     <title>Nature's Heal: Leaves & Fruits Encyclopedia</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#059669">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -68,6 +71,10 @@
     <button id="themeToggle" onclick="toggleTheme()" title="Toggle Night Mode">
         <i class="fas fa-moon" id="themeIcon"></i>
     </button>
+    <button onclick="installApp()"
+class="fixed bottom-20 right-2 bg-emerald-600 text-white px-4 py-2 rounded-full shadow-lg z-50">
+    Install App
+</button>
 
     <div id="cartOverlay" onclick="closeCart()"></div>
     <div id="cartSidebar">
@@ -989,7 +996,30 @@ window.closeOrders = function () {
         showToast("Payment succeeded but order save failed", true);
     }
 }
+      if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js")
+        .then(reg => console.log("SW registered:", reg.scope))
+        .catch(err => console.log("SW failed:", err));
+    });
+}
 
+      let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log("PWA install ready");
+});
+
+function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+            deferredPrompt = null;
+        });
+    }
+}
       window.onload = () => {
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark');
