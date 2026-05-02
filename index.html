@@ -757,10 +757,10 @@ const items = window.appState.cart.map(c => {
     const email = localStorage.getItem("user_email");
     const uid = localStorage.getItem("user_uid");
 
-    if (!email || !uid) {
-        showToast("Please login", true);
-        return;
-    }
+if (!email || !uid) {
+    showToast("Please login", true);
+    return;
+}
 
     document.getElementById('ordersModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
