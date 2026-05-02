@@ -209,6 +209,7 @@ if (userName) {
     document.getElementById('name').value = userName;
     document.getElementById('email').value = userEmail;
     document.getElementById('ordersTabBtn').classList.remove('hidden');
+    document.getElementById('placeOrderBtn').disabled = window.appState.cart.length === 0;
 } else {
     // Guest mode
     document.getElementById('userNameDisplay').textContent = "Guest";
@@ -236,26 +237,50 @@ if (userName) {
 
     document.getElementById('userFormModal').classList.remove('hidden');
 }
-
+    function stopLoading(btn, text = "Submit Order") {
+    btn.disabled = false;
+    btn.innerHTML = text;
+    btn.dataset.loading = "false";
+}
     window.submitOrder = async function(event){
     const btn = event.target;
-    if (btn.disabled) return;
+    if (btn.dataset.loading === "true") return;
+    btn.dataset.loading = "true";
 
     const name = document.getElementById('name').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const email = document.getElementById('email').value.trim();
     const address = document.getElementById('address').value.trim();
 
-    if (!name) return showToast("Enter your name", true);
-    if (!phone) return showToast("Enter phone number", true);
-    if (!email) return showToast("Enter email", true);
-    if (!address) return showToast("Enter address", true);
+    if (!name) {
+    stopLoading(btn);
+    return showToast("Enter your name", true);
+}
+    if (!phone) {
+    stopLoading(btn);
+    return showToast("Enter phone number", true);
+}
 
+if (!email) {
+    stopLoading(btn);
+    return showToast("Enter email", true);
+}
+
+if (!address) {
+    stopLoading(btn);
+    return showToast("Enter address", true);
+}
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-    if (!emailRegex.test(email)) return showToast("Invalid email", true);
+    if (!emailRegex.test(email)) {
+    stopLoading(btn);
+    return showToast("Invalid email", true);
+}
 
     const phoneRegex = /^(\+91)?[6-9]\d{9}$/;
-    if (!phoneRegex.test(phone)) return showToast("Invalid phone number", true);
+    if (!phoneRegex.test(phone)) {
+    stopLoading(btn);
+    return showToast("Invalid phone number", true);
+}
 
     const sanitize = str => str.replace(/[<>"'`]/g, "").trim();
 
@@ -263,17 +288,24 @@ if (userName) {
     const safeAddress = sanitize(address);
 
     btn.disabled = true;
-    btn.innerText = "Processing...";
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
 
-    const items = window.appState.cart.map(c => {
-        const product = window.catalogMap.get(c.id);
-        return product ? { name: product.name, price: product.price, qty: c.qty } : null;
-    }).filter(Boolean);
+    const catalogMap = new Map(
+    window.appState.catalogData.map(i => [i.id, i])
+);
 
+const items = window.appState.cart.map(c => {
+    const product = catalogMap.get(c.id);
+    return product
+        ? { name: product.name, price: product.price, qty: c.qty }
+        : null;
+}).filter(Boolean);
     if (!items.length) {
-        showToast("Cart error. Try again.", true);
-        return;
-    }
+    showToast("Cart error. Try again.", true);
+    btn.disabled = false;
+    btn.innerHTML = "Submit Order";
+    return;
+}
 
     const total = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
 
@@ -287,22 +319,31 @@ if (userName) {
                 email,
                 address: safeAddress
             },
+            user_email: email, // 🔥 add this
             created_at: serverTimestamp()
         });
 
-        showToast("Order placed successfully!");
-        window.appState.cart = [];
-        localStorage.setItem('cart', JSON.stringify([]));
-        renderCartItems();
-        updateCartBadge();
-        document.getElementById('userFormModal').classList.add('hidden');
-        closeCart();
+        showToast("🎉 Order placed successfully!");
+
+        setTimeout(() => {
+            window.appState.cart.length = 0;
+            localStorage.setItem('cart', JSON.stringify([]));
+            renderCartItems();
+            updateCartBadge();
+
+            document.getElementById('userFormModal').classList.add('hidden');
+            closeCart();
+
+            openOrders(); // ✅ correct
+        }, 800);
+
     } catch(e){
         console.error(e);
         showToast("Error placing order", true);
     } finally {
         btn.disabled = false;
-        btn.innerText = "Submit Order";
+        btn.innerHTML = "Submit Order";
+        btn.dataset.loading = "false";
     }
 }
 </script>
@@ -321,37 +362,48 @@ if (userName) {
         let lastRenderKey = "";
 
         async function fetchSheetData() {
-            try {
-                const response = await fetch(SHEET_URL);
-                const data = await response.text();
-                const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
-                if (rows.length < 2) return;
+    try {
+        const response = await fetch(SHEET_URL);
+        const data = await response.text();
+        const rows = data.split(/\r?\n/).filter(r => r.trim() !== "");
 
-                const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
-                const newData = rows.slice(1).map(row => {
-                    const cols = [];
-                    let current = '', inQuotes = false;
-                    for (let char of row) {
-                        if (char === '"') inQuotes = !inQuotes;
-                        else if (char === ',' && !inQuotes) { cols.push(current.trim()); current = ''; }
-                        else current += char;
-                    }
+        if (rows.length < 2) return;
+
+        const headers = rows[0].split(',').map(h => h.trim().toLowerCase());
+
+        const newData = rows.slice(1).map(row => {
+            const cols = [];
+            let current = '', inQuotes = false;
+
+            for (let char of row) {
+                if (char === '"') inQuotes = !inQuotes;
+                else if (char === ',' && !inQuotes) {
                     cols.push(current.trim());
-                    let obj = {};
-                    headers.forEach((h, i) => {
-                        let val = (cols[i] || "").replace(/^"|"$/g, "");
-                        if (h === "id" || h === "price") obj[h] = parseFloat(val) || 0;
-                        else obj[h] = val;
-                    });
-                    return obj;
-                }).filter(i => i.id);
+                    current = '';
+                } else current += char;
+            }
+            cols.push(current.trim());
 
-              if (newData.length !== window.appState.catalogData.length) {
-                    window.appState.catalogData = newData;
-                    renderItems(getFilteredData());
-                }
-            } catch (e) { console.error("Fetch Error:", e); }
+            let obj = {};
+            headers.forEach((h, i) => {
+                let val = (cols[i] || "").replace(/^"|"$/g, "");
+                if (h === "id" || h === "price") obj[h] = parseFloat(val) || 0;
+                else obj[h] = val;
+            });
+
+            return obj;
+        }).filter(i => i.id);
+
+        // ✅ ONLY re-render if data actually changed
+        if (JSON.stringify(window.appState.catalogData) !== JSON.stringify(newData)) {
+            window.appState.catalogData = newData;
+            renderItems(getFilteredData());
         }
+
+    } catch (e) {
+        console.error("Fetch Error:", e);
+    }
+}
 
         function getFilteredData() {
             const term = (document.getElementById('searchInput')?.value || "").toLowerCase();
@@ -381,7 +433,7 @@ if (userName) {
 
     // Optional: block suspicious domains
     if (u.hostname.includes("javascript") || u.hostname.length > 100) {
-      return "fallback.png";
+      return "https://via.placeholder.com/300x200?text=Image+Error";
     }
 
     return u.href;
@@ -649,7 +701,7 @@ if (userName) {
     list.innerHTML = "Loading...";
 
     try {
-        const q = query(collection(window.db, "orders"), where("user.email", "==", email));
+        const q = query(collection(window.db, "orders"), where("user_email", "==", email));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
@@ -667,7 +719,7 @@ if (userName) {
                     <div class="flex justify-between mb-2">
                         <span class="font-bold">₹${data.total}</span>
                         <span class="text-xs opacity-60">
-                            ${data.created_at?.toDate().toLocaleString()}
+                           ${data.created_at ? data.created_at.toDate().toLocaleString() : "Just now"}
                         </span>
                     </div>
                     <ul class="text-sm">
