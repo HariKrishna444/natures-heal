@@ -449,21 +449,29 @@ const items = window.appState.cart.map(c => {
 
         async function fetchSheetData() {
     try {
+        console.log("Fetching CSV...");
+
         const response = await fetch(SHEET_URL);
         const csvText = await response.text();
+
+        console.log("CSV Loaded:", csvText.slice(0, 200));
 
         const result = Papa.parse(csvText, {
             header: true,
             skipEmptyLines: true
         });
 
-        const newData = result.data.map(item => ({
-            ...item,
-            id: parseFloat(item.id),
-            price: parseFloat(item.price)
-        })).filter(i => i.id);
+        console.log("Parsed Data:", result.data);
 
-        window.appState.catalogData = newData;
+        window.appState.catalogData = result.data
+            .map(item => ({
+                ...item,
+                id: parseFloat(item.id),
+                price: parseFloat(item.price)
+            }))
+            .filter(i => i.id);
+
+        console.log("Final Data:", window.appState.catalogData);
 
         renderItems(getFilteredData());
 
@@ -980,7 +988,7 @@ window.closeOrders = function () {
 }
       if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js");
+        navigator.serviceWorker.register("sw.js")
         .then(reg => console.log("SW registered:", reg.scope))
         .catch(err => console.log("SW failed:", err));
     });
