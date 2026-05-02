@@ -55,84 +55,110 @@ Verify OTP
 
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  setPersistence,
+  browserLocalPersistence,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
   authDomain: "naturesheal.firebaseapp.com",
   projectId: "naturesheal"
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-// ✅ Auto persistence
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+// ✅ persistence
+setPersistence(auth, browserLocalPersistence);
 
-// ------------------ EMAIL LOGIN ------------------
-function emailLogin() {
-  const email = email.value;
-  const password = password.value;
+// ---------------- EMAIL LOGIN ----------------
+window.emailLogin = async function () {
+  const emailInput = document.getElementById('email').value;
+  const passwordInput = document.getElementById('password').value;
 
-  auth.signInWithEmailAndPassword(email, password)
-    .then(res => saveUser(res.user))
-    .catch(err => alert(err.message));
-}
+  if (!emailInput || !passwordInput) {
+    alert("Enter email & password");
+    return;
+  }
 
-// ------------------ GOOGLE LOGIN ------------------
-function googleLogin() {
-  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    const res = await signInWithEmailAndPassword(auth, emailInput, passwordInput);
+    saveUser(res.user);
+  } catch (err) {
+    // auto signup if user not found
+    if (err.code === "auth/user-not-found") {
+      const res = await createUserWithEmailAndPassword(auth, emailInput, passwordInput);
+      saveUser(res.user);
+    } else {
+      alert(err.message);
+    }
+  }
+};
 
-  auth.signInWithPopup(provider)
-    .then(res => saveUser(res.user))
-    .catch(err => alert(err.message));
-}
+// ---------------- GOOGLE LOGIN ----------------
+window.googleLogin = async function () {
+  const provider = new GoogleAuthProvider();
 
-// ------------------ OTP LOGIN ------------------
-window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha', {
+  try {
+    const res = await signInWithPopup(auth, provider);
+    saveUser(res.user);
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+// ---------------- OTP LOGIN ----------------
+let confirmationResult;
+
+window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha', {
   size: 'invisible'
 });
 
-function sendOTP() {
+window.sendOTP = async function () {
   const phone = document.getElementById('phone').value;
 
-  auth.signInWithPhoneNumber(phone, window.recaptchaVerifier)
-    .then(result => {
-      window.confirmationResult = result;
-      alert("OTP sent");
-    })
-    .catch(err => alert(err.message));
-}
+  try {
+    confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
+    alert("OTP sent");
+  } catch (err) {
+    alert(err.message);
+  }
+};
 
-function verifyOTP() {
+window.verifyOTP = async function () {
   const code = document.getElementById('otp').value;
 
-  confirmationResult.confirm(code)
-    .then(res => saveUser(res.user))
-    .catch(err => alert("Invalid OTP"));
-}
+  try {
+    const res = await confirmationResult.confirm(code);
+    saveUser(res.user);
+  } catch {
+    alert("Invalid OTP");
+  }
+};
 
-// ------------------ SAVE USER ------------------
+// ---------------- SAVE USER ----------------
 function saveUser(user) {
   localStorage.setItem('user_name', user.displayName || "User");
   localStorage.setItem('user_email', user.email || "");
   localStorage.setItem('user_photo', user.photoURL || "");
 
-  redirectUser();
-}
-
-// ------------------ REDIRECT ------------------
-function redirectUser() {
-  const redirect = localStorage.getItem('redirect_after_login');
-  localStorage.removeItem('redirect_after_login');
-
   window.location.href = "index.html";
 }
 
-// ------------------ AUTO LOGIN ------------------
-auth.onAuthStateChanged(user => {
-  if (user) {
-    saveUser(user);
-  }
+// ---------------- AUTO LOGIN ----------------
+onAuthStateChanged(auth, (user) => {
+  if (user) saveUser(user);
 });
 </script>
 
