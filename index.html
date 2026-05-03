@@ -712,10 +712,14 @@ if (userName) {
     const userName = localStorage.getItem('user_name');
 
     if (!userName) {
-        localStorage.setItem('redirect_after_login', 'checkout');
+    showToast("Please login to place order", true);
+
+    setTimeout(() => {
         window.location.href = 'login.html';
-        return;
-    }
+    }, 1000);
+
+    return;
+}
 
     if (!window.appState?.cart?.length) {
         showToast("Cart is empty", true);
@@ -750,20 +754,6 @@ const address = document.getElementById('address').value.trim();
 if (!name || name.length < 3) {
     stopLoading(btn);
     return showToast("Enter valid full name (min 3 chars)", true);
-}
-
-// ❌ Phone validation (STRICT 10 digits, India)
-const phoneRegex = /^[6-9]\d{9}$/;
-if (!phoneRegex.test(phone)) {
-    stopLoading(btn);
-    return showToast("Enter valid 10-digit phone number", true);
-}
-
-// ❌ Email validation (strict)
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
-if (!emailRegex.test(email)) {
-    stopLoading(btn);
-    return showToast("Enter valid email address", true);
 }
 
 // ❌ Address validation
@@ -1515,6 +1505,12 @@ function installApp() {
     deferredPrompt.userChoice.then(() => {
         deferredPrompt = null;
     });
+}
+function stopLoading(btn) {
+    if (!btn) return;
+    btn.disabled = false;
+    btn.innerHTML = "Submit Order";
+    btn.dataset.loading = "false";
 }
 
 // extra safety: if install never triggers
