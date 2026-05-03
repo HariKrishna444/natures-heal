@@ -598,22 +598,31 @@ class="fixed bottom-20 right-2 bg-emerald-600 text-white px-4 py-2 rounded-full 
         <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl w-full max-w-md">
             <h2 class="text-2xl font-bold mb-6 text-emerald-700">Shipping Details</h2>
             <div class="space-y-4">
-                <input id="name" type="text" placeholder="Full Name"
+               <input id="name" type="text" placeholder="Full Name"
+minlength="3"
+required
 class="w-full p-3 rounded-xl border outline-none focus:border-emerald-500
 bg-white dark:bg-slate-800 text-slate-900 dark:text-white
 placeholder-slate-400 dark:placeholder-slate-500 border-slate-300 dark:border-slate-700">
 
 <input id="phone" type="tel" placeholder="Phone Number"
+maxlength="10"
+inputmode="numeric"
+pattern="[6-9]{1}[0-9]{9}"
+required
 class="w-full p-3 rounded-xl border outline-none focus:border-emerald-500
 bg-white dark:bg-slate-800 text-slate-900 dark:text-white
 placeholder-slate-400 dark:placeholder-slate-500 border-slate-300 dark:border-slate-700">
 
 <input id="email" type="email" placeholder="Email Address"
+required
 class="w-full p-3 rounded-xl border outline-none focus:border-emerald-500
 bg-white dark:bg-slate-800 text-slate-900 dark:text-white
 placeholder-slate-400 dark:placeholder-slate-500 border-slate-300 dark:border-slate-700">
 
 <textarea id="address" placeholder="Complete Address"
+minlength="10"
+required
 class="w-full p-3 rounded-xl border h-28 outline-none focus:border-emerald-500
 bg-white dark:bg-slate-800 text-slate-900 dark:text-white
 placeholder-slate-400 dark:placeholder-slate-500 border-slate-300 dark:border-slate-700"></textarea>
@@ -733,27 +742,34 @@ if (userName) {
     btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
 
     const name = document.getElementById('name').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const address = document.getElementById('address').value.trim();
+const phone = document.getElementById('phone').value.trim();
+const email = document.getElementById('email').value.trim();
+const address = document.getElementById('address').value.trim();
 
-    if (!name) {
+// ❌ Name validation
+if (!name || name.length < 3) {
     stopLoading(btn);
-    return showToast("Enter your name", true);
-}
-    if (!phone) {
-    stopLoading(btn);
-    return showToast("Enter phone number", true);
+    return showToast("Enter valid full name (min 3 chars)", true);
 }
 
-if (!email) {
+// ❌ Phone validation (STRICT 10 digits, India)
+const phoneRegex = /^[6-9]\d{9}$/;
+if (!phoneRegex.test(phone)) {
     stopLoading(btn);
-    return showToast("Enter email", true);
+    return showToast("Enter valid 10-digit phone number", true);
 }
 
-if (!address) {
+// ❌ Email validation (strict)
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
+if (!emailRegex.test(email)) {
     stopLoading(btn);
-    return showToast("Enter address", true);
+    return showToast("Enter valid email address", true);
+}
+
+// ❌ Address validation
+if (!address || address.length < 10) {
+    stopLoading(btn);
+    return showToast("Enter full address (min 10 chars)", true);
 }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!emailRegex.test(email)) {
@@ -767,7 +783,8 @@ if (!address) {
     return showToast("Invalid phone number", true);
 }
 
-    const sanitize = str => str.replace(/[<>"'`]/g, "").trim();
+    const sanitize = str =>
+    str.replace(/[<>`"'%;()&+]/g, "").trim();
 
     const safeName = sanitize(name);
     const safeAddress = sanitize(address);
@@ -906,6 +923,8 @@ const items = window.appState.cart.map(c => {
     '"': '&quot;',
     "'": '&#39;'
   }[tag]));
+        const sanitize = str =>
+    str.replace(/[<>`"'%;()&+]/g, "").trim();
       const safeURL = url => {
   try {
     const u = new URL(url);
