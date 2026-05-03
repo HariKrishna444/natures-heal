@@ -1436,6 +1436,14 @@ function showInstallButton() {
     if (installBtn) installBtn.style.display = "block";
 }
 
+function showPaymentLoader() {
+    document.getElementById("paymentLoader").classList.remove("hidden");
+}
+
+function hidePaymentLoader() {
+    document.getElementById("paymentLoader").classList.add("hidden");
+}
+
 // If already installed (PWA standalone mode)
 if (window.matchMedia('(display-mode: standalone)').matches) {
     hideInstallButton();
