@@ -8,7 +8,362 @@
     <link rel="manifest" href="/natures-heal/manifest.json">
     <meta name="theme-color" content="#059669">
     <link rel="apple-touch-icon" href="icon_192.png">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style id="tw">
+*,::before,::after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}
+*{--tw-ring-inset:;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246/.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000}
+html{line-height:1.5;-webkit-text-size-adjust:100%;tab-size:4;font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif}
+body{margin:0;line-height:inherit}
+hr{height:0;color:inherit;border-top-width:1px}
+abbr:where([title]){text-decoration:underline dotted}
+h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}
+a{color:inherit;text-decoration:inherit}
+b,strong{font-weight:bolder}
+code,kbd,samp,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:1em}
+small{font-size:80%}
+sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}
+sub{bottom:-.25em}sup{top:-.5em}
+table{text-indent:0;border-color:inherit;border-collapse:collapse}
+button,input,optgroup,select,textarea{font-family:inherit;font-size:100%;font-weight:inherit;line-height:inherit;color:inherit;margin:0;padding:0}
+button,select{text-transform:none}
+button,[type='button'],[type='reset'],[type='submit']{-webkit-appearance:button;background-color:transparent;background-image:none}
+:-moz-focusring{outline:auto}
+:-moz-ui-invalid{box-shadow:none}
+progress{vertical-align:baseline}
+::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}
+[type='search']{-webkit-appearance:textfield;outline-offset:-2px}
+::-webkit-search-decoration{-webkit-appearance:none}
+::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}
+summary{display:list-item}
+blockquote,dl,dd,h1,h2,h3,h4,h5,h6,hr,figure,p,pre{margin:0}
+fieldset{margin:0;padding:0}
+legend{padding:0}
+ol,ul,menu{list-style:none;margin:0;padding:0}
+textarea{resize:vertical}
+input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}
+button,[role='button']{cursor:pointer}
+:disabled{cursor:default}
+img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}
+img,video{max-width:100%;height:auto}
+[hidden]{display:none}
+
+
+.block{display:block}
+.inline{display:inline}
+.flex{display:flex}
+.inline-flex{display:inline-flex}
+.grid{display:grid}
+.hidden{display:none}
+.table{display:table}
+
+.h-full{height:100%}
+.h-screen{height:100vh}
+.max-h-screen{max-height:100vh}
+.max-h-\[90vh\]{max-height:90vh}
+.h-7{height:1.75rem}
+.h-8{height:2rem}
+.h-9{height:2.25rem}
+.h-10{height:2.5rem}
+.h-16{height:4rem}
+.h-28{height:7rem}
+.h-44{height:11rem}
+.h-56{height:14rem}
+.h-64{height:16rem}
+.min-h-0{min-height:0px}
+
+.w-7{width:1.75rem}
+.w-8{width:2rem}
+.w-9{width:2.25rem}
+.w-10{width:2.5rem}
+.w-16{width:4rem}
+.w-full{width:100%}
+
+.max-w-md{max-width:28rem}
+.max-w-xl{max-width:36rem}
+.max-w-2xl{max-width:42rem}
+.max-w-7xl{max-width:80rem}
+
+.mx-auto{margin-left:auto;margin-right:auto}
+
+.p-1{padding:0.25rem}
+.p-2{padding:0.5rem}
+.p-3{padding:0.75rem}
+.p-4{padding:1rem}
+.p-6{padding:1.5rem}
+.p-8{padding:2rem}
+
+.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}
+.px-2{padding-left:0.5rem;padding-right:0.5rem}
+.px-4{padding-left:1rem;padding-right:1rem}
+.px-5{padding-left:1.25rem;padding-right:1.25rem}
+
+.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}
+.py-2{padding-top:0.5rem;padding-bottom:0.5rem}
+.py-3{padding-top:0.75rem;padding-bottom:0.75rem}
+.py-4{padding-top:1rem;padding-bottom:1rem}
+.py-10{padding-top:2.5rem;padding-bottom:2.5rem}
+.py-12{padding-top:3rem;padding-bottom:3rem}
+.py-16{padding-top:4rem;padding-bottom:4rem}
+
+.pb-1{padding-bottom:0.25rem}
+.pb-4{padding-bottom:1rem}
+.pl-10{padding-left:2.5rem}
+.pr-2{padding-right:0.5rem}
+.pr-4{padding-right:1rem}
+.pt-4{padding-top:1rem}
+
+.mb-1{margin-bottom:0.25rem}
+.mb-2{margin-bottom:0.5rem}
+.mb-3{margin-bottom:0.75rem}
+.mb-4{margin-bottom:1rem}
+.mb-5{margin-bottom:1.25rem}
+.mb-6{margin-bottom:1.5rem}
+.mb-8{margin-bottom:2rem}
+.mb-12{margin-bottom:3rem}
+.ml-2{margin-left:0.5rem}
+.mr-2{margin-right:0.5rem}
+.mt-2{margin-top:0.5rem}
+.mt-6{margin-top:1.5rem}
+
+.gap-1{gap:0.25rem}
+.gap-2{gap:0.5rem}
+.gap-3{gap:0.75rem}
+.gap-4{gap:1rem}
+.gap-6{gap:1.5rem}
+
+.space-x-2>:not([hidden])~:not([hidden]){margin-left:0.5rem}
+.space-x-3>:not([hidden])~:not([hidden]){margin-left:0.75rem}
+.space-x-6>:not([hidden])~:not([hidden]){margin-left:1.5rem}
+.space-x-8>:not([hidden])~:not([hidden]){margin-left:2rem}
+.space-y-1>:not([hidden])~:not([hidden]){margin-top:0.25rem}
+.space-y-4>:not([hidden])~:not([hidden]){margin-top:1rem}
+
+.flex-1{flex:1 1 0%}
+.flex-col{flex-direction:column}
+.flex-wrap{flex-wrap:wrap}
+.flex-grow{flex-grow:1}
+
+.items-center{align-items:center}
+.items-start{align-items:flex-start}
+.justify-between{justify-content:space-between}
+.justify-center{justify-content:center}
+
+.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}
+.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.col-span-full{grid-column:1/-1}
+
+.relative{position:relative}
+.absolute{position:absolute}
+.fixed{position:fixed}
+.sticky{position:sticky;top:0}
+.inset-0{top:0;right:0;bottom:0;left:0}
+
+.top-0{top:0}
+.top-1{top:0.25rem}
+.top-3{top:0.75rem}
+.bottom-0{bottom:0}
+.bottom-20{bottom:5rem}
+.right-1{right:0.25rem}
+.right-2{right:0.5rem}
+.right-3{right:0.75rem}
+.left-1{left:0.25rem}
+.left-3{left:0.75rem}
+.-top-1{top:-0.25rem}
+.-right-1{right:-0.25rem}
+
+.z-10{z-index:10}
+.z-40{z-index:40}
+.z-50{z-index:50}
+.z-\[110\]{z-index:110}
+.z-\[120\]{z-index:120}
+
+.overflow-hidden{overflow:hidden}
+.overflow-y-auto{overflow-y:auto}
+.object-cover{object-fit:cover}
+
+.order-last{order:9999}
+
+
+.text-xs{font-size:.75rem;line-height:1rem}
+.text-sm{font-size:.875rem;line-height:1.25rem}
+.text-base{font-size:1rem;line-height:1.5rem}
+.text-lg{font-size:1.125rem;line-height:1.75rem}
+.text-xl{font-size:1.25rem;line-height:1.75rem}
+.text-2xl{font-size:1.5rem;line-height:2rem}
+.text-3xl{font-size:1.875rem;line-height:2.25rem}
+.text-\[5px\]{font-size:5px}
+.text-\[8px\]{font-size:8px}
+.text-\[9px\]{font-size:9px}
+.text-\[10px\]{font-size:10px}
+.text-\[10px\]{font-size:10px}
+
+.font-medium{font-weight:500}
+.font-semibold{font-weight:600}
+.font-bold{font-weight:700}
+.font-black{font-weight:900}
+
+.italic{font-style:italic}
+.uppercase{text-transform:uppercase}
+.whitespace-nowrap{white-space:nowrap}
+.leading-relaxed{line-height:1.625}
+.leading-tight{line-height:1.25}
+.tracking-tight{letter-spacing:-.025em}
+.tracking-widest{letter-spacing:.1em}
+.line-clamp-2{overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.text-center{text-align:center}
+.text-right{text-align:right}
+
+.text-white{color:#fff}
+.text-red-500{color:#ef4444}
+.text-rose-400{color:#fb7185}
+.text-rose-500{color:#f43f5e}
+.text-slate-400{color:#94a3b8}
+.text-slate-500{color:#64748b}
+.text-slate-600{color:#475569}
+.text-slate-700{color:#334155}
+.text-slate-800{color:#1e293b}
+.text-slate-900{color:#0f172a}
+.text-emerald-50{color:#ecfdf5}
+.text-emerald-100{color:#d1fae5}
+.text-emerald-200{color:#a7f3d0}
+.text-emerald-300{color:#6ee7b7}
+.text-emerald-400{color:#34d399}
+.text-emerald-500{color:#10b981}
+.text-emerald-600{color:#059669}
+.text-emerald-700{color:#047857}
+.text-emerald-900{color:#064e3b}
+.placeholder-emerald-200::placeholder{color:#a7f3d0}
+
+
+.bg-white{background-color:#fff}
+.bg-\[\#10b981\]{background-color:#10b981}
+.bg-\[var\(--bg-card\)\]{background-color:var(--bg-card)}
+.bg-black\/60{background-color:rgb(0 0 0/.6)}
+.bg-black\/70{background-color:rgb(0 0 0/.7)}
+.bg-white\/90{background-color:rgb(255 255 255/.9)}
+.bg-rose-500{background-color:#f43f5e}
+.bg-gray-200{background-color:#e5e7eb}
+.bg-emerald-600{background-color:#059669}
+.bg-emerald-700{background-color:#047857}
+.bg-emerald-800{background-color:#065f46}
+.bg-emerald-800\/50{background-color:rgb(6 95 70/.5)}
+.bg-emerald-950{background-color:#022c22}
+.bg-slate-900\/70{background-color:rgb(15 23 42/.7)}
+
+
+.border{border-width:1px}
+.border-2{border-width:2px}
+.border-b{border-bottom-width:1px}
+.border-b-2{border-bottom-width:2px}
+.border-t{border-top-width:1px}
+.border-none{border-style:none}
+.border-white{border-color:#fff}
+.border-emerald-700{border-color:#047857}
+.border-emerald-800{border-color:#065f46}
+.border-slate-200{border-color:#e2e8f0}
+
+.rounded-lg{border-radius:.5rem}
+.rounded-xl{border-radius:.75rem}
+.rounded-2xl{border-radius:1rem}
+.rounded-3xl{border-radius:1.5rem}
+.rounded-full{border-radius:9999px}
+.rounded-\[2rem\]{border-radius:2rem}
+
+
+.shadow-lg{box-shadow:0 10px 15px -3px rgb(0 0 0/.1),0 4px 6px -4px rgb(0 0 0/.1)}
+.shadow-xl{box-shadow:0 20px 25px -5px rgb(0 0 0/.1),0 8px 10px -6px rgb(0 0 0/.1)}
+.shadow-2xl{box-shadow:0 25px 50px -12px rgb(0 0 0/.25)}
+
+
+.opacity-40{opacity:.4}
+.opacity-50{opacity:.5}
+.opacity-90{opacity:.9}
+.backdrop-blur-sm{-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.outline-none{outline:2px solid transparent;outline-offset:2px}
+.cursor-pointer{cursor:pointer}
+.transform{transform:translateX(var(--tw-translate-x,0)) translateY(var(--tw-translate-y,0)) rotate(var(--tw-rotate,0)) skewX(var(--tw-skew-x,0)) skewY(var(--tw-skew-y,0)) scaleX(var(--tw-scale-x,1)) scaleY(var(--tw-scale-y,1))}
+.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:150ms}
+.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:150ms}
+.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:150ms}
+.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:150ms}
+.duration-700{transition-duration:700ms}
+
+
+.hover\:bg-emerald-50:hover{background-color:#ecfdf5}
+.hover\:bg-emerald-700:hover{background-color:#047857}
+.hover\:bg-gray-100:hover{background-color:#f3f4f6}
+.hover\:scale-105:hover{transform:scale(1.05)}
+.hover\:text-emerald-200:hover{color:#a7f3d0}
+.hover\:text-emerald-500:hover{color:#10b981}
+.hover\:text-white:hover{color:#fff}
+.focus\:ring-2:focus{--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}
+.focus\:ring-white:focus{--tw-ring-color:#fff}
+.focus\:border-emerald-500:focus{border-color:#10b981}
+.group:hover .group-hover\:scale-110{transform:scale(1.1)}
+
+
+.dark .dark\:bg-slate-700{background-color:#334155}
+.dark .dark\:bg-slate-800{background-color:#1e293b}
+.dark .dark\:bg-slate-900{background-color:#0f172a}
+.dark .dark\:border-slate-600{border-color:#475569}
+.dark .dark\:hover\:bg-slate-700:hover{background-color:#334155}
+.dark .dark\:text-emerald-400{color:#34d399}
+.dark .dark\:text-slate-200{color:#e2e8f0}
+.dark .dark\:text-slate-400{color:#94a3b8}
+.dark .dark\:text-white{color:#fff}
+
+
+@media(min-width:640px){
+  .sm\:block{display:block}
+  .sm\:gap-4{gap:1rem}
+  .sm\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sm\:h-36{height:9rem}
+  .sm\:h-56{height:14rem}
+  .sm\:mb-4{margin-bottom:1rem}
+  .sm\:mb-6{margin-bottom:1.5rem}
+  .sm\:p-4{padding:1rem}
+  .sm\:p-6{padding:1.5rem}
+  .sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}
+  .sm\:py-2\.5{padding-top:.625rem;padding-bottom:.625rem}
+  .sm\:text-2xl{font-size:1.5rem;line-height:2rem}
+  .sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}
+  .sm\:text-base{font-size:1rem;line-height:1.5rem}
+  .sm\:text-sm{font-size:.875rem;line-height:1.25rem}
+  .sm\:text-xl{font-size:1.25rem;line-height:1.75rem}
+  .sm\:text-xs{font-size:.75rem;line-height:1rem}
+}
+@media(min-width:768px){
+  .md\:block{display:block}
+  .md\:flex{display:flex}
+  .md\:hidden{display:none}
+  .md\:inline{display:inline}
+  .md\:gap-8{gap:2rem}
+  .md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .md\:grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .md\:h-56{height:14rem}
+  .md\:h-72{height:18rem}
+  .md\:max-w-2xl{max-width:42rem}
+  .md\:mb-6{margin-bottom:1.5rem}
+  .md\:mb-10{margin-bottom:2.5rem}
+  .md\:mb-16{margin-bottom:4rem}
+  .md\:order-none{order:0}
+  .md\:p-8{padding:2rem}
+  .md\:p-12{padding:3rem}
+  .md\:px-8{padding-left:2rem;padding-right:2rem}
+  .md\:py-3{padding-top:.75rem;padding-bottom:.75rem}
+  .md\:text-3xl{font-size:1.875rem;line-height:2.25rem}
+  .md\:text-5xl{font-size:3rem;line-height:1}
+  .md\:text-base{font-size:1rem;line-height:1.5rem}
+  .md\:text-lg{font-size:1.125rem;line-height:1.75rem}
+  .md\:w-64{width:16rem}
+}
+@media(min-width:1280px){
+  .xl\:block{display:block}
+  .xl\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(min-width:1024px){
+  .lg\:px-8{padding-left:2rem;padding-right:2rem}
+}
+</style>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -40,7 +395,6 @@
     display: flex;
     height: 100dvh; 
     flex-direction: column;
-    padding-bottom: env(safe-area-inset-bottom);
 
     background: var(--bg-card);
     color: var(--text-main);
@@ -50,25 +404,22 @@
     box-shadow: -10px 0 30px rgba(0,0,0,0.2);
     border-left: 1px solid var(--border-color);
 }
-        #cartSidebar .sticky {
-    padding-bottom: 10px;
-}
         #cartItemsList {
         min-height: 0; /* important for flex scrolling on mobile */
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
         }
         #cartSidebar.active { right: 0; }
         #cartOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 90; display: none; }
         footer { background-color: var(--footer-bg); }
         #themeToggle { position: fixed; bottom: 2rem; right: 2rem; z-index: 50; width: 50px; height: 50px; border-radius: 50%; background: #10b981; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
         .modal-animate { animation: modalIn 0.3s ease-out; }
+        .skeleton { background: linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 50%,#e2e8f0 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; border-radius:1.5rem; }
+        .dark .skeleton { background: linear-gradient(90deg,#1e293b 25%,#273344 50%,#1e293b 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
         @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         #toast {
             position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
             background: #10b981; color: white; padding: 1rem 2rem; border-radius: 1rem;
             font-weight: 600; box-shadow: 0 10px 15px rgba(0,0,0,0.2); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000;
-            bottom: calc(2rem + env(keyboard-inset-height, 0px));
         }
         #toast.active { transform: translateX(-50%) translateY(0); }
     </style>
@@ -185,7 +536,12 @@ class="fixed bottom-20 right-2 bg-emerald-600 text-white px-4 py-2 rounded-full 
            <h2 class="text-3xl font-bold mb-1 text-emerald-600">Botanical Catalog</h2>
             <p class="text-muted-custom font-medium">Showing <span id="itemCount" class="font-bold text-emerald-600">0</span> unique species</p>
         </div>
-        <div id="gridContainer" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-8"></div>
+        <div id="gridContainer" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-8">
+            <div class="skeleton h-64"></div><div class="skeleton h-64"></div>
+            <div class="skeleton h-64"></div><div class="skeleton h-64"></div>
+            <div class="skeleton h-64"></div><div class="skeleton h-64"></div>
+            <div class="skeleton h-64"></div><div class="skeleton h-64"></div>
+        </div>
     </main>
 
     <footer class="py-16 px-4">
@@ -208,8 +564,8 @@ class="fixed bottom-20 right-2 bg-emerald-600 text-white px-4 py-2 rounded-full 
     </div>
 
     <!-- User Details Modal -->
-    <div id="userFormModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4 overflow-y-auto">
-        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+    <div id="userFormModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4">
+        <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl w-full max-w-md">
             <h2 class="text-2xl font-bold mb-6 text-emerald-700">Shipping Details</h2>
             <div class="space-y-4">
                 <input id="name" type="text" placeholder="Full Name"
@@ -266,6 +622,8 @@ Cancel
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
     import { getAuth } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
+    // ⚠️ Restrict this API key by domain in Firebase Console → Project Settings
+    // and set Firestore Security Rules so users can only access their own data
     const firebaseConfig = {
         apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
         authDomain: "naturesheal.firebaseapp.com",
@@ -445,6 +803,8 @@ const items = window.appState.cart.map(c => {
 
     <script>
         const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-oDJG-YtvMsbQuQP7Xea38B2ovpgWMJA6s4GYiJ0R3RLVCJhljuwwTc0MJWzJCRWv2EF/pub?output=csv`;
+        // ⚠️ BEFORE GO-LIVE: swap for live key from Razorpay Dashboard
+        const RAZORPAY_KEY = "rzp_test_SkZ2ZeOudkj7PI";
         
         window.appState = {
             catalogData: [],
@@ -456,38 +816,41 @@ const items = window.appState.cart.map(c => {
 
         let lastRenderKey = "";
 
-        async function fetchSheetData() {
-    try {
-        console.log("Fetching CSV...");
+        function showCatalogError(msg) {
+            const c = document.getElementById('gridContainer');
+            if (c) c.innerHTML = `<div class="col-span-full text-center py-16" style="color:var(--text-main)">
+                <i class="fas fa-exclamation-circle text-3xl mb-3 block" style="color:#fb7185"></i>
+                <p style="font-weight:700;margin-bottom:0.5rem">${msg}</p>
+                <button onclick="fetchSheetData()" style="margin-top:1rem;background:#059669;color:#fff;padding:0.6rem 1.5rem;border-radius:9999px;font-weight:700;border:none;cursor:pointer">Try Again</button>
+            </div>`;
+        }
 
-        const response = await fetch(SHEET_URL);
-        const csvText = await response.text();
+        function fetchSheetData() {
+            Papa.parse(SHEET_URL, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(result) {
+                    const parsed = (result.data || [])
+                        .map(item => ({
+                            ...item,
+                            id: parseFloat(item.id),
+                            price: parseFloat(item.price)
+                        }))
+                        .filter(i => i.id && !isNaN(i.id));
 
-        console.log("CSV Loaded:", csvText.slice(0, 200));
-
-        const result = Papa.parse(csvText, {
-            header: true,
-            skipEmptyLines: true
-        });
-
-        console.log("Parsed Data:", result.data);
-
-        window.appState.catalogData = result.data
-            .map(item => ({
-                ...item,
-                id: parseFloat(item.id),
-                price: parseFloat(item.price)
-            }))
-            .filter(i => i.id);
-
-        console.log("Final Data:", window.appState.catalogData);
-
-        renderItems(getFilteredData());
-
-    } catch (e) {
-        console.error("Fetch Error:", e);
-    }
-}
+                    if (parsed.length === 0) {
+                        showCatalogError('No items found. Check the sheet has data and is published as CSV.');
+                        return;
+                    }
+                    window.appState.catalogData = parsed;
+                    renderItems(getFilteredData());
+                },
+                error: function() {
+                    showCatalogError('Could not load catalog. Make sure the Google Sheet is published publicly as CSV.');
+                }
+            });
+        }
 
         function getFilteredData() {
             const term = (document.getElementById('searchInput')?.value || "").toLowerCase();
@@ -528,9 +891,10 @@ const items = window.appState.cart.map(c => {
         function renderItems(items) {
             const container = document.getElementById('gridContainer');
             const countDisplay = document.getElementById('itemCount');
-            
+
             if (!container) return;
-            
+            if (window.appState.catalogData.length === 0) return; // keep skeletons
+
             container.innerHTML = '';
             if (countDisplay) countDisplay.textContent = items.length;
 
@@ -634,7 +998,7 @@ const items = window.appState.cart.map(c => {
             <!-- Info -->
             <div class="flex-grow">
                 <h4 class="font-bold text-sm text-slate-800 dark:text-white">
-                    ${i.name}
+                    ${escapeHTML(i.name)}
                 </h4>
 
                 <p class="text-xs text-slate-500 dark:text-slate-400">
@@ -828,7 +1192,7 @@ const items = window.appState.cart.map(c => {
         }
 
         const options = {
-            key: "rzp_test_SkZ2ZeOudkj7PI",
+            key: RAZORPAY_KEY,
             amount: order.amount,
             currency: "INR",
             name: "Nature's Heal",
@@ -836,27 +1200,23 @@ const items = window.appState.cart.map(c => {
             order_id: order.id,
 
            handler: async function (response) {
-    console.log("Payment success:", response);
 
     try {
         await saveOrderAfterPayment(response, orderData);
-
-        // ❌ REMOVE THIS LINE
-        // showToast("🎉 Payment Successful!", false);
-
+        showToast("🎉 Payment Successful!", false);
     } catch (e) {
         console.error(e);
         showToast("Order saved failed after payment", true);
     }
 },
+
             theme: { color: "#10b981" }
         };
 
         const rzp = new Razorpay(options);
 
         rzp.on("payment.failed", function (response) {
-            console.log("Payment failed:", response);
-            alert("Payment Failed");
+            showToast("Payment failed. Please try again.", true);
         });
 
         rzp.open();
@@ -998,6 +1358,8 @@ window.closeOrders = function () {
     document.body.style.overflow = '';
 };
 
+        // ⚠️ TODO: verify razorpay_signature server-side in your Cloud Function
+       // HMAC-SHA256(order_id+"|"+payment_id, secret) === signature
        async function saveOrderAfterPayment(paymentResponse, orderData) {
     try {
         await addDoc(collection(db, "orders"), {
@@ -1018,8 +1380,8 @@ window.closeOrders = function () {
 
         document.getElementById('userFormModal').classList.add('hidden');
         closeCart();
+        openOrders();
 
-        // ❌ removed openOrders()
     } catch (e) {
         console.error(e);
         showToast("Payment succeeded but order save failed", true);
@@ -1031,8 +1393,7 @@ window.closeOrders = function () {
       .register("/natures-heal/sw.js", {
         scope: "/natures-heal/"
       })
-      .then(reg => console.log("SW registered:", reg.scope))
-      .catch(err => console.log("SW failed:", err));
+      .catch(() => {});
   });
 }
 
@@ -1058,8 +1419,6 @@ if (window.matchMedia('(display-mode: standalone)').matches) {
 window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
-
-    console.log("PWA install ready");
     showInstallButton();
 });
 
