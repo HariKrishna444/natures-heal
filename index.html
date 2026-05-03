@@ -140,7 +140,7 @@ class="fixed bottom-20 right-2 bg-emerald-600 text-white px-4 py-2 rounded-full 
                 <button data-filter="wild_fruit" onclick="filterItems('wild_fruit')" class="filter-btn text-emerald-100 hover:text-white pb-1">Wild Fruits</button>
                 <button data-filter="seed" onclick="filterItems('seed')" class="filter-btn text-emerald-100 hover:text-white pb-1">Seeds</button>
                 <button data-filter="favorites" onclick="filterItems('favorites')" class="filter-btn text-emerald-100 hover:text-white pb-1">Collection ⭐</button>
-               <button id="ordersTabBtn" onclick="openOrders()" class="filter-btn text-emerald-100 hover:text-white pb-1">Orders 📦</button>
+               <button id="ordersTabBtn" onclick="openOrders()" class="filter-btn text-emerald-100 hover:text-white pb-1">My Orders📦</button>
             </nav>
             <div class="relative flex items-center gap-3">
                 <button onclick="toggleCartSidebar()" class="relative p-2 text-white hover:text-emerald-200">
@@ -304,7 +304,7 @@ if (userName) {
     location.reload(); // stay on index as guest
 }
 
-    window.placeOrder = function() {
+    window.placeOrder = function () {
     const userName = localStorage.getItem('user_name');
 
     if (!userName) {
@@ -313,18 +313,13 @@ if (userName) {
         return;
     }
 
-    if(window.appState.cart.length === 0){
+    if (!window.appState?.cart?.length) {
         showToast("Cart is empty", true);
         return;
     }
-
-    document.getElementById('userFormModal').classList.remove('hidden');
-}
-    function stopLoading(btn, text = "Submit Order") {
-    btn.disabled = false;
-    btn.innerHTML = text;
-    btn.dataset.loading = "false";
-}
+   
+    openShippingModal();
+};
     window.submitOrder = async function(event){
     const btn = event.target;
 
@@ -381,6 +376,13 @@ if (!address) {
 
     const safeName = sanitize(name);
     const safeAddress = sanitize(address);
+        
+    localStorage.setItem("shipping_cache", JSON.stringify({
+    name: safeName,
+    phone,
+    email,
+    address: safeAddress
+}));
 
     btn.disabled = true;
     btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing...`;
@@ -588,8 +590,8 @@ const items = window.appState.cart.map(c => {
             if(item.qty <= 0) window.appState.cart = window.appState.cart.filter(i => i.id !== id);
             localStorage.setItem('cart', JSON.stringify(window.appState.cart));
             renderCartItems();
-            updateCartBadge();
             renderItems(getFilteredData());
+            updateCartBadge();
             updatePlaceOrderButton();
         }
 
@@ -826,25 +828,16 @@ const items = window.appState.cart.map(c => {
             description: "Herbal Product Order",
             order_id: order.id,
 
-            handler: function (response) {
+           handler: async function (response) {
     console.log("Payment success:", response);
-    saveOrderAfterPayment(response, orderData);
 
-    // UI actions AFTER payment success
-    showToast("🎉 Payment Successful!", false);
-
-    setTimeout(() => {
-        window.appState.cart.length = 0;
-        localStorage.setItem('cart', JSON.stringify([]));
-
-        renderCartItems();
-        updateCartBadge();
-
-        document.getElementById('userFormModal').classList.add('hidden');
-        closeCart();
-
-        openOrders();
-    }, 1500); // 1.5–2 sec delay as you wanted
+    try {
+        await saveOrderAfterPayment(response, orderData);
+        showToast("🎉 Payment Successful!", false);
+    } catch (e) {
+        console.error(e);
+        showToast("Order saved failed after payment", true);
+    }
 },
 
             theme: { color: "#10b981" }
@@ -883,7 +876,35 @@ const items = window.appState.cart.map(c => {
         t.classList.remove('active');
     }, hideTime);
 }
+        function openShippingModal() {
+    document.getElementById('userFormModal').classList.remove('hidden');
+    loadShippingDetails();
+}
 
+        async function loadShippingDetails() {
+    const uid = localStorage.getItem("user_uid");
+    if (!uid) return;
+
+    try {
+        const q = query(
+            collection(db, "users_shipping"),
+            where("user_uid", "==", uid)
+        );
+
+        const snap = await getDocs(q);
+
+        if (!snap.empty) {
+            const data = snap.docs[0].data();
+
+            document.getElementById("name").value = data.name || "";
+            document.getElementById("phone").value = data.phone || "";
+            document.getElementById("email").value = data.email || "";
+            document.getElementById("address").value = data.address || "";
+        }
+    } catch (e) {
+        console.error("Shipping load error:", e);
+    }
+}
         // Search Debounce
         let debounce;
         document.getElementById('searchInput').oninput = () => {
@@ -1037,17 +1058,17 @@ function installApp() {
     const btn = document.querySelector('button[onclick="installApp()"]');
 
     if (!deferredPrompt) {
-        showToast("Install not available", true);
+    showToast("Install not available", true);
 
-        // hide button on mobile
-        if (window.innerWidth <= 768 && btn) {
-            setTimeout(() => {
-                btn.style.display = "none";
-            }, 1000);
-        }
-
-        return;
+    // hide button after 1 second in mobile view
+    if (window.innerWidth <= 768 && btn) {
+        setTimeout(() => {
+            btn.style.display = "none";
+        }, 1000);
     }
+
+    return;
+}
 
     deferredPrompt.prompt();
 
@@ -1074,8 +1095,6 @@ setTimeout(() => {
     filterItems(savedFilter);
 
     fetchSheetData();
-    updateCartBadge();
-    updatePlaceOrderButton();
 
     setInterval(fetchSheetData, 30000);
 };
