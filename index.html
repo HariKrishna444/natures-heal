@@ -1217,9 +1217,7 @@ const items = window.appState.cart.map(c => {
     })
     .then(order => {
 
-        if (!order || !order.id) {
-            throw new Error("Invalid order response from server");
-        }
+        hidePaymentLoader(); // 👈 HIDE when ready
 
         const options = {
             key: RAZORPAY_KEY,
@@ -1229,34 +1227,31 @@ const items = window.appState.cart.map(c => {
             description: "Herbal Product Order",
             order_id: order.id,
 
-           handler: async function (response) {
-
-    try {
-        await saveOrderAfterPayment(response, orderData);
-        showToast("🎉 Payment Successful!", false);
-    } catch (e) {
-        console.error(e);
-        showToast("Order saved failed after payment", true);
-    }
-},
+            handler: async function (response) {
+                try {
+                    await saveOrderAfterPayment(response, orderData);
+                    showToast("🎉 Payment Successful!", false);
+                } catch (e) {
+                    showToast("Order save failed", true);
+                }
+            },
 
             theme: { color: "#10b981" }
         };
 
         const rzp = new Razorpay(options);
 
-        rzp.on("payment.failed", function (response) {
-            showToast("Payment failed. Please try again.", true);
+        rzp.on("payment.failed", function () {
+            showToast("Payment failed", true);
         });
 
         rzp.open();
     })
     .catch(err => {
-        console.error("Razorpay error:", err);
+        hidePaymentLoader(); // 👈 HIDE on error
         showToast("Payment setup failed: " + err.message, true);
     });
 }
-
         function closeModal() { document.getElementById('modal').classList.add('hidden'); document.body.style.overflow = ''; }
         
         function showToast(msg, isError = false) {
@@ -1497,5 +1492,11 @@ setTimeout(() => {
     setInterval(fetchSheetData, 30000);
 };
     </script>
+    <div id="paymentLoader" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[2000]">
+    <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl flex flex-col items-center gap-4">
+        <i class="fas fa-spinner fa-spin text-3xl text-emerald-600"></i>
+        <p class="font-bold text-emerald-600">Opening Payment Gateway...</p>
+    </div>
+</div>
 </body>
 </html>
