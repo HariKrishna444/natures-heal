@@ -804,26 +804,29 @@ const items = window.appState.cart.map(c => {
     try {
     const totalAmount = total * 100;
 
-    payNow(totalAmount, {
-        items,
-        total,
-        user: {
-            name: safeName,
-            phone,
-            email,
-            address: safeAddress
-        },
-        user_uid: uid,
-        user_email: email
-    });
+    btn.disabled = true;
+    btn.dataset.loading = "true";
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Opening Payment...`;
 
+    await payNow(totalAmount, {
+    items,
+    total,
+    user: {
+        name: safeName,
+        phone,
+        email,
+        address: safeAddress
+    },
+    user_uid: uid,
+    user_email: email
+    }, btn);
     // ❌ DO NOTHING ELSE HERE
     return;
 
-} catch (e) {
+    } catch (e) {
     console.error(e);
     showToast("Error starting payment", true);
-} finally {
+    } finally {
         btn.disabled = false;
         btn.innerHTML = "Submit Order";
         btn.dataset.loading = "false";
@@ -1204,7 +1207,9 @@ const items = window.appState.cart.map(c => {
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         }
 
-       function payNow(totalAmount, orderData) {
+     function payNow(totalAmount, orderData, btn) {
+
+    showPaymentLoader(); // ✅ SHOW loader before API call
 
     fetch("https://us-central1-naturesheal.cloudfunctions.net/createOrder", {
         method: "POST",
@@ -1217,7 +1222,13 @@ const items = window.appState.cart.map(c => {
     })
     .then(order => {
 
-        hidePaymentLoader(); // 👈 HIDE when ready
+        hidePaymentLoader(); // ✅ HIDE before Razorpay opens
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = "Submit Order";
+            btn.dataset.loading = "false";
+        }
 
         const options = {
             key: RAZORPAY_KEY,
@@ -1248,7 +1259,16 @@ const items = window.appState.cart.map(c => {
         rzp.open();
     })
     .catch(err => {
-        hidePaymentLoader(); // 👈 HIDE on error
+        console.error("Razorpay error:", err);
+
+        hidePaymentLoader(); // ✅ HIDE on error
+
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = "Submit Order";
+            btn.dataset.loading = "false";
+        }
+
         showToast("Payment setup failed: " + err.message, true);
     });
 }
