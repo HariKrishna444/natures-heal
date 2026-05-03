@@ -40,6 +40,7 @@
     display: flex;
     height: 100dvh; 
     flex-direction: column;
+    padding-bottom: env(safe-area-inset-bottom);
 
     background: var(--bg-card);
     color: var(--text-main);
@@ -49,8 +50,13 @@
     box-shadow: -10px 0 30px rgba(0,0,0,0.2);
     border-left: 1px solid var(--border-color);
 }
+        #cartSidebar .sticky {
+    padding-bottom: 10px;
+}
         #cartItemsList {
         min-height: 0; /* important for flex scrolling on mobile */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         }
         #cartSidebar.active { right: 0; }
         #cartOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 90; display: none; }
@@ -62,6 +68,7 @@
             position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
             background: #10b981; color: white; padding: 1rem 2rem; border-radius: 1rem;
             font-weight: 600; box-shadow: 0 10px 15px rgba(0,0,0,0.2); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000;
+            bottom: calc(2rem + env(keyboard-inset-height, 0px));
         }
         #toast.active { transform: translateX(-50%) translateY(0); }
     </style>
@@ -201,8 +208,8 @@ class="fixed bottom-20 right-2 bg-emerald-600 text-white px-4 py-2 rounded-full 
     </div>
 
     <!-- User Details Modal -->
-    <div id="userFormModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4">
-        <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl w-full max-w-md">
+    <div id="userFormModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h2 class="text-2xl font-bold mb-6 text-emerald-700">Shipping Details</h2>
             <div class="space-y-4">
                 <input id="name" type="text" placeholder="Full Name"
@@ -833,13 +840,15 @@ const items = window.appState.cart.map(c => {
 
     try {
         await saveOrderAfterPayment(response, orderData);
-        showToast("🎉 Payment Successful!", false);
+
+        // ❌ REMOVE THIS LINE
+        // showToast("🎉 Payment Successful!", false);
+
     } catch (e) {
         console.error(e);
         showToast("Order saved failed after payment", true);
     }
 },
-
             theme: { color: "#10b981" }
         };
 
@@ -989,7 +998,7 @@ window.closeOrders = function () {
     document.body.style.overflow = '';
 };
 
-        async function saveOrderAfterPayment(paymentResponse, orderData) {
+       async function saveOrderAfterPayment(paymentResponse, orderData) {
     try {
         await addDoc(collection(db, "orders"), {
             ...orderData,
@@ -1009,8 +1018,8 @@ window.closeOrders = function () {
 
         document.getElementById('userFormModal').classList.add('hidden');
         closeCart();
-        openOrders();
 
+        // ❌ removed openOrders()
     } catch (e) {
         console.error(e);
         showToast("Payment succeeded but order save failed", true);
