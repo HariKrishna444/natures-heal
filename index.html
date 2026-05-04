@@ -875,10 +875,12 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
             <button class="modal-close-btn" onclick="closeAdminLogin()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
-            <div class="form-group">
-                <input id="adminPassword" type="password" class="form-input" placeholder="Enter admin password">
-                <button onclick="verifyAdmin()" class="submit-btn">Access Dashboard</button>
-            </div>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.5">Sign in with your <strong>admin Google account</strong> to access the dashboard.</p>
+            <button class="google-btn" onclick="signInWithGoogle()" style="margin-top:0">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                Sign in with Google
+            </button>
+            <p style="font-size:0.7rem;text-align:center;color:var(--text-muted);margin-top:0.75rem">Only the registered admin email can access this panel.</p>
         </div>
     </div>
 </div>
@@ -956,6 +958,37 @@ const firebaseConfig = {
     messagingSenderId: "429407436276",
     appId: "1:429407436276:web:2cb0470eecbf9ed349cda1"
 };
+
+/*
+ ╔══════════════════════════════════════════════════════════════╗
+ ║  FIRESTORE SECURITY RULES — Apply in Firebase Console        ║
+ ║  Firebase → Firestore → Rules                                ║
+ ╠══════════════════════════════════════════════════════════════╣
+ ║                                                              ║
+ ║  rules_version = '2';                                        ║
+ ║  service cloud.firestore {                                   ║
+ ║    match /databases/{database}/documents {                   ║
+ ║      function isAdmin() {                                    ║
+ ║        return request.auth != null &&                        ║
+ ║               request.auth.token.email == "ADMIN@EMAIL.COM"; ║
+ ║      }                                                       ║
+ ║      match /products/{id} {                                  ║
+ ║        allow read: if true;                                  ║
+ ║        allow write: if isAdmin();                            ║
+ ║      }                                                       ║
+ ║      match /orders/{id} {                                    ║
+ ║        allow create: if request.auth != null;                ║
+ ║        allow read: if isAdmin();                             ║
+ ║        allow update: if isAdmin();                           ║
+ ║      }                                                       ║
+ ║      match /users_shipping/{id} {                            ║
+ ║        allow read, write: if request.auth != null &&         ║
+ ║          request.auth.uid == resource.data.user_uid;         ║
+ ║      }                                                       ║
+ ║    }                                                         ║
+ ║  }                                                           ║
+ ╚══════════════════════════════════════════════════════════════╝
+*/
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -1046,6 +1079,7 @@ window.switchToPhoneInput = function() {
 
 // Auth state observer
 onAuthStateChanged(auth, (user) => {
+    window.currentUser = user || null;
     if (user) {
         const name = user.displayName || user.phoneNumber || 'User';
         const email = user.email || user.phoneNumber || '';
@@ -1056,13 +1090,16 @@ onAuthStateChanged(auth, (user) => {
 
 // ===== LOGOUT =====
 window.logout = async function() {
-    try { await signOut(auth); } catch(e) {}
+    try { await signOut(auth); } catch(e) {
+        showToast("Logout error. Try again.", true);
+    }
+    window.currentUser = null;
     localStorage.removeItem('user_uid');
     localStorage.removeItem('user_name');
     localStorage.removeItem('user_email');
     localStorage.removeItem('user_photo');
     updateUserUI(null);
-    showToast("Logged out");
+    showToast("Logged out successfully");
 };
 
 // ===== SAVE ORDER TO FIRESTORE =====
@@ -1105,9 +1142,9 @@ window.loadAllOrders = async function() {
 window.updateOrderStatus = async function(orderId, newStatus) {
     try {
         await updateDoc(doc(db, "orders", orderId), { status: newStatus });
-        showToast("✅ Status updated");
+        showToast("✅ Status updated to: " + newStatus);
     } catch(e) {
-        showToast("Failed to update", true);
+        showToast("Failed to update status", true);
     }
 };
 
@@ -1142,11 +1179,18 @@ window.adminSaveProduct = async function(productData) {
 <script>
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-oDJG-YtvMsbQuQP7Xea38B2ovpgWMJA6s4GYiJ0R3RLVCJhljuwwTc0MJWzJCRWv2EF/pub?output=csv`;
 const RAZORPAY_KEY = "rzp_test_SkZ2ZeOudkj7PI";
-const WHATSAPP_NUMBER = "919XXXXXXXXX"; // 🔴 REPLACE with your number
-const ADMIN_PASSWORD = "natures@admin2024"; // 🔴 CHANGE this
+const WHATSAPP_NUMBER = "918919011159";
+const ADMIN_EMAIL = "youradmin@gmail.com"; // 🔴 CHANGE this to your admin Google email
+
+// ===== ADMIN AUTH CHECK (uses Firebase Auth, not password) =====
+function isAdmin() {
+    return window.currentUser && window.currentUser.email === ADMIN_EMAIL;
+}
 
 window.appState = {
     catalogData: [],
+    catalogCache: null,   // in-memory cache for performance
+    catalogLastFetch: 0,  // timestamp of last fetch
     favorites: JSON.parse(localStorage.getItem('favorites')) || [],
     cart: (JSON.parse(localStorage.getItem('cart')) || []).map(i =>
         typeof i === "number" ? { id: i, qty: 1 } : i
@@ -1242,7 +1286,17 @@ window.switchAuthTab = function(tab) {
 };
 
 // ===== CATALOG =====
-function fetchSheetData() {
+function fetchSheetData(forceRefresh = false) {
+    const now = Date.now();
+    const CACHE_TTL = 30000; // 30s
+
+    // Use cached data if fresh and not forcing refresh
+    if (!forceRefresh && window.appState.catalogCache && (now - window.appState.catalogLastFetch < CACHE_TTL)) {
+        window.appState.catalogData = window.appState.catalogCache;
+        renderItems(getFilteredData());
+        return;
+    }
+
     Papa.parse(SHEET_URL, {
         download: true, header: true, skipEmptyLines: true,
         complete: function(result) {
@@ -1253,7 +1307,10 @@ function fetchSheetData() {
                 showCatalogError('No items found. Check the sheet is published as CSV.');
                 return;
             }
+            // Store in cache
             window.appState.catalogData = parsed;
+            window.appState.catalogCache = parsed;
+            window.appState.catalogLastFetch = Date.now();
             renderItems(getFilteredData());
         },
         error: () => showCatalogError('Could not load catalog. Check your internet connection.')
@@ -1791,8 +1848,18 @@ window.handleAdminTrigger = function() {
 };
 
 window.openAdminLogin = function() {
-    document.getElementById('adminLoginModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    // If user is already logged in with Firebase Auth, check if admin directly
+    if (window.currentUser) {
+        if (isAdmin()) {
+            openAdminPanel();
+        } else {
+            showToast("Not authorized. Login with admin Google account.", true);
+        }
+        return;
+    }
+    // Not logged in — show auth modal first
+    showToast("Please login with your admin Google account first.", true);
+    setTimeout(() => openAuthModal(), 800);
 };
 window.closeAdminLogin = function() {
     document.getElementById('adminLoginModal').classList.add('hidden');
@@ -1800,18 +1867,20 @@ window.closeAdminLogin = function() {
 };
 
 window.verifyAdmin = function() {
-    const pw = document.getElementById('adminPassword').value;
-    if (pw === ADMIN_PASSWORD) {
-        window.appState.isAdmin = true;
+    // Legacy fallback — now handled by Firebase Auth in openAdminLogin
+    if (isAdmin()) {
         closeAdminLogin();
         openAdminPanel();
     } else {
-        showToast("Wrong password", true);
-        document.getElementById('adminPassword').value = '';
+        showToast("Not authorized", true);
     }
 };
 
 window.openAdminPanel = async function() {
+    if (!isAdmin()) {
+        showToast("Not authorized", true);
+        return;
+    }
     document.getElementById('adminPanel').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     loadAdminOrders();
@@ -1834,7 +1903,9 @@ window.switchAdminTab = switchAdminTab;
 
 async function loadAdminOrders() {
     const list = document.getElementById('adminOrdersList');
-    list.innerHTML = `<p style="color:var(--text-muted);font-size:0.875rem">Loading...</p>`;
+    list.innerHTML = `<div style="display:flex;align-items:center;gap:0.5rem;color:var(--text-muted);font-size:0.875rem;padding:1rem 0">
+        <i class="fas fa-spinner fa-spin" style="color:#059669"></i> Loading orders...
+    </div>`;
     const orders = await loadAllOrders();
 
     if (!orders.length) {
@@ -1878,7 +1949,8 @@ function loadAdminProducts() {
         </div>
         <div style="display:flex;align-items:center;gap:0.5rem">
             <span style="font-size:0.78rem;color:var(--text-muted)">₹</span>
-            <input class="admin-input-sm" type="number" value="${p.price}" id="price_${p.id}" onchange="adminUpdatePrice(${p.id}, this.value)">
+            <input class="admin-input-sm" type="number" value="${p.price}" id="price_${p.id}" min="1" onchange="adminUpdatePrice(${p.id}, this.value)">
+            <button onclick="editProduct(${p.id})" style="font-size:0.7rem;padding:0.3rem 0.5rem;border-radius:0.4rem;background:#dbeafe;color:#1d4ed8;font-weight:700">Edit</button>
             <label class="admin-toggle">
                 <span style="font-size:0.72rem;color:var(--text-muted)">${p.stock === '0' ? 'OOS' : 'In Stock'}</span>
                 <label class="toggle-switch">
@@ -1890,9 +1962,35 @@ function loadAdminProducts() {
     </div>`).join('');
 }
 
-window.adminUpdatePrice = function(id, val) {
+window.editProduct = async function(id) {
     const item = window.appState.catalogData.find(i => i.id === id);
-    if (item) { item.price = parseFloat(val); showToast("Price updated in session. Update Google Sheet to persist."); }
+    if (!item) return;
+    const newPrice = prompt(`Edit price for "${item.name}" (current: ₹${item.price}):`);
+    if (!newPrice) return;
+    const price = parseFloat(newPrice);
+    if (!price || price <= 0) return showToast("Invalid price", true);
+    const priceInput = document.getElementById('price_' + id);
+    if (priceInput) priceInput.value = price;
+    await window.adminUpdatePrice(id, price);
+    loadAdminProducts();
+    loadProductsFromFirestore && loadProductsFromFirestore();
+};
+
+window.adminUpdatePrice = async function(id, val) {
+    const price = parseFloat(val);
+    if (!price || price <= 0) return showToast("Invalid price", true);
+    const item = window.appState.catalogData.find(i => i.id === id);
+    if (!item) return;
+    item.price = price;
+    try {
+        // Update in Firestore if product has a firestoreId
+        if (item.firestoreId) {
+            await window.fbUpdateDoc(window.fbDoc(window.db, "products_admin", item.firestoreId), { price });
+        }
+        showToast("✅ Price updated");
+    } catch(e) {
+        showToast("Price saved locally. Update Google Sheet for catalog.", false);
+    }
 };
 window.adminToggleStock = function(id, inStock) {
     const item = window.appState.catalogData.find(i => i.id === id);
@@ -1908,7 +2006,9 @@ window.adminAddProduct = async function() {
     const description = document.getElementById('ap_description').value.trim();
     const uses = document.getElementById('ap_uses').value.trim();
 
-    if (!name || !price) return showToast("Name and price are required", true);
+    if (!name || name.length < 3) return showToast("Product name must be at least 3 characters", true);
+    if (!price || price <= 0) return showToast("Invalid price. Must be greater than ₹0", true);
+    if (image && !image.startsWith('https://')) return showToast("Image URL must start with https://", true);
 
     try {
         await adminSaveProduct({ name, scientific, type, price, image, description, uses });
@@ -1956,7 +2056,7 @@ window.onload = function() {
     filterItems(localStorage.getItem('selectedFilter') || 'all');
     // Load catalog
     fetchSheetData();
-    setInterval(fetchSheetData, 30000);
+    setInterval(() => fetchSheetData(true), 30000);
     // Auth state
     updateUserUI(null);
     // Cart
