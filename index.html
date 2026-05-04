@@ -1012,9 +1012,28 @@ window.signInWithGoogle = async function() {
         const provider = new GoogleAuthProvider();
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
+        window.currentUser = user;
         onLoginSuccess(user.uid, user.displayName, user.email, user.photoURL);
+
+        // Close whichever modal triggered sign-in
         closeAuthModal();
-        showToast("✅ Logged in as " + user.displayName);
+        const adminLoginModal = document.getElementById('adminLoginModal');
+        if (adminLoginModal && !adminLoginModal.classList.contains('hidden')) {
+            adminLoginModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // If admin email — open panel immediately
+        if (user.email === ADMIN_EMAIL) {
+            showToast("✅ Admin login successful!");
+            setTimeout(() => {
+                document.getElementById('adminPanel').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                loadAdminOrders();
+            }, 300);
+        } else {
+            showToast("✅ Logged in as " + user.displayName);
+        }
     } catch(e) {
         if (e.code !== 'auth/popup-closed-by-user') {
             showToast("Google login failed: " + e.message, true);
@@ -1085,6 +1104,17 @@ onAuthStateChanged(auth, (user) => {
         const email = user.email || user.phoneNumber || '';
         const photo = user.photoURL || 'https://i.pravatar.cc/40?u=' + user.uid;
         onLoginSuccess(user.uid, name, email, photo);
+
+        // If admin is already logged in and tried to open admin panel, open it now
+        if (user.email === ADMIN_EMAIL && window._pendingAdminOpen) {
+            window._pendingAdminOpen = false;
+            setTimeout(() => {
+                document.getElementById('adminLoginModal')?.classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                loadAdminOrders();
+            }, 300);
+        }
     }
 });
 
@@ -1848,18 +1878,24 @@ window.handleAdminTrigger = function() {
 };
 
 window.openAdminLogin = function() {
-    // If user is already logged in with Firebase Auth, check if admin directly
+    // If already logged in with Firebase Auth, check admin directly
     if (window.currentUser) {
-        if (isAdmin()) {
-            openAdminPanel();
+        if (window.currentUser.email === ADMIN_EMAIL) {
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            loadAdminOrders();
         } else {
             showToast("Not authorized. Login with admin Google account.", true);
+            // Show the admin login modal so they can switch accounts
+            document.getElementById('adminLoginModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
         return;
     }
-    // Not logged in — show auth modal first
-    showToast("Please login with your admin Google account first.", true);
-    setTimeout(() => openAuthModal(), 800);
+    // Not logged in — set pending flag, show login modal
+    window._pendingAdminOpen = true;
+    document.getElementById('adminLoginModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 };
 window.closeAdminLogin = function() {
     document.getElementById('adminLoginModal').classList.add('hidden');
