@@ -1217,7 +1217,7 @@ window.saveShippingDetails = async function(uid, data) {
 
 // ===== ADMIN: SAVE NEW PRODUCT =====
 window.adminSaveProduct = async function(productData) {
-    return await addDoc(collection(db, "products_admin"), {
+    return await addDoc(collection(db, "products"), {
         ...productData,
         created_at: serverTimestamp(),
         in_stock: true
@@ -1230,7 +1230,7 @@ window.adminSaveProduct = async function(productData) {
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-oDJG-YtvMsbQuQP7Xea38B2ovpgWMJA6s4GYiJ0R3RLVCJhljuwwTc0MJWzJCRWv2EF/pub?output=csv`;
 const RAZORPAY_KEY = "rzp_test_SkZ2ZeOudkj7PI";
 const WHATSAPP_NUMBER = "918919011159";
-const ADMIN_EMAIL = "harikrishnarock444@gmail.com"; // 🔴 CHANGE this to your admin Google email
+const ADMIN_EMAIL = "harikrishnarock444@gmail.com";
 
 // ===== ADMIN AUTH CHECK (uses Firebase Auth, not password) =====
 function isAdmin() {
@@ -2050,24 +2050,31 @@ window.adminUpdatePrice = async function(id, val) {
     const item = window.appState.catalogData.find(i => i.id === id);
     if (!item) return showToast("Product not found", true);
     item.price = price;
-    // Also update the cache so re-renders use new price
     if (window.appState.catalogCache) {
         const cached = window.appState.catalogCache.find(i => i.id === id);
         if (cached) cached.price = price;
     }
     try {
         if (item.firestoreId) {
-            await window.fbUpdateDoc(window.fbDoc(window.db, "products_admin", item.firestoreId), { price });
+            // Product was added via admin — update directly in "products" collection
+            await window.fbUpdateDoc(window.fbDoc(window.db, "products", item.firestoreId), { price });
             showToast("✅ Price updated in Firestore");
         } else {
-            // Product is from Google Sheet — save override to Firestore
-            await addDoc(collection(db, "price_overrides"), { sheet_id: id, price, updated_at: serverTimestamp() });
-            showToast("✅ Price updated! (update Google Sheet row too to persist permanently)");
+            // Product is from Google Sheet — save override to "products" collection
+            await addDoc(collection(db, "products"), {
+                sheet_id: id,
+                name: item.name,
+                price,
+                type: item.type || '',
+                is_price_override: true,
+                updated_at: serverTimestamp()
+            });
+            showToast("✅ Price override saved! Also update your Google Sheet to keep it permanent.");
         }
         renderItems(getFilteredData());
     } catch(e) {
-        console.error(e);
-        showToast("Price updated locally only. Check Firestore rules.", false);
+        console.error("adminUpdatePrice error:", e);
+        showToast("Save failed: " + (e.message || "Check you are logged in as admin"), true);
     }
 };
 window.adminToggleStock = function(id, inStock) {
