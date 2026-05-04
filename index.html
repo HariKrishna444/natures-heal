@@ -660,6 +660,11 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 
             <!-- hidden admin trigger (triple-click logo) -->
             <button id="adminTriggerBtn" onclick="openAdminLogin()" class="hidden" style="color:rgba(255,255,255,0.4);font-size:0.7rem;padding:0.2rem 0.5rem">⚙</button>
+
+            <!-- Admin Dashboard button — only visible when logged in as admin -->
+            <button id="adminDashboardBtn" onclick="openAdminPanel()" class="hidden" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:white;font-size:0.75rem;font-weight:700;padding:0.35rem 0.85rem;border-radius:9999px;display:none;align-items:center;gap:0.4rem">
+                <i class="fas fa-shield-alt"></i> Admin
+            </button>
         </div>
 
         <div class="mobile-filter">
@@ -1274,20 +1279,32 @@ function onLoginSuccess(uid, name, email, photo) {
 function updateUserUI(user) {
     const name = user?.name || localStorage.getItem('user_name');
     const photo = user?.photo || localStorage.getItem('user_photo');
+    const email = user?.email || localStorage.getItem('user_email') || '';
     const logoutBtn = document.querySelector('.logout-btn');
     const nameEl = document.getElementById('userNameDisplay');
     const imgEl = document.getElementById('userImg');
+    const adminBtn = document.getElementById('adminDashboardBtn');
 
     if (name && name !== 'Guest' && localStorage.getItem('user_uid')) {
         if (nameEl) nameEl.textContent = name.split(' ')[0];
         if (imgEl) imgEl.src = photo || 'https://i.pravatar.cc/40';
         if (logoutBtn) { logoutBtn.textContent = 'LOGOUT'; logoutBtn.onclick = () => logout(); }
         document.getElementById('ordersTabBtn')?.classList.remove('hidden');
+
+        // Show admin button only for admin email
+        if (adminBtn) {
+            if (email === ADMIN_EMAIL) {
+                adminBtn.style.display = 'flex';
+            } else {
+                adminBtn.style.display = 'none';
+            }
+        }
     } else {
         if (nameEl) nameEl.textContent = 'Guest';
         if (imgEl) imgEl.src = 'https://i.pravatar.cc/40';
         if (logoutBtn) { logoutBtn.textContent = 'LOGIN'; logoutBtn.onclick = () => openAuthModal(); }
         document.getElementById('ordersTabBtn')?.classList.add('hidden');
+        if (adminBtn) adminBtn.style.display = 'none';
     }
 }
 
