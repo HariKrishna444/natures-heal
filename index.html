@@ -928,7 +928,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
                         <input id="ap_image" class="form-input" placeholder="Image URL">
                         <textarea id="ap_description" class="form-input form-textarea" placeholder="Description"></textarea>
                         <textarea id="ap_uses" class="form-input" placeholder="Benefits (comma separated)" style="min-height:3.5rem"></textarea>
-                        <button onclick="adminAddProduct()" class="submit-btn" style="background:#4f46e5">
+                        <button id="adminAddProductBtn" onclick="adminAddProduct()" class="submit-btn" style="background:#4f46e5">
                             <i class="fas fa-plus"></i> Add to Google Sheet
                         </button>
                         <p style="font-size:0.72rem;color:var(--text-muted);text-align:center">Note: Adding product here saves to Firestore. Update your Google Sheet manually for catalog display.</p>
@@ -983,7 +983,9 @@ const firebaseConfig = {
  ║      }                                                       ║
  ║      match /orders/{id} {                                    ║
  ║        allow create: if request.auth != null;                ║
- ║        allow read: if isAdmin();                             ║
+ ║        allow read: if isAdmin() ||                           ║
+ ║          (request.auth != null &&                            ║
+ ║           request.auth.uid == resource.data.user_uid);       ║
  ║        allow update: if isAdmin();                           ║
  ║      }                                                       ║
  ║      match /users_shipping/{id} {                            ║
@@ -1149,11 +1151,24 @@ window.saveOrderToFirestore = async function(orderData) {
 // ===== LOAD USER ORDERS =====
 window.loadUserOrders = async function(uid) {
     try {
-        const q = query(collection(db, "orders"), where("user_uid", "==", uid));
-        const snap = await getDocs(q);
-        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // Try with orderBy first, fallback to simple query if index missing
+        let orders = [];
+        try {
+            const q = query(collection(db, "orders"), where("user_uid", "==", uid), orderBy("created_at", "desc"));
+            const snap = await getDocs(q);
+            orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        } catch(e) {
+            // Fallback: simple query without orderBy (no index needed)
+            const q2 = query(collection(db, "orders"), where("user_uid", "==", uid));
+            const snap2 = await getDocs(q2);
+            orders = snap2.docs.map(d => ({ id: d.id, ...d.data() }));
+            // Sort client-side
+            orders.sort((a, b) => (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0));
+        }
+        return orders;
     } catch(e) {
-        console.error(e);
+        console.error("loadUserOrders error:", e);
+        showToast("Could not load orders. Check Firestore rules.", true);
         return [];
     }
 };
@@ -1215,7 +1230,7 @@ window.adminSaveProduct = async function(productData) {
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-oDJG-YtvMsbQuQP7Xea38B2ovpgWMJA6s4GYiJ0R3RLVCJhljuwwTc0MJWzJCRWv2EF/pub?output=csv`;
 const RAZORPAY_KEY = "rzp_test_SkZ2ZeOudkj7PI";
 const WHATSAPP_NUMBER = "918919011159";
-const ADMIN_EMAIL = "harikrishnarock444@gmail.com"; // 🔴 CHANGE this to your admin Google email
+const ADMIN_EMAIL = "youradmin@gmail.com"; // 🔴 CHANGE this to your admin Google email
 
 // ===== ADMIN AUTH CHECK (uses Firebase Auth, not password) =====
 function isAdmin() {
@@ -2033,16 +2048,26 @@ window.adminUpdatePrice = async function(id, val) {
     const price = parseFloat(val);
     if (!price || price <= 0) return showToast("Invalid price", true);
     const item = window.appState.catalogData.find(i => i.id === id);
-    if (!item) return;
+    if (!item) return showToast("Product not found", true);
     item.price = price;
+    // Also update the cache so re-renders use new price
+    if (window.appState.catalogCache) {
+        const cached = window.appState.catalogCache.find(i => i.id === id);
+        if (cached) cached.price = price;
+    }
     try {
-        // Update in Firestore if product has a firestoreId
         if (item.firestoreId) {
             await window.fbUpdateDoc(window.fbDoc(window.db, "products_admin", item.firestoreId), { price });
+            showToast("✅ Price updated in Firestore");
+        } else {
+            // Product is from Google Sheet — save override to Firestore
+            await addDoc(collection(db, "price_overrides"), { sheet_id: id, price, updated_at: serverTimestamp() });
+            showToast("✅ Price updated! (update Google Sheet row too to persist permanently)");
         }
-        showToast("✅ Price updated");
+        renderItems(getFilteredData());
     } catch(e) {
-        showToast("Price saved locally. Update Google Sheet for catalog.", false);
+        console.error(e);
+        showToast("Price updated locally only. Check Firestore rules.", false);
     }
 };
 window.adminToggleStock = function(id, inStock) {
@@ -2063,14 +2088,25 @@ window.adminAddProduct = async function() {
     if (!price || price <= 0) return showToast("Invalid price. Must be greater than ₹0", true);
     if (image && !image.startsWith('https://')) return showToast("Image URL must start with https://", true);
 
+    // Disable button during save
+    const btn = document.getElementById('adminAddProductBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
     try {
-        await adminSaveProduct({ name, scientific, type, price, image, description, uses });
-        showToast("✅ Product saved to Firestore! Add to Google Sheet to show in catalog.");
+        // Use window.adminSaveProduct (defined in Firebase module script)
+        if (typeof window.adminSaveProduct !== 'function') throw new Error("Firebase not ready");
+        await window.adminSaveProduct({ name, scientific, type, price, image, description, uses });
+        showToast("✅ Product added successfully!");
         ['ap_name','ap_scientific','ap_price','ap_image','ap_description','ap_uses'].forEach(id => {
-            document.getElementById(id).value = '';
+            const el = document.getElementById(id);
+            if (el) el.value = '';
         });
+        document.getElementById('ap_type').value = 'powder';
     } catch(e) {
-        showToast("Failed to save product", true);
+        console.error("adminAddProduct error:", e);
+        showToast("Failed to save: " + (e.message || "Check Firestore rules"), true);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '+ Add Product'; }
     }
 };
 
