@@ -1217,11 +1217,31 @@ window.saveShippingDetails = async function(uid, data) {
 
 // ===== ADMIN: SAVE NEW PRODUCT =====
 window.adminSaveProduct = async function(productData) {
-    return await addDoc(collection(db, "products"), {
+    // 1. Save to Firestore
+    const docRef = await addDoc(collection(db, "products"), {
         ...productData,
         created_at: serverTimestamp(),
         in_stock: true
     });
+
+    // 2. Save to Google Sheets via Apps Script
+    if (window.APPS_SCRIPT_URL) {
+        try {
+            await fetch(window.APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'addProduct',
+                    firestoreId: docRef.id,
+                    ...productData
+                })
+            });
+        } catch(e) {
+            console.warn("Sheet sync failed (non-critical):", e);
+        }
+    }
+    return docRef;
 };
 </script>
 
@@ -1231,6 +1251,14 @@ const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-o
 const RAZORPAY_KEY = "rzp_test_SkZ2ZeOudkj7PI";
 const WHATSAPP_NUMBER = "918919011159";
 const ADMIN_EMAIL = "harikrishnarock444@gmail.com";
+
+// 🔴 Paste your Google Apps Script Web App URL here after deploying (see instructions below)
+// How to get this URL:
+//   1. Open your Google Sheet → Extensions → Apps Script
+//   2. Paste the Apps Script code (given separately)
+//   3. Click Deploy → New Deployment → Web App → Anyone → Deploy
+//   4. Copy the URL and paste below
+window.APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysQGE_P7XFBPtNmApp3sn9LEUF5_UJPBbMGpSXL8QDzZY-QItJ30--tj8zHaTMNJBM/exec"; // e.g. "https://script.google.com/macros/s/XXXX/exec"
 
 // ===== ADMIN AUTH CHECK (uses Firebase Auth, not password) =====
 function isAdmin() {
@@ -2056,25 +2084,34 @@ window.adminUpdatePrice = async function(id, val) {
     }
     try {
         if (item.firestoreId) {
-            // Product was added via admin — update directly in "products" collection
             await window.fbUpdateDoc(window.fbDoc(window.db, "products", item.firestoreId), { price });
-            showToast("✅ Price updated in Firestore");
         } else {
-            // Product is from Google Sheet — save override to "products" collection
-            await addDoc(collection(db, "products"), {
+            // Save price override to Firestore using window.fbAddDoc
+            await window.fbAddDoc(window.fbCollection(window.db, "products"), {
                 sheet_id: id,
                 name: item.name,
                 price,
                 type: item.type || '',
                 is_price_override: true,
-                updated_at: serverTimestamp()
+                updated_at: window.fbServerTimestamp()
             });
-            showToast("✅ Price override saved! Also update your Google Sheet to keep it permanent.");
         }
+
+        // Sync price to Google Sheets
+        if (window.APPS_SCRIPT_URL) {
+            fetch(window.APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'updatePrice', id, price })
+            }).catch(() => {});
+        }
+
+        showToast("✅ Price updated!");
         renderItems(getFilteredData());
     } catch(e) {
         console.error("adminUpdatePrice error:", e);
-        showToast("Save failed: " + (e.message || "Check you are logged in as admin"), true);
+        showToast("Save failed: " + (e.message || "Check Firestore rules"), true);
     }
 };
 window.adminToggleStock = function(id, inStock) {
