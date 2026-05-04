@@ -1828,13 +1828,20 @@ window.submitOrder = async function(event) {
     const safeName = sanitize(name);
     const safeAddress = sanitize(address);
 
-    const catalogMap = new Map(window.appState.catalogData.map(i => [i.id, i]));
+    // Build map with string keys to avoid type mismatch (Firestore IDs are strings)
+    const catalogMap = new Map(window.appState.catalogData.map(i => [String(i.id), i]));
     const items = window.appState.cart.map(c => {
-        const p = catalogMap.get(c.id);
-        return p ? { name: p.name, price: p.price, qty: c.qty, id: p.id, image: p.image || '', quantityType: p.quantityType || 'unit' } : null;
+        const p = catalogMap.get(String(c.id));
+        if (!p) return null;
+        // Ensure image is a valid https URL, else store empty string
+        const imgUrl = p.image && p.image.startsWith('https://') ? p.image : '';
+        return { name: p.name, price: p.price, qty: c.qty, id: p.id, image: imgUrl, quantityType: p.quantityType || 'unit' };
     }).filter(Boolean);
 
-    if (!items.length) return showToast("Cart error. Please try again.", true);
+    if (!items.length) {
+        console.error("Cart map failed. Cart:", window.appState.cart, "Catalog IDs:", window.appState.catalogData.map(i=>i.id));
+        return showToast("Cart error. Please refresh and try again.", true);
+    }
 
     const total = items.reduce((s, i) => s + (i.price * i.qty), 0);
 
@@ -1975,9 +1982,16 @@ window.openOrders = async function() {
         const st = o.status || 'pending';
         const date = o.created_at?.seconds ? new Date(o.created_at.seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
         const payMethod = o.payment?.method === 'COD' ? '💵 Cash on Delivery' : '💳 Online Payment';
-        const itemsHTML = (o.items || []).map(i => `
+        const itemsHTML = (o.items || []).map(i => {
+            const hasImg = i.image && String(i.image).startsWith('https://');
+            return `
             <div style="display:flex;align-items:center;gap:0.75rem;padding:0.55rem 0;border-bottom:1px solid var(--border-color)">
-                ${i.image ? `<img src="${safeURL(i.image)}" style="width:3.25rem;height:3.25rem;border-radius:0.65rem;object-fit:cover;flex-shrink:0;border:1.5px solid var(--border-color)" alt="${escapeHTML(i.name)}">` : `<div style="width:3.25rem;height:3.25rem;border-radius:0.65rem;background:var(--bg-body);border:1.5px solid var(--border-color);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-leaf" style="color:#059669;font-size:1rem"></i></div>`}
+                <div style="position:relative;width:3.25rem;height:3.25rem;flex-shrink:0">
+                    ${hasImg ? `<img src="${safeURL(i.image)}" style="width:3.25rem;height:3.25rem;border-radius:0.65rem;object-fit:cover;border:1.5px solid var(--border-color);position:absolute;inset:0" alt="${escapeHTML(i.name)}" onerror="this.style.display='none';this.parentElement.querySelector('.img-fallback').style.display='flex'">` : ''}
+                    <div class="img-fallback" style="width:3.25rem;height:3.25rem;border-radius:0.65rem;background:var(--bg-body);border:1.5px solid var(--border-color);display:${hasImg ? 'none' : 'flex'};align-items:center;justify-content:center;position:absolute;inset:0">
+                        <i class="fas fa-leaf" style="color:#059669;font-size:1rem"></i>
+                    </div>
+                </div>
                 <div style="flex:1;min-width:0">
                     <div style="font-size:0.82rem;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(i.name)}</div>
                     <div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.15rem">
@@ -1986,7 +2000,8 @@ window.openOrders = async function() {
                     </div>
                 </div>
                 <div style="font-size:0.82rem;font-weight:800;color:#059669;flex-shrink:0;text-align:right">₹${((i.price || 0) * (i.qty || 1)).toFixed(0)}</div>
-            </div>`).join('');
+            </div>`;
+        }).join('');
         return `<div class="order-card">
             <div class="order-top">
                 <span class="order-amount">₹${o.total}</span>
