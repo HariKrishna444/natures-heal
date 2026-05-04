@@ -262,25 +262,29 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 
 /* ===== CART SIDEBAR ===== */
 #cartSidebar {
-    position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px;
+    position: fixed; top: 0; right: -100%; width: min(100%, 400px);
     height: 100dvh; display: flex; flex-direction: column;
     background: var(--bg-card); z-index: 100;
     transition: right 0.4s cubic-bezier(0.4,0,0.2,1);
     box-shadow: -10px 0 40px rgba(0,0,0,0.2);
     border-left: 1px solid var(--border-color);
+    overflow: hidden;
 }
 #cartSidebar.active { right: 0; }
 #cartOverlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.5);
     backdrop-filter: blur(4px); z-index: 90; display: none;
 }
-.cart-header { padding: 1.25rem 1.25rem 1rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+.cart-header { padding: 1rem 1rem 0.85rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+@media(min-width:400px){ .cart-header { padding: 1.25rem 1.25rem 1rem; } }
 .cart-title { font-family: 'Poppins', sans-serif; font-size: 1.15rem; font-weight: 800; color: #059669; }
 .cart-close { width: 2rem; height: 2rem; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #475569; transition: all 0.2s; }
 .dark .cart-close { background: #1e293b; color: #94a3b8; }
 .cart-close:hover { background: #ef4444; color: white; }
-.cart-items { flex: 1; overflow-y: auto; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; min-height: 0; }
-.cart-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--border-color); }
+.cart-items { flex: 1; overflow-y: auto; padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 0.65rem; min-height: 0; }
+@media(min-width:400px){ .cart-items { padding: 1rem 1.25rem; gap: 0.75rem; } }
+.cart-footer { padding: 0.85rem 1rem; border-top: 1px solid var(--border-color); }
+@media(min-width:400px){ .cart-footer { padding: 1rem 1.25rem; } }
 .cart-total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
 .cart-total-label { font-size: 0.875rem; color: var(--text-muted); }
 .cart-total-amount { font-size: 1.1rem; font-weight: 800; color: #065f46; }
@@ -292,10 +296,15 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 .place-order-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .cart-item {
-    display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem;
+    display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem;
     background: var(--bg-body); border-radius: 0.85rem; border: 1px solid var(--border-color);
+    min-width: 0;
 }
-.cart-item img { width: 3.5rem; height: 3.5rem; border-radius: 0.6rem; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-color); }
+.cart-item img { width: 3rem; height: 3rem; border-radius: 0.6rem; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-color); }
+@media(min-width:400px){
+    .cart-item img { width: 3.5rem; height: 3.5rem; }
+    .cart-item { gap: 0.75rem; padding: 0.75rem; }
+}
 .cart-item-info { flex: 1; min-width: 0; }
 .cart-item-name { font-size: 0.8rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cart-item-price { font-size: 0.72rem; color: var(--text-muted); }
@@ -1494,7 +1503,7 @@ function renderItems(items) {
 
     items.forEach((item, idx) => {
         const isFav = window.appState.favorites.includes(item.id);
-        const inCart = window.appState.cart.some(c => c.id === item.id);
+        const inCart = window.appState.cart.some(c => c.id == item.id);
         const isOutOfStock = item.stock === '0' || item.stock === 'out';
         const isBestseller = item.bestseller === '1' || item.bestseller === 'true';
         const isUrgent = item.stock && parseInt(item.stock) <= 5 && parseInt(item.stock) > 0;
@@ -1566,12 +1575,12 @@ window.openModalById = function(id) {
             <span class="rating-stars">${stars}</span>
             <span class="rating-count">${r} (${count} reviews)</span>
         </div>
-        <div style="display:flex;align-items:center;gap:0.75rem;margin:0.75rem 0;padding:0.65rem;background:var(--bg-body);border-radius:0.75rem;border:1px solid var(--border-color)">
-            <span style="font-size:0.78rem;color:var(--text-muted);font-weight:600">Qty:</span>
+        <div style="display:flex;align-items:center;gap:0.75rem;margin:0.75rem 0;padding:0.65rem;background:rgba(255,255,255,0.12);border-radius:0.75rem;border:1px solid rgba(255,255,255,0.2)">
+            <span style="font-size:0.78rem;color:rgba(255,255,255,0.85);font-weight:600">Qty:</span>
             <button onclick="modalQtyChange(${item.id}, -1)" style="width:1.8rem;height:1.8rem;border-radius:0.4rem;background:#fee2e2;color:#dc2626;font-weight:700;font-size:1rem;border:none;cursor:pointer">−</button>
-            <span id="modalQtyVal_${item.id}" style="min-width:3.5rem;text-align:center;font-weight:700;font-size:0.85rem">${item.minQty || 1} ${item.quantityType || 'unit'}</span>
+            <span id="modalQtyVal_${item.id}" style="min-width:3.5rem;text-align:center;font-weight:700;font-size:0.85rem;color:white">${item.minQty || 1} ${item.quantityType || 'unit'}</span>
             <button onclick="modalQtyChange(${item.id}, 1)" style="width:1.8rem;height:1.8rem;border-radius:0.4rem;background:#d1fae5;color:#065f46;font-weight:700;font-size:1rem;border:none;cursor:pointer">+</button>
-            <span id="modalSubtotal_${item.id}" style="margin-left:auto;font-weight:800;color:#059669;font-size:0.9rem">₹${((item.price || 0) * (item.minQty || 1)).toFixed(0)}</span>
+            <span id="modalSubtotal_${item.id}" style="margin-left:auto;font-weight:800;color:#34d399;font-size:0.9rem">₹${((item.price || 0) * (item.minQty || 1)).toFixed(0)}</span>
         </div>
         <div class="item-modal-section">
             <div class="item-modal-section-title">Description</div>
@@ -1630,7 +1639,7 @@ window.addToCartFromModal = function(id) {
     const item = window.appState.catalogData.find(i => i.id == id);
     if (!item) return;
     const qty = window._modalQty[id] || item.minQty || 1;
-    const existing = window.appState.cart.find(c => c.id === id);
+    const existing = window.appState.cart.find(c => c.id == id);
     if (existing) existing.qty += qty;
     else window.appState.cart.push({ id, qty });
     delete window._modalQty[id];
@@ -1644,7 +1653,8 @@ window.addToCartFromModal = function(id) {
 
 // ===== CART =====
 function addToCartSimple(id) {
-    const item = window.appState.cart.find(i => i.id === id);
+    // Use == for type-coerced comparison since Firestore IDs may be strings or numbers
+    const item = window.appState.cart.find(i => i.id == id);
     if (item) item.qty += 1;
     else window.appState.cart.push({ id, qty: 1 });
     persistCart();
@@ -1657,13 +1667,13 @@ function addToCartSimple(id) {
 window.addToCartSimple = addToCartSimple;
 
 window.updateQty = function(id, change) {
-    const item = window.appState.cart.find(i => i.id === id);
+    const item = window.appState.cart.find(i => i.id == id);
     if (!item) return;
-    const prod = window.appState.catalogData.find(p => p.id === id);
+    const prod = window.appState.catalogData.find(p => p.id == id);
     const step = (prod && prod.step) ? prod.step : 1;
     const minQty = (prod && prod.minQty) ? prod.minQty : 1;
     item.qty = Math.round((item.qty + change * step) * 1000) / 1000;
-    if (item.qty < minQty) window.appState.cart = window.appState.cart.filter(i => i.id !== id);
+    if (item.qty < minQty) window.appState.cart = window.appState.cart.filter(i => i.id != id);
     persistCart();
     renderCartItems();
     renderItems(getFilteredData());
@@ -1678,7 +1688,7 @@ function persistCart() {
 function renderCartItems() {
     const list = document.getElementById('cartItemsList');
     const items = window.appState.cart.map(c => {
-        const p = window.appState.catalogData.find(i => i.id === c.id);
+        const p = window.appState.catalogData.find(i => i.id == c.id);
         return p ? { ...p, qty: c.qty } : null;
     }).filter(Boolean);
 
@@ -1715,7 +1725,7 @@ function renderCartItems() {
 
 function updateCartBadge() {
     const b = document.getElementById('cartBadge');
-    const count = window.appState.cart.reduce((s, i) => s + i.qty, 0);
+    const count = window.appState.cart.length;
     b.textContent = count;
     b.style.display = count > 0 ? 'block' : 'none';
 }
@@ -1966,13 +1976,16 @@ window.openOrders = async function() {
         const date = o.created_at?.seconds ? new Date(o.created_at.seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
         const payMethod = o.payment?.method === 'COD' ? '💵 Cash on Delivery' : '💳 Online Payment';
         const itemsHTML = (o.items || []).map(i => `
-            <div style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 0;border-bottom:1px solid var(--border-color)">
-                ${i.image ? `<img src="${safeURL(i.image)}" style="width:2.5rem;height:2.5rem;border-radius:0.5rem;object-fit:cover;flex-shrink:0;border:1px solid var(--border-color)" alt="${escapeHTML(i.name)}">` : `<div style="width:2.5rem;height:2.5rem;border-radius:0.5rem;background:var(--bg-body);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-leaf" style="color:#059669;font-size:0.8rem"></i></div>`}
+            <div style="display:flex;align-items:center;gap:0.75rem;padding:0.55rem 0;border-bottom:1px solid var(--border-color)">
+                ${i.image ? `<img src="${safeURL(i.image)}" style="width:3.25rem;height:3.25rem;border-radius:0.65rem;object-fit:cover;flex-shrink:0;border:1.5px solid var(--border-color)" alt="${escapeHTML(i.name)}">` : `<div style="width:3.25rem;height:3.25rem;border-radius:0.65rem;background:var(--bg-body);border:1.5px solid var(--border-color);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-leaf" style="color:#059669;font-size:1rem"></i></div>`}
                 <div style="flex:1;min-width:0">
-                    <div style="font-size:0.78rem;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(i.name)}</div>
-                    <div style="font-size:0.65rem;color:var(--text-muted)">${i.qty} ${i.quantityType || 'unit'} · ₹${i.price || 0}</div>
+                    <div style="font-size:0.82rem;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(i.name)}</div>
+                    <div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.15rem">
+                        <span style="background:var(--border-color);border-radius:0.3rem;padding:0.1rem 0.4rem;font-weight:600">Qty: ${i.qty} ${i.quantityType || 'unit'}</span>
+                        <span style="margin-left:0.4rem">@ ₹${i.price || 0}/${i.quantityType || 'unit'}</span>
+                    </div>
                 </div>
-                <div style="font-size:0.78rem;font-weight:700;color:#059669;flex-shrink:0">₹${((i.price || 0) * (i.qty || 1)).toFixed(0)}</div>
+                <div style="font-size:0.82rem;font-weight:800;color:#059669;flex-shrink:0;text-align:right">₹${((i.price || 0) * (i.qty || 1)).toFixed(0)}</div>
             </div>`).join('');
         return `<div class="order-card">
             <div class="order-top">
