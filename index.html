@@ -385,6 +385,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 .status-pending { background: #fef9c3; color: #a16207; }
 .status-shipped { background: #dbeafe; color: #1d4ed8; }
 .status-delivered { background: #d1fae5; color: #065f46; }
+.status-cancelled { background: #fee2e2; color: #dc2626; }
 .status-cod { background: #ede9fe; color: #6d28d9; }
 .order-items { font-size: 0.78rem; color: var(--text-muted); }
 .order-payment-badge {
@@ -916,22 +917,40 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
                 <div class="add-product-form">
                     <h4>➕ Add New Product</h4>
                     <div class="form-group">
-                        <input id="ap_name" class="form-input" placeholder="Product Name (e.g. Neem Powder)">
+                        <input id="ap_name" class="form-input" placeholder="Product Name (e.g. Curry Leaves)">
                         <input id="ap_scientific" class="form-input" placeholder="Scientific Name">
-                        <select id="ap_type" class="form-input">
-                            <option value="leaf">Leaf / Powder</option>
-                            <option value="fruit">Fruit</option>
-                            <option value="wild_fruit">Wild Fruit</option>
-                            <option value="seed">Seed</option>
+                        <select id="ap_type" class="form-input" onchange="autoFillQuantityType()">
+                            <option value="leaf">🍃 Leaf / Powder</option>
+                            <option value="fruit">🍎 Fruit</option>
+                            <option value="wild_fruit">🫐 Wild Fruit</option>
+                            <option value="seed">🌱 Seed</option>
                         </select>
-                        <input id="ap_price" class="form-input" type="number" placeholder="Price (₹)" min="1">
-                        <input id="ap_image" class="form-input" placeholder="Image URL">
+                        <input id="ap_price" class="form-input" type="number" placeholder="Price (₹)" min="0.01" step="0.01">
+                        <div style="display:flex;gap:0.5rem">
+                            <div style="flex:1">
+                                <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;display:block;margin-bottom:0.25rem">Quantity Type</label>
+                                <select id="ap_quantityType" class="form-input">
+                                    <option value="bunch">bunch (Leaves)</option>
+                                    <option value="kg">kg (Fruits)</option>
+                                    <option value="g">g (Seeds)</option>
+                                </select>
+                            </div>
+                            <div style="flex:1">
+                                <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;display:block;margin-bottom:0.25rem">Min Qty</label>
+                                <input id="ap_minQty" class="form-input" type="number" placeholder="e.g. 1 or 0.5" min="0.01" step="0.01">
+                            </div>
+                            <div style="flex:1">
+                                <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;display:block;margin-bottom:0.25rem">Step</label>
+                                <input id="ap_step" class="form-input" type="number" placeholder="e.g. 1 or 50" min="0.01" step="0.01">
+                            </div>
+                        </div>
+                        <input id="ap_image" class="form-input" placeholder="Image URL (https://...)">
                         <textarea id="ap_description" class="form-input form-textarea" placeholder="Description"></textarea>
-                        <textarea id="ap_uses" class="form-input" placeholder="Benefits (comma separated)" style="min-height:3.5rem"></textarea>
+                        <textarea id="ap_uses" class="form-input" placeholder="Benefits / Uses (comma separated)" style="min-height:3.5rem"></textarea>
                         <button id="adminAddProductBtn" onclick="adminAddProduct()" class="submit-btn" style="background:#4f46e5">
-                            <i class="fas fa-plus"></i> Add to Google Sheet
+                            <i class="fas fa-plus"></i> Add Product to Firestore
                         </button>
-                        <p style="font-size:0.72rem;color:var(--text-muted);text-align:center">Note: Adding product here saves to Firestore. Update your Google Sheet manually for catalog display.</p>
+                        <p style="font-size:0.72rem;color:var(--text-muted);text-align:center">Product saved directly to Firestore. No Google Sheets required.</p>
                     </div>
                 </div>
             </div>
@@ -940,7 +959,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 </div>
 
 <!-- ========== SCRIPTS ========== -->
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<!-- Razorpay -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <!-- Firebase -->
@@ -1217,48 +1236,23 @@ window.saveShippingDetails = async function(uid, data) {
 
 // ===== ADMIN: SAVE NEW PRODUCT =====
 window.adminSaveProduct = async function(productData) {
-    // 1. Save to Firestore
+    // Save to Firestore only (Google Sheets dependency removed)
     const docRef = await addDoc(collection(db, "products"), {
         ...productData,
         created_at: serverTimestamp(),
-        in_stock: true
+        in_stock: true,
+        stock: '10'
     });
-
-    // 2. Save to Google Sheets via Apps Script
-    if (window.APPS_SCRIPT_URL) {
-        try {
-            await fetch(window.APPS_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'addProduct',
-                    firestoreId: docRef.id,
-                    ...productData
-                })
-            });
-        } catch(e) {
-            console.warn("Sheet sync failed (non-critical):", e);
-        }
-    }
     return docRef;
 };
 </script>
 
 <!-- App Logic -->
 <script>
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/e/2PACX-1vR4opRHwgnv-oDJG-YtvMsbQuQP7Xea38B2ovpgWMJA6s4GYiJ0R3RLVCJhljuwwTc0MJWzJCRWv2EF/pub?output=csv`;
 const RAZORPAY_KEY = "rzp_test_SkZ2ZeOudkj7PI";
 const WHATSAPP_NUMBER = "918919011159";
 const ADMIN_EMAIL = "harikrishnarock444@gmail.com";
-
-// 🔴 Paste your Google Apps Script Web App URL here after deploying (see instructions below)
-// How to get this URL:
-//   1. Open your Google Sheet → Extensions → Apps Script
-//   2. Paste the Apps Script code (given separately)
-//   3. Click Deploy → New Deployment → Web App → Anyone → Deploy
-//   4. Copy the URL and paste below
-window.APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzT2bA4fRYPee0-niMwv53aQwTSAv0BRzcnbvLp9f3_3oXq9EFwFFqWoJEutXKopmie/exec"; // e.g. "https://script.google.com/macros/s/XXXX/exec"
+// Google Sheets dependency removed — catalog is now fully Firestore-based
 
 // ===== ADMIN AUTH CHECK (uses Firebase Auth, not password) =====
 function isAdmin() {
@@ -1375,36 +1369,71 @@ window.switchAuthTab = function(tab) {
     document.getElementById('googleTabBtn').classList.toggle('active', tab === 'google');
 };
 
-// ===== CATALOG =====
-function fetchSheetData(forceRefresh = false) {
+// ===== CATALOG (Firestore-only) =====
+async function loadCatalogFromFirestore(forceRefresh = false) {
     const now = Date.now();
     const CACHE_TTL = 30000; // 30s
 
-    // Use cached data if fresh and not forcing refresh
     if (!forceRefresh && window.appState.catalogCache && (now - window.appState.catalogLastFetch < CACHE_TTL)) {
         window.appState.catalogData = window.appState.catalogCache;
         renderItems(getFilteredData());
         return;
     }
 
-    Papa.parse(SHEET_URL, {
-        download: true, header: true, skipEmptyLines: true,
-        complete: function(result) {
-            const parsed = (result.data || [])
-                .map(item => ({ ...item, id: parseFloat(item.id), price: parseFloat(item.price) }))
-                .filter(i => i.id && !isNaN(i.id));
-            if (!parsed.length) {
-                showCatalogError('No items found. Check the sheet is published as CSV.');
-                return;
-            }
-            // Store in cache
-            window.appState.catalogData = parsed;
-            window.appState.catalogCache = parsed;
-            window.appState.catalogLastFetch = Date.now();
-            renderItems(getFilteredData());
-        },
-        error: () => showCatalogError('Could not load catalog. Check your internet connection.')
-    });
+    try {
+        const snap = await window.fbGetDocs(window.fbCollection(window.db, "products"));
+        const parsed = snap.docs.map(d => {
+            const data = d.data();
+            return {
+                ...data,
+                firestoreId: d.id,
+                id: data.id ?? data.sheet_id ?? d.id,
+                price: parseFloat(data.price) || 0,
+                quantityType: data.quantityType || inferQuantityType(data.type),
+                minQty: parseFloat(data.minQty) || 1,
+                step: parseFloat(data.step) || 1,
+            };
+        }).filter(p => p.name);
+
+        if (!parsed.length) {
+            showCatalogError('No products found in Firestore. Add products via Admin → Add Product.');
+            return;
+        }
+        window.appState.catalogData = parsed;
+        window.appState.catalogCache = parsed;
+        window.appState.catalogLastFetch = Date.now();
+        renderItems(getFilteredData());
+    } catch(e) {
+        console.error("loadCatalogFromFirestore error:", e);
+        showCatalogError('Could not load catalog: ' + (e.message || 'Check Firestore rules.'));
+    }
+}
+window.loadProductsFromFirestore = loadCatalogFromFirestore;
+
+// Helper: infer quantityType from product type when not set
+function inferQuantityType(type) {
+    if (!type) return 'bunch';
+    const t = String(type).toLowerCase();
+    if (t.includes('leaf') || t.includes('leave') || t.includes('powder')) return 'bunch';
+    if (t.includes('seed')) return 'g';
+    if (t.includes('fruit') || t.includes('wild')) return 'kg';
+    return 'bunch';
+}
+
+// Format quantity display
+function formatQty(qty, quantityType) {
+    if (quantityType === 'kg') return qty + ' kg';
+    if (quantityType === 'g') return qty + ' g';
+    return qty + (qty === 1 ? ' bunch' : ' bunches');
+}
+
+// Format price per unit
+function formatPriceUnit(price, quantityType) {
+    if (quantityType === 'g') {
+        // Show per 100g and per kg equivalent
+        return `₹${price}/g · ₹${(price * 100).toFixed(0)}/100g`;
+    }
+    return `₹${price}/${quantityType}`;
 }
 
 function showCatalogError(msg) {
@@ -1428,6 +1457,18 @@ function getFilteredData() {
         return matchType && matchSearch;
     });
 }
+
+// Auto-fill quantityType defaults when product type changes in admin form
+window.autoFillQuantityType = function() {
+    const type = document.getElementById('ap_type').value;
+    const qt = document.getElementById('ap_quantityType');
+    const minQty = document.getElementById('ap_minQty');
+    const step = document.getElementById('ap_step');
+    if (!qt) return;
+    if (type === 'leaf') { qt.value = 'bunch'; minQty.value = '1'; step.value = '1'; }
+    else if (type === 'fruit' || type === 'wild_fruit') { qt.value = 'kg'; minQty.value = '0.5'; step.value = '0.5'; }
+    else if (type === 'seed') { qt.value = 'g'; minQty.value = '100'; step.value = '50'; }
+};
 
 // Random ratings for social proof
 function getStarRating(id) {
@@ -1489,7 +1530,7 @@ function renderItems(items) {
                 <div class="card-scientific">${escapeHTML(item.scientific || '')}</div>
                 <div class="card-desc">${escapeHTML(item.description || '')}</div>
                 <div class="card-footer">
-                    <span class="card-price">₹${(item.price || 0).toFixed(0)}</span>
+                    <span class="card-price">₹${(item.price || 0).toFixed(item.quantityType === 'g' ? 2 : 0)}<span style="font-size:0.6rem;font-weight:500;color:var(--text-muted)">/${item.quantityType || 'unit'}</span></span>
                     <span class="card-stars">${stars} <span style="color:var(--text-muted);font-size:0.6rem">(${count})</span></span>
                 </div>
             </div>
@@ -1516,11 +1557,21 @@ window.openModalById = function(id) {
                 <div class="item-modal-name">${escapeHTML(item.name)}</div>
                 <div class="item-modal-scientific">${escapeHTML(item.scientific || '')}</div>
             </div>
-            <div class="item-modal-price">₹${(item.price || 0).toFixed(0)}</div>
+            <div>
+                <div class="item-modal-price">₹${(item.price || 0).toFixed(item.quantityType === 'g' ? 2 : 0)}</div>
+                <div style="font-size:0.65rem;color:var(--text-muted);text-align:right">per ${item.quantityType || 'unit'}</div>
+            </div>
         </div>
         <div class="item-modal-ratings">
             <span class="rating-stars">${stars}</span>
             <span class="rating-count">${r} (${count} reviews)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;margin:0.75rem 0;padding:0.65rem;background:var(--bg-body);border-radius:0.75rem;border:1px solid var(--border-color)">
+            <span style="font-size:0.78rem;color:var(--text-muted);font-weight:600">Qty:</span>
+            <button onclick="modalQtyChange(${item.id}, -1)" style="width:1.8rem;height:1.8rem;border-radius:0.4rem;background:#fee2e2;color:#dc2626;font-weight:700;font-size:1rem;border:none;cursor:pointer">−</button>
+            <span id="modalQtyVal_${item.id}" style="min-width:3.5rem;text-align:center;font-weight:700;font-size:0.85rem">${item.minQty || 1} ${item.quantityType || 'unit'}</span>
+            <button onclick="modalQtyChange(${item.id}, 1)" style="width:1.8rem;height:1.8rem;border-radius:0.4rem;background:#d1fae5;color:#065f46;font-weight:700;font-size:1rem;border:none;cursor:pointer">+</button>
+            <span id="modalSubtotal_${item.id}" style="margin-left:auto;font-weight:800;color:#059669;font-size:0.9rem">₹${((item.price || 0) * (item.minQty || 1)).toFixed(0)}</span>
         </div>
         <div class="item-modal-section">
             <div class="item-modal-section-title">Description</div>
@@ -1535,7 +1586,7 @@ window.openModalById = function(id) {
         </div>
         ${isOutOfStock
             ? `<button class="item-modal-cta" style="background:#6b7280;cursor:not-allowed" disabled>Out of Stock</button>`
-            : `<button class="item-modal-cta" onclick="addToCartSimple(${item.id}); closeItemModal(); openCartSidebar();">
+            : `<button class="item-modal-cta" onclick="addToCartFromModal(${item.id}); closeItemModal(); openCartSidebar();">
                 🛒 Add to Cart
                </button>`
         }
@@ -1555,6 +1606,42 @@ window.closeItemModal = function() {
     document.body.style.overflow = '';
 };
 
+// Modal quantity state
+window._modalQty = {};
+window.modalQtyChange = function(id, dir) {
+    const item = window.appState.catalogData.find(i => i.id == id);
+    if (!item) return;
+    const qt = item.quantityType || 'bunch';
+    const step = item.step || 1;
+    const minQty = item.minQty || 1;
+    if (!window._modalQty[id]) window._modalQty[id] = minQty;
+    let newQty = window._modalQty[id] + dir * step;
+    if (newQty < minQty) newQty = minQty;
+    window._modalQty[id] = newQty;
+    const label = qt === 'bunch' ? (newQty === 1 ? 'bunch' : 'bunches') : qt;
+    const dispQty = Number.isInteger(newQty) ? newQty : newQty.toFixed(1);
+    const el = document.getElementById('modalQtyVal_' + id);
+    if (el) el.textContent = dispQty + ' ' + label;
+    const sub = document.getElementById('modalSubtotal_' + id);
+    if (sub) sub.textContent = '₹' + (item.price * newQty).toFixed(0);
+};
+
+window.addToCartFromModal = function(id) {
+    const item = window.appState.catalogData.find(i => i.id == id);
+    if (!item) return;
+    const qty = window._modalQty[id] || item.minQty || 1;
+    const existing = window.appState.cart.find(c => c.id === id);
+    if (existing) existing.qty += qty;
+    else window.appState.cart.push({ id, qty });
+    delete window._modalQty[id];
+    persistCart();
+    updateCartBadge();
+    renderCartItems();
+    renderItems(getFilteredData());
+    updatePlaceOrderButton();
+    showToast("✅ Added to cart");
+};
+
 // ===== CART =====
 function addToCartSimple(id) {
     const item = window.appState.cart.find(i => i.id === id);
@@ -1572,8 +1659,11 @@ window.addToCartSimple = addToCartSimple;
 window.updateQty = function(id, change) {
     const item = window.appState.cart.find(i => i.id === id);
     if (!item) return;
-    item.qty += change;
-    if (item.qty <= 0) window.appState.cart = window.appState.cart.filter(i => i.id !== id);
+    const prod = window.appState.catalogData.find(p => p.id === id);
+    const step = (prod && prod.step) ? prod.step : 1;
+    const minQty = (prod && prod.minQty) ? prod.minQty : 1;
+    item.qty = Math.round((item.qty + change * step) * 1000) / 1000;
+    if (item.qty < minQty) window.appState.cart = window.appState.cart.filter(i => i.id !== id);
     persistCart();
     renderCartItems();
     renderItems(getFilteredData());
@@ -1604,20 +1694,23 @@ function renderCartItems() {
         return;
     }
 
-    list.innerHTML = items.map(i => `
+    list.innerHTML = items.map(i => {
+        const qt = i.quantityType || 'unit';
+        return `
     <div class="cart-item">
         <img src="${safeURL(i.image)}" alt="${escapeHTML(i.name)}">
         <div class="cart-item-info">
             <div class="cart-item-name">${escapeHTML(i.name)}</div>
-            <div class="cart-item-price">₹${i.price} each</div>
+            <div class="cart-item-price">₹${i.price} / ${qt}</div>
             <div class="cart-qty">
                 <button class="qty-btn qty-minus" onclick="updateQty(${i.id}, -1)">−</button>
-                <span class="qty-val">${i.qty}</span>
+                <span class="qty-val">${Number.isInteger(i.qty) ? i.qty : i.qty.toFixed(1)} ${qt}</span>
                 <button class="qty-btn qty-plus" onclick="updateQty(${i.id}, 1)">+</button>
             </div>
         </div>
         <div class="cart-item-subtotal">₹${(i.price * i.qty).toFixed(0)}</div>
-    </div>`).join('');
+    </div>`;
+    }).join('');
 }
 
 function updateCartBadge() {
@@ -1728,7 +1821,7 @@ window.submitOrder = async function(event) {
     const catalogMap = new Map(window.appState.catalogData.map(i => [i.id, i]));
     const items = window.appState.cart.map(c => {
         const p = catalogMap.get(c.id);
-        return p ? { name: p.name, price: p.price, qty: c.qty, id: p.id } : null;
+        return p ? { name: p.name, price: p.price, qty: c.qty, id: p.id, image: p.image || '', quantityType: p.quantityType || 'unit' } : null;
     }).filter(Boolean);
 
     if (!items.length) return showToast("Cart error. Please try again.", true);
@@ -1864,21 +1957,36 @@ window.openOrders = async function() {
         return;
     }
 
-    const statusClass = { pending: 'status-pending', shipped: 'status-shipped', delivered: 'status-delivered', cod_pending: 'status-cod' };
-    const statusLabel = { pending: '🕐 Pending', shipped: '🚚 Shipped', delivered: '✅ Delivered', cod_pending: '💰 COD Pending' };
+    const statusIcon = { pending: '🕒', shipped: '🚚', delivered: '✅', cancelled: '❌', cod_pending: '💰' };
+    const statusClass = { pending: 'status-pending', shipped: 'status-shipped', delivered: 'status-delivered', cancelled: 'status-cancelled', cod_pending: 'status-cod' };
+    const statusLabel = { pending: 'Pending', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled', cod_pending: 'COD Pending' };
 
     list.innerHTML = orders.map(o => {
         const st = o.status || 'pending';
-        const cod = o.payment?.method === 'COD' ? ' · COD' : ' · Online';
-        const date = o.created_at?.seconds ? new Date(o.created_at.seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Just now';
+        const date = o.created_at?.seconds ? new Date(o.created_at.seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
+        const payMethod = o.payment?.method === 'COD' ? '💵 Cash on Delivery' : '💳 Online Payment';
+        const itemsHTML = (o.items || []).map(i => `
+            <div style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 0;border-bottom:1px solid var(--border-color)">
+                ${i.image ? `<img src="${safeURL(i.image)}" style="width:2.5rem;height:2.5rem;border-radius:0.5rem;object-fit:cover;flex-shrink:0;border:1px solid var(--border-color)" alt="${escapeHTML(i.name)}">` : `<div style="width:2.5rem;height:2.5rem;border-radius:0.5rem;background:var(--bg-body);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-leaf" style="color:#059669;font-size:0.8rem"></i></div>`}
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:0.78rem;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(i.name)}</div>
+                    <div style="font-size:0.65rem;color:var(--text-muted)">${i.qty} ${i.quantityType || 'unit'} · ₹${i.price || 0}</div>
+                </div>
+                <div style="font-size:0.78rem;font-weight:700;color:#059669;flex-shrink:0">₹${((i.price || 0) * (i.qty || 1)).toFixed(0)}</div>
+            </div>`).join('');
         return `<div class="order-card">
             <div class="order-top">
                 <span class="order-amount">₹${o.total}</span>
-                <span class="order-date">${date}</span>
+                <span class="order-date"><i class="fas fa-calendar-alt" style="font-size:0.65rem;margin-right:0.2rem"></i>${date}</span>
             </div>
-            <span class="order-status ${statusClass[st] || 'status-pending'}">${statusLabel[st] || st}</span>
-            <div class="order-items">${(o.items || []).map(i => `• ${escapeHTML(i.name)} x${i.qty}`).join('<br>')}</div>
-            <div class="order-payment-badge"><i class="fas fa-receipt"></i> ${o.payment?.method === 'COD' ? 'Cash on Delivery' : 'Online Payment'}${cod}</div>
+            <span class="order-status ${statusClass[st] || 'status-pending'}">${statusIcon[st] || '🕒'} ${statusLabel[st] || st}</span>
+            <div style="margin:0.6rem 0">${itemsHTML}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;font-size:0.72rem;color:var(--text-muted)">
+                <span><i class="fas fa-user" style="margin-right:0.2rem;color:#059669"></i>${escapeHTML(o.user?.name || 'N/A')}</span>
+                <span><i class="fas fa-phone" style="margin-right:0.2rem;color:#059669"></i>${escapeHTML(o.user?.phone || 'N/A')}</span>
+            </div>
+            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem"><i class="fas fa-map-marker-alt" style="margin-right:0.3rem;color:#f43f5e"></i>${escapeHTML(o.user?.address || 'N/A')}</div>
+            <div class="order-payment-badge"><i class="fas fa-receipt"></i> ${payMethod}</div>
         </div>`;
     }).join('');
 };
@@ -2009,22 +2117,36 @@ async function loadAdminOrders() {
         return;
     }
 
-    const statuses = ['pending', 'shipped', 'delivered'];
+    const statuses = ['pending', 'shipped', 'delivered', 'cancelled'];
+    const statusIcon = { pending: '🕒', shipped: '🚚', delivered: '✅', cancelled: '❌' };
     list.innerHTML = orders.map(o => {
         const date = o.created_at?.seconds ? new Date(o.created_at.seconds * 1000).toLocaleString('en-IN') : 'Unknown';
-        const options = statuses.map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('');
+        const st = o.status || 'pending';
+        const options = statuses.map(s => `<option value="${s}" ${st === s ? 'selected' : ''}>${statusIcon[s]} ${s}</option>`).join('');
+        const itemsHTML = (o.items || []).map(i => `
+            <div style="display:flex;align-items:center;gap:0.5rem;padding:0.3rem 0">
+                ${i.image ? `<img src="${safeURL(i.image)}" style="width:2rem;height:2rem;border-radius:0.35rem;object-fit:cover;flex-shrink:0" alt="">` : `<div style="width:2rem;height:2rem;border-radius:0.35rem;background:#d1fae5;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="fas fa-leaf" style="color:#059669;font-size:0.65rem"></i></div>`}
+                <span style="font-size:0.72rem;font-weight:600">${escapeHTML(i.name)}</span>
+                <span style="font-size:0.68rem;color:var(--text-muted);margin-left:auto">${i.qty} ${i.quantityType || 'unit'} · ₹${((i.price||0)*(i.qty||1)).toFixed(0)}</span>
+            </div>`).join('');
         return `<div class="admin-order-row">
             <div class="admin-order-top">
                 <div>
                     <span class="admin-order-total">₹${o.total}</span>
-                    <span class="admin-order-id"> · ${o.id.slice(0,10)}...</span>
+                    <span class="admin-order-id"> · #${o.id.slice(0,8)}</span>
+                    <span style="font-size:0.68rem;color:var(--text-muted);margin-left:0.4rem">${o.payment?.method === 'COD' ? '💵 COD' : '💳 Online'}</span>
                 </div>
                 <select class="admin-status-select" onchange="updateOrderStatus('${o.id}', this.value)">${options}</select>
             </div>
             <div class="admin-order-details">
-                ${o.user?.name || 'N/A'} · ${o.user?.phone || 'N/A'} · ${o.payment?.method === 'COD' ? '💰 COD' : '💳 Online'}<br>
-                ${(o.items||[]).map(i => `${escapeHTML(i.name)} x${i.qty}`).join(', ')}<br>
-                <span style="font-size:0.68rem">${date}</span>
+                <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.35rem">
+                    <span><i class="fas fa-user" style="color:#059669;margin-right:0.2rem"></i><strong>${escapeHTML(o.user?.name || 'N/A')}</strong></span>
+                    <span><i class="fas fa-phone" style="color:#059669;margin-right:0.2rem"></i>${escapeHTML(o.user?.phone || 'N/A')}</span>
+                    <span><i class="fas fa-envelope" style="color:#059669;margin-right:0.2rem"></i>${escapeHTML(o.user?.email || 'N/A')}</span>
+                </div>
+                <div style="font-size:0.7rem;margin-bottom:0.35rem"><i class="fas fa-map-marker-alt" style="color:#f43f5e;margin-right:0.3rem"></i>${escapeHTML(o.user?.address || 'N/A')}</div>
+                <div style="border-top:1px solid var(--border-color);padding-top:0.35rem">${itemsHTML}</div>
+                <span style="font-size:0.68rem;color:var(--text-muted);display:block;margin-top:0.3rem"><i class="fas fa-clock" style="margin-right:0.2rem"></i>${date}</span>
             </div>
         </div>`;
     }).join('');
@@ -2041,16 +2163,17 @@ function loadAdminProducts() {
     <div class="admin-product-row">
         <div style="flex:1;min-width:0">
             <div class="admin-product-name">${escapeHTML(p.name)}</div>
-            <div style="font-size:0.7rem;color:var(--text-muted)">${String(p.type||'').replace('_',' ')}</div>
+            <div style="font-size:0.7rem;color:var(--text-muted)">${String(p.type||'').replace('_',' ')} · ${p.quantityType || inferQuantityType(p.type)}</div>
         </div>
         <div style="display:flex;align-items:center;gap:0.5rem">
             <span style="font-size:0.78rem;color:var(--text-muted)">₹</span>
-            <input class="admin-input-sm" type="number" value="${p.price}" id="price_${p.id}" min="1" onchange="adminUpdatePrice(${p.id}, this.value)">
-            <button onclick="editProduct(${p.id})" style="font-size:0.7rem;padding:0.3rem 0.5rem;border-radius:0.4rem;background:#dbeafe;color:#1d4ed8;font-weight:700">Edit</button>
+            <input class="admin-input-sm" type="number" value="${p.price}" id="price_${p.id}" min="0.01" step="0.01" onchange="adminUpdatePrice('${p.id}', this.value)">
+            <span style="font-size:0.68rem;color:var(--text-muted)">/${p.quantityType || '?'}</span>
+            <button onclick="editProduct('${p.id}')" style="font-size:0.7rem;padding:0.3rem 0.5rem;border-radius:0.4rem;background:#dbeafe;color:#1d4ed8;font-weight:700">Edit</button>
             <label class="admin-toggle">
                 <span style="font-size:0.72rem;color:var(--text-muted)">${p.stock === '0' ? 'OOS' : 'In Stock'}</span>
                 <label class="toggle-switch">
-                    <input type="checkbox" ${p.stock !== '0' ? 'checked' : ''} onchange="adminToggleStock(${p.id}, this.checked)">
+                    <input type="checkbox" ${p.stock !== '0' ? 'checked' : ''} onchange="adminToggleStock('${p.id}', this.checked)">
                     <span class="toggle-slider"></span>
                 </label>
             </label>
@@ -2059,17 +2182,17 @@ function loadAdminProducts() {
 }
 
 window.editProduct = async function(id) {
-    const item = window.appState.catalogData.find(i => i.id === id);
+    const item = window.appState.catalogData.find(i => i.id === id || i.firestoreId === id);
     if (!item) return;
-    const newPrice = prompt(`Edit price for "${item.name}" (current: ₹${item.price}):`);
+    const newPrice = prompt(`Edit price for "${item.name}" (current: ₹${item.price}/${item.quantityType || 'unit'}):`);
     if (!newPrice) return;
     const price = parseFloat(newPrice);
     if (!price || price <= 0) return showToast("Invalid price", true);
-    const priceInput = document.getElementById('price_' + id);
+    const priceInput = document.getElementById('price_' + item.id);
     if (priceInput) priceInput.value = price;
-    await window.adminUpdatePrice(id, price);
+    await window.adminUpdatePrice(item.id, price);
     loadAdminProducts();
-    loadProductsFromFirestore && loadProductsFromFirestore();
+    loadCatalogFromFirestore && loadCatalogFromFirestore(true);
 };
 
 window.adminUpdatePrice = async function(id, val) {
@@ -2086,28 +2209,13 @@ window.adminUpdatePrice = async function(id, val) {
         if (item.firestoreId) {
             await window.fbUpdateDoc(window.fbDoc(window.db, "products", item.firestoreId), { price });
         } else {
-            // Save price override to Firestore using window.fbAddDoc
             await window.fbAddDoc(window.fbCollection(window.db, "products"), {
-                sheet_id: id,
-                name: item.name,
-                price,
-                type: item.type || '',
-                is_price_override: true,
+                sheet_id: id, name: item.name, price,
+                type: item.type || '', is_price_override: true,
                 updated_at: window.fbServerTimestamp()
             });
         }
-
-        // Sync price to Google Sheets
-        if (window.APPS_SCRIPT_URL) {
-            fetch(window.APPS_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'updatePrice', id, price })
-            }).catch(() => {});
-        }
-
-        showToast("✅ Price updated!");
+        showToast("✅ Price updated in Firestore!");
         renderItems(getFilteredData());
     } catch(e) {
         console.error("adminUpdatePrice error:", e);
@@ -2124,6 +2232,9 @@ window.adminAddProduct = async function() {
     const scientific = document.getElementById('ap_scientific').value.trim();
     const type = document.getElementById('ap_type').value;
     const price = parseFloat(document.getElementById('ap_price').value);
+    const quantityType = document.getElementById('ap_quantityType').value;
+    const minQty = parseFloat(document.getElementById('ap_minQty').value) || 1;
+    const step = parseFloat(document.getElementById('ap_step').value) || 1;
     const image = document.getElementById('ap_image').value.trim();
     const description = document.getElementById('ap_description').value.trim();
     const uses = document.getElementById('ap_uses').value.trim();
@@ -2132,20 +2243,21 @@ window.adminAddProduct = async function() {
     if (!price || price <= 0) return showToast("Invalid price. Must be greater than ₹0", true);
     if (image && !image.startsWith('https://')) return showToast("Image URL must start with https://", true);
 
-    // Disable button during save
     const btn = document.getElementById('adminAddProductBtn');
     if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
 
     try {
-        // Use window.adminSaveProduct (defined in Firebase module script)
         if (typeof window.adminSaveProduct !== 'function') throw new Error("Firebase not ready");
-        await window.adminSaveProduct({ name, scientific, type, price, image, description, uses });
-        showToast("✅ Product added successfully!");
-        ['ap_name','ap_scientific','ap_price','ap_image','ap_description','ap_uses'].forEach(id => {
+        await window.adminSaveProduct({ name, scientific, type, price, quantityType, minQty, step, image, description, uses });
+        showToast("✅ Product added to Firestore!");
+        ['ap_name','ap_scientific','ap_price','ap_image','ap_description','ap_uses','ap_minQty','ap_step'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
-        document.getElementById('ap_type').value = 'powder';
+        document.getElementById('ap_type').value = 'leaf';
+        document.getElementById('ap_quantityType').value = 'bunch';
+        // Reload catalog
+        loadCatalogFromFirestore(true);
     } catch(e) {
         console.error("adminAddProduct error:", e);
         showToast("Failed to save: " + (e.message || "Check Firestore rules"), true);
@@ -2187,9 +2299,9 @@ window.onload = function() {
     }
     // Restore filter
     filterItems(localStorage.getItem('selectedFilter') || 'all');
-    // Load catalog
-    fetchSheetData();
-    setInterval(() => fetchSheetData(true), 30000);
+    // Load catalog from Firestore
+    loadCatalogFromFirestore();
+    setInterval(() => loadCatalogFromFirestore(true), 30000);
     // Auth state
     updateUserUI(null);
     // Cart
