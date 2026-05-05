@@ -8,6 +8,31 @@
     <link rel="manifest" href="/natures-heal/manifest.json">
     <meta name="theme-color" content="#059669">
     <meta name="description" content="100% natural herbal powders, seeds & botanical products. Free delivery on orders above ₹499. Cash on Delivery available.">
+    <meta name="keywords" content="herbal products, natural powders, botanical seeds, curry leaves, organic herbs, India, Hyderabad">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" id="canonicalTag" href="https://naturesheal.web.app/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Nature's Heal">
+    <meta property="og:title" id="ogTitle" content="Nature's Heal — Pure Herbal Products">
+    <meta property="og:description" id="ogDesc" content="100% natural herbal powders, seeds & botanical products. Free delivery above ₹499.">
+    <meta property="og:url" id="ogUrl" content="https://naturesheal.web.app/">
+    <meta property="og:image" id="ogImage" content="https://naturesheal.web.app/icon_192.png">
+    <meta property="og:locale" content="en_IN">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" id="twTitle" content="Nature's Heal — Pure Herbal Products">
+    <meta name="twitter:description" id="twDesc" content="100% natural herbal powders, seeds & botanical products.">
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com">
+    <link rel="preconnect" href="https://firestore.googleapis.com">
+    <link rel="dns-prefetch" href="https://checkout.razorpay.com">
+
     <link rel="apple-touch-icon" href="icon_192.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
@@ -561,6 +586,61 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 /* ===== ADMIN TRIGGER ===== */
 .admin-trigger { display: none; }
 
+/* ===== POLICY MODAL ===== */
+#policyModal { z-index: 150; }
+.policy-box {
+    background: var(--bg-card); border-radius: 1.5rem; width: 100%;
+    max-width: 640px; max-height: 88vh; overflow: hidden;
+    display: flex; flex-direction: column;
+    animation: modalIn 0.3s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+}
+.policy-header {
+    padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);
+    display: flex; justify-content: space-between; align-items: center;
+    background: linear-gradient(135deg, #064e3b, #047857); flex-shrink: 0;
+}
+.policy-title { font-family: Poppins,sans-serif; font-size: 1.1rem; font-weight: 800; color: white; }
+.policy-tabs {
+    display: flex; gap: 0; background: var(--bg-body);
+    border-radius: 0.75rem; padding: 0.2rem; flex-wrap: wrap;
+    flex-shrink: 0; margin: 1rem 1.25rem 0;
+}
+.policy-tab {
+    flex: 1; padding: 0.45rem 0.5rem; border-radius: 0.55rem;
+    font-size: 0.72rem; font-weight: 600; color: var(--text-muted);
+    transition: all 0.2s; white-space: nowrap; text-align: center; min-width: 80px;
+}
+.policy-tab.active { background: #059669; color: white; box-shadow: 0 1px 4px rgba(5,150,105,0.3); }
+.policy-body { padding: 1.25rem 1.5rem 1.5rem; overflow-y: auto; flex: 1; }
+.policy-body h3 { font-size: 1rem; font-weight: 700; color: #059669; margin: 1rem 0 0.5rem; }
+.policy-body h3:first-child { margin-top: 0; }
+.policy-body p, .policy-body li { font-size: 0.83rem; line-height: 1.7; color: var(--text-muted); }
+.policy-body ul { list-style: disc; padding-left: 1.25rem; margin: 0.4rem 0; }
+.policy-body strong { color: var(--text-main); font-weight: 700; }
+
+/* ===== FOOTER POLICY LINKS ===== */
+.footer-policy {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1rem;
+    margin: 1rem 0 0.5rem; padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+.footer-policy button {
+    font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.45);
+    background: none; border: none; cursor: pointer; padding: 0.15rem 0;
+    transition: color 0.2s; text-decoration: underline; text-underline-offset: 2px;
+}
+.footer-policy button:hover { color: rgba(255,255,255,0.8); }
+
+/* ===== CANCEL ORDER BTN ===== */
+.cancel-order-btn {
+    font-size: 0.68rem; font-weight: 700; color: #dc2626;
+    background: #fee2e2; border: none; border-radius: 0.4rem;
+    padding: 0.25rem 0.6rem; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem;
+}
+.cancel-order-btn:hover { background: #dc2626; color: white; }
+.cancel-order-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
 /* ===== EMPTY STATE ===== */
 .empty-state { grid-column: 1/-1; text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
 .empty-state i { font-size: 2rem; display: block; margin-bottom: 0.75rem; opacity: 0.4; }
@@ -759,8 +839,15 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
    <i class="fab fa-whatsapp"></i>
 </a>
         </div>
+        <!-- Policy Links (required for Razorpay Live mode) -->
+        <div class="footer-policy">
+            <button onclick="openPolicy('terms')">Terms &amp; Conditions</button>
+            <button onclick="openPolicy('privacy')">Privacy Policy</button>
+            <button onclick="openPolicy('refund')">Refund &amp; Cancellation</button>
+            <button onclick="openPolicy('shipping')">Shipping Policy</button>
+        </div>
         <!-- Admin access: 5x click logo -->
-        <div class="footer-copy" onclick="handleAdminTrigger()">© 2026 Nature's Heal Encyclopedia</div>
+        <div class="footer-copy" onclick="handleAdminTrigger()">© 2026 Nature's Heal · All rights reserved</div>
     </div>
 </footer>
 
@@ -964,6 +1051,23 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- ========== POLICY MODAL ========== -->
+<div id="policyModal" class="modal-overlay hidden">
+    <div class="policy-box">
+        <div class="policy-header">
+            <span class="policy-title" id="policyModalTitle">📄 Legal Policies</span>
+            <button class="modal-close-btn" onclick="closePolicyModal()" style="background:rgba(255,255,255,0.15);color:white"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="policy-tabs">
+            <button class="policy-tab active" id="ptab_terms" onclick="switchPolicy('terms')">Terms</button>
+            <button class="policy-tab" id="ptab_privacy" onclick="switchPolicy('privacy')">Privacy</button>
+            <button class="policy-tab" id="ptab_refund" onclick="switchPolicy('refund')">Refund</button>
+            <button class="policy-tab" id="ptab_shipping" onclick="switchPolicy('shipping')">Shipping</button>
+        </div>
+        <div class="policy-body" id="policyContent"></div>
     </div>
 </div>
 
@@ -1608,11 +1712,14 @@ window.openModalById = function(id) {
 
     document.getElementById('itemModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    // SEO: update meta tags and URL for this product
+    updateMetaForProduct(item);
 };
 
 window.closeItemModal = function() {
     document.getElementById('itemModal').classList.add('hidden');
     document.body.style.overflow = '';
+    resetMeta();
 };
 
 // Modal quantity state
@@ -1965,58 +2072,7 @@ window.openOrders = async function() {
     list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-spinner fa-spin" style="font-size:1.5rem"></i></div>`;
 
     const orders = await loadUserOrders(uid);
-
-    if (!orders.length) {
-        list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-muted)">
-            <i class="fas fa-box-open" style="font-size:2rem;display:block;margin-bottom:0.75rem;opacity:0.4"></i>
-            <p style="font-weight:600">No orders yet</p>
-        </div>`;
-        return;
-    }
-
-    const statusIcon = { pending: '🕒', shipped: '🚚', delivered: '✅', cancelled: '❌', cod_pending: '💰' };
-    const statusClass = { pending: 'status-pending', shipped: 'status-shipped', delivered: 'status-delivered', cancelled: 'status-cancelled', cod_pending: 'status-cod' };
-    const statusLabel = { pending: 'Pending', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled', cod_pending: 'COD Pending' };
-
-    list.innerHTML = orders.map(o => {
-        const st = o.status || 'pending';
-        const date = o.created_at?.seconds ? new Date(o.created_at.seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
-        const payMethod = o.payment?.method === 'COD' ? '💵 Cash on Delivery' : '💳 Online Payment';
-        const itemsHTML = (o.items || []).map(i => {
-            const hasImg = i.image && String(i.image).startsWith('https://');
-            return `
-            <div style="display:flex;align-items:center;gap:0.75rem;padding:0.55rem 0;border-bottom:1px solid var(--border-color)">
-                <div style="position:relative;width:3.25rem;height:3.25rem;flex-shrink:0">
-                    ${hasImg ? `<img src="${safeURL(i.image)}" style="width:3.25rem;height:3.25rem;border-radius:0.65rem;object-fit:cover;border:1.5px solid var(--border-color);position:absolute;inset:0" alt="${escapeHTML(i.name)}" onerror="this.style.display='none';this.parentElement.querySelector('.img-fallback').style.display='flex'">` : ''}
-                    <div class="img-fallback" style="width:3.25rem;height:3.25rem;border-radius:0.65rem;background:var(--bg-body);border:1.5px solid var(--border-color);display:${hasImg ? 'none' : 'flex'};align-items:center;justify-content:center;position:absolute;inset:0">
-                        <i class="fas fa-leaf" style="color:#059669;font-size:1rem"></i>
-                    </div>
-                </div>
-                <div style="flex:1;min-width:0">
-                    <div style="font-size:0.82rem;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(i.name)}</div>
-                    <div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.15rem">
-                        <span style="background:var(--border-color);border-radius:0.3rem;padding:0.1rem 0.4rem;font-weight:600">Qty: ${i.qty} ${i.quantityType || 'unit'}</span>
-                        <span style="margin-left:0.4rem">@ ₹${i.price || 0}/${i.quantityType || 'unit'}</span>
-                    </div>
-                </div>
-                <div style="font-size:0.82rem;font-weight:800;color:#059669;flex-shrink:0;text-align:right">₹${((i.price || 0) * (i.qty || 1)).toFixed(0)}</div>
-            </div>`;
-        }).join('');
-        return `<div class="order-card">
-            <div class="order-top">
-                <span class="order-amount">₹${o.total}</span>
-                <span class="order-date"><i class="fas fa-calendar-alt" style="font-size:0.65rem;margin-right:0.2rem"></i>${date}</span>
-            </div>
-            <span class="order-status ${statusClass[st] || 'status-pending'}">${statusIcon[st] || '🕒'} ${statusLabel[st] || st}</span>
-            <div style="margin:0.6rem 0">${itemsHTML}</div>
-            <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem;font-size:0.72rem;color:var(--text-muted)">
-                <span><i class="fas fa-user" style="margin-right:0.2rem;color:#059669"></i>${escapeHTML(o.user?.name || 'N/A')}</span>
-                <span><i class="fas fa-phone" style="margin-right:0.2rem;color:#059669"></i>${escapeHTML(o.user?.phone || 'N/A')}</span>
-            </div>
-            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.3rem"><i class="fas fa-map-marker-alt" style="margin-right:0.3rem;color:#f43f5e"></i>${escapeHTML(o.user?.address || 'N/A')}</div>
-            <div class="order-payment-badge"><i class="fas fa-receipt"></i> ${payMethod}</div>
-        </div>`;
-    }).join('');
+    renderOrdersList(orders);
 };
 
 window.closeOrders = function() {
@@ -2294,7 +2350,233 @@ window.adminAddProduct = async function() {
     }
 };
 
-// ===== PWA INSTALL =====
+// ===== CANCEL ORDER =====
+window.cancelOrder = async function(orderId, btn) {
+    if (!confirm("Cancel this order? This action cannot be undone.")) return;
+    btn.disabled = true;
+    btn.textContent = 'Cancelling...';
+    try {
+        await window.fbUpdateDoc(window.fbDoc(window.db, "orders", orderId), { status: 'cancelled' });
+        showToast("Order cancelled.");
+        // Refresh orders list
+        const uid = localStorage.getItem('user_uid');
+        if (uid) {
+            const orders = await window.loadUserOrders(uid);
+            renderOrdersList(orders);
+        }
+    } catch(e) {
+        showToast("Could not cancel order. Try again.", true);
+        btn.disabled = false;
+        btn.textContent = 'Cancel Order';
+    }
+};
+
+// Helper: render orders (extracted so cancelOrder can refresh list)
+function renderOrdersList(orders) {
+    const list = document.getElementById('ordersList');
+    if (!orders.length) {
+        list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-muted)">
+            <i class="fas fa-box-open" style="font-size:2rem;display:block;margin-bottom:0.75rem;opacity:0.4"></i>
+            <p style="font-weight:600">No orders yet</p>
+        </div>`;
+        return;
+    }
+    const statusIcon = { pending: '🕒', shipped: '🚚', delivered: '✅', cancelled: '❌', cod_pending: '💰' };
+    const statusClass = { pending: 'status-pending', shipped: 'status-shipped', delivered: 'status-delivered', cancelled: 'status-cancelled', cod_pending: 'status-cod' };
+    const statusLabel = { pending: 'Pending', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled', cod_pending: 'COD Pending' };
+
+    list.innerHTML = orders.map(o => {
+        const st = o.status || 'pending';
+        const date = o.created_at?.seconds ? new Date(o.created_at.seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
+        const payMethod = o.payment?.method === 'COD' ? '💵 Cash on Delivery' : '💳 Online Payment';
+        const canCancel = (st === 'pending' || st === 'cod_pending');
+        const itemsHTML = (o.items || []).map(i => {
+            const hasImg = i.image && String(i.image).startsWith('https://');
+            return `
+            <div style="display:flex;align-items:center;gap:0.75rem;padding:0.55rem 0;border-bottom:1px solid var(--border-color)">
+                <div style="position:relative;width:3.25rem;height:3.25rem;flex-shrink:0">
+                    ${hasImg ? `<img src="${safeURL(i.image)}" style="width:3.25rem;height:3.25rem;border-radius:0.65rem;object-fit:cover;border:1.5px solid var(--border-color);position:absolute;inset:0" alt="${escapeHTML(i.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+                    <div style="width:3.25rem;height:3.25rem;border-radius:0.65rem;background:var(--bg-body);border:1.5px solid var(--border-color);display:${hasImg ? 'none' : 'flex'};align-items:center;justify-content:center;position:absolute;inset:0">
+                        <i class="fas fa-leaf" style="color:#059669;font-size:1rem"></i>
+                    </div>
+                </div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:0.82rem;font-weight:700;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(i.name)}</div>
+                    <div style="font-size:0.68rem;color:var(--text-muted);margin-top:0.15rem">
+                        <span style="background:var(--border-color);border-radius:0.3rem;padding:0.1rem 0.4rem;font-weight:600">Qty: ${i.qty} ${i.quantityType || 'unit'}</span>
+                        <span style="margin-left:0.4rem">@ ₹${i.price || 0}/${i.quantityType || 'unit'}</span>
+                    </div>
+                </div>
+                <div style="font-size:0.85rem;font-weight:800;color:#059669;flex-shrink:0">₹${((i.price || 0) * (i.qty || 1)).toFixed(0)}</div>
+            </div>`;
+        }).join('');
+
+        return `<div class="order-card">
+            <div class="order-top">
+                <div>
+                    <div class="order-amount">₹${(o.total || 0).toFixed(2)}</div>
+                    <div class="order-date"><i class="fas fa-clock" style="margin-right:0.2rem"></i>${date}</div>
+                </div>
+                <span class="order-status ${statusClass[st] || 'status-pending'}">${statusIcon[st] || '🕒'} ${statusLabel[st] || st}</span>
+            </div>
+            <div class="order-payment-badge"><i class="fas fa-credit-card"></i> ${payMethod}</div>
+            <div class="order-items" style="margin-top:0.5rem">${itemsHTML}</div>
+            ${canCancel ? `<button class="cancel-order-btn" onclick="cancelOrder('${o.id}', this)"><i class="fas fa-times-circle"></i> Cancel Order</button>` : ''}
+        </div>`;
+    }).join('');
+}
+window.renderOrdersList = renderOrdersList;
+
+// ===== SEO: Update dynamic meta tags & URL when product modal opens =====
+function updateMetaForProduct(item) {
+    const slug = (item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const url = `https://naturesheal.web.app/product/${slug}`;
+    const title = `${item.name} — Nature's Heal`;
+    const desc = item.description || `Buy ${item.name} — 100% natural. ₹${item.price}/${item.quantityType || 'unit'}. Free delivery above ₹499.`;
+    const img = item.image && item.image.startsWith('https://') ? item.image : 'https://naturesheal.web.app/icon_192.png';
+
+    document.title = title;
+    document.getElementById('ogTitle') && (document.getElementById('ogTitle').content = title);
+    document.getElementById('ogDesc') && (document.getElementById('ogDesc').content = desc);
+    document.getElementById('ogUrl') && (document.getElementById('ogUrl').content = url);
+    document.getElementById('ogImage') && (document.getElementById('ogImage').content = img);
+    document.getElementById('twTitle') && (document.getElementById('twTitle').content = title);
+    document.getElementById('twDesc') && (document.getElementById('twDesc').content = desc);
+    document.getElementById('canonicalTag') && (document.getElementById('canonicalTag').href = url);
+
+    // Update URL without full page reload (History API)
+    try { history.pushState({ productId: item.id }, title, `/product/${slug}`); } catch(e) {}
+}
+
+function resetMeta() {
+    const title = "Nature's Heal — Pure Herbal Products";
+    const desc = "100% natural herbal powders, seeds & botanical products. Free delivery on orders above ₹499.";
+    document.title = title;
+    document.getElementById('ogTitle') && (document.getElementById('ogTitle').content = title);
+    document.getElementById('ogDesc') && (document.getElementById('ogDesc').content = desc);
+    document.getElementById('ogUrl') && (document.getElementById('ogUrl').content = 'https://naturesheal.web.app/');
+    document.getElementById('canonicalTag') && (document.getElementById('canonicalTag').href = 'https://naturesheal.web.app/');
+    try { history.pushState({}, title, '/'); } catch(e) {}
+}
+
+// Handle browser back button for product pages
+window.addEventListener('popstate', (e) => {
+    if (!e.state?.productId) {
+        document.getElementById('itemModal')?.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+});
+
+// ===== POLICY MODAL =====
+const POLICIES = {
+    terms: {
+        title: '📋 Terms & Conditions',
+        content: `
+<h3>1. Acceptance of Terms</h3>
+<p>By accessing and using Nature's Heal (<strong>naturesheal.web.app</strong>), you agree to be bound by these Terms & Conditions. If you disagree with any part, please do not use our service.</p>
+<h3>2. Products & Pricing</h3>
+<p>All products listed are natural/herbal and sold for general wellness purposes. Prices are in Indian Rupees (₹) and inclusive of applicable taxes. We reserve the right to modify prices without prior notice.</p>
+<h3>3. Orders</h3>
+<p>An order confirmation via WhatsApp or email constitutes acceptance of your order. We reserve the right to cancel any order due to stock unavailability or pricing errors.</p>
+<h3>4. User Responsibilities</h3>
+<ul>
+<li>You must provide accurate delivery information.</li>
+<li>You are responsible for the security of your login credentials.</li>
+<li>Misuse of the platform may result in account suspension.</li>
+</ul>
+<h3>5. Disclaimer</h3>
+<p>Our herbal products are not intended to diagnose, treat, cure, or prevent any disease. Please consult a healthcare professional before use.</p>
+<h3>6. Governing Law</h3>
+<p>These terms are governed by the laws of India. Any disputes shall be subject to the jurisdiction of courts in Hyderabad, Telangana.</p>
+<h3>7. Contact</h3>
+<p>For questions about these terms, WhatsApp us at <strong>+91 89190 11159</strong> or email harikrishnarock444@gmail.com.</p>`
+    },
+    privacy: {
+        title: '🔒 Privacy Policy',
+        content: `
+<h3>1. Information We Collect</h3>
+<p>We collect information you provide directly: name, phone number, email address, and delivery address when you place an order or sign up. We also collect usage data via Firebase Analytics.</p>
+<h3>2. How We Use Your Information</h3>
+<ul>
+<li>To process and fulfill your orders.</li>
+<li>To send order confirmations and delivery updates via WhatsApp.</li>
+<li>To improve our products and services.</li>
+<li>To comply with legal obligations.</li>
+</ul>
+<h3>3. Data Storage</h3>
+<p>Your data is stored securely on <strong>Google Firebase (Firestore)</strong>, which complies with GDPR and Indian data protection standards. We do not sell your personal data to third parties.</p>
+<h3>4. Payment Data</h3>
+<p>Payments are processed by <strong>Razorpay</strong>. We do not store your card or UPI details. Please review Razorpay's privacy policy for payment data handling.</p>
+<h3>5. Cookies & Local Storage</h3>
+<p>We use browser local storage to remember your cart, preferences, and login session. No third-party advertising cookies are used.</p>
+<h3>6. Your Rights</h3>
+<p>You may request deletion of your account data by contacting us via WhatsApp. We will process requests within 30 days.</p>
+<h3>7. Contact</h3>
+<p>Privacy concerns: <strong>+91 89190 11159</strong> (WhatsApp) or harikrishnarock444@gmail.com</p>`
+    },
+    refund: {
+        title: '↩️ Refund & Cancellation Policy',
+        content: `
+<h3>Cancellation Policy</h3>
+<p>Orders can be cancelled <strong>within 2 hours</strong> of placement by tapping "Cancel Order" in the My Orders section, or by contacting us on WhatsApp at <strong>+91 89190 11159</strong>. Orders that have already been dispatched cannot be cancelled.</p>
+<h3>Refund Eligibility</h3>
+<p>You are eligible for a refund if:</p>
+<ul>
+<li>You received a wrong product.</li>
+<li>The product was damaged during delivery.</li>
+<li>The product was significantly different from the description.</li>
+</ul>
+<h3>Non-Refundable Items</h3>
+<ul>
+<li>Products that have been used or consumed.</li>
+<li>Orders cancelled after dispatch.</li>
+<li>Perishable products like fresh leaves after 24 hours of delivery.</li>
+</ul>
+<h3>Refund Process</h3>
+<p>Approved refunds for online payments will be credited back to the original payment method within <strong>5–7 business days</strong>. COD refunds will be processed via bank transfer or UPI within 7 business days.</p>
+<h3>How to Raise a Refund Request</h3>
+<p>WhatsApp us at <strong>+91 89190 11159</strong> with your order ID, photos of the issue, and your reason for the refund request within 48 hours of delivery.</p>`
+    },
+    shipping: {
+        title: '🚚 Shipping Policy',
+        content: `
+<h3>Delivery Area</h3>
+<p>We currently deliver across <strong>Hyderabad, Telangana</strong> and select areas in Andhra Pradesh. We are expanding to more cities soon.</p>
+<h3>Delivery Timelines</h3>
+<ul>
+<li><strong>Hyderabad (within city):</strong> 1–2 business days</li>
+<li><strong>Telangana (other districts):</strong> 2–4 business days</li>
+<li><strong>Andhra Pradesh:</strong> 3–5 business days</li>
+</ul>
+<h3>Shipping Charges</h3>
+<p><strong>Free delivery</strong> on all orders above ₹499. A flat shipping fee of ₹49 applies to orders below ₹499.</p>
+<h3>Cash on Delivery (COD)</h3>
+<p>COD is available for all orders. After placing a COD order, our team will confirm the order via WhatsApp within 2 hours before dispatch.</p>
+<h3>Order Tracking</h3>
+<p>Once your order is dispatched, you will receive a WhatsApp message with delivery updates. For real-time tracking, contact us at <strong>+91 89190 11159</strong>.</p>
+<h3>Delays</h3>
+<p>Delivery timelines may be affected by public holidays, extreme weather, or other unforeseen circumstances. We will proactively notify you of any delays via WhatsApp.</p>`
+    }
+};
+
+window.openPolicy = function(tab) {
+    switchPolicy(tab || 'terms');
+    document.getElementById('policyModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+};
+window.closePolicyModal = function() {
+    document.getElementById('policyModal').classList.add('hidden');
+    document.body.style.overflow = '';
+};
+window.switchPolicy = function(tab) {
+    const p = POLICIES[tab];
+    if (!p) return;
+    document.getElementById('policyContent').innerHTML = p.content;
+    document.getElementById('policyModalTitle').textContent = p.title;
+    document.querySelectorAll('.policy-tab').forEach(t => t.classList.remove('active'));
+    const activeTab = document.getElementById('ptab_' + tab);
+    if (activeTab) activeTab.classList.add('active');
+};
 let deferredPrompt;
 window.addEventListener("beforeinstallprompt", e => {
     e.preventDefault();
