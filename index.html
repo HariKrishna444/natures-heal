@@ -109,12 +109,12 @@ header {
 .logo-text { font-family: 'Poppins', sans-serif; font-size: 1.4rem; font-weight: 800; color: white; letter-spacing: -0.02em; }
 .logo-text span { color: #a7f3d0; }
 
-.nav-links { display: none; gap: 1.5rem; }
-@media(min-width:768px){ .nav-links { display: flex; } }
+.nav-links { display: none; gap: 1rem; }
+@media(min-width:768px){ .nav-links { display: flex; flex-wrap: wrap; gap: 0.75rem 1rem; } }
 .nav-links button {
-    color: rgba(255,255,255,0.85); font-size: 0.875rem; font-weight: 600;
+    color: rgba(255,255,255,0.85); font-size: 0.8rem; font-weight: 600;
     padding: 0.35rem 0; border-bottom: 2px solid transparent;
-    transition: all 0.2s; background: none;
+    transition: all 0.2s; background: none; white-space: nowrap;
 }
 .nav-links button:hover, .nav-links button.active { color: white; border-color: white; }
 
@@ -683,10 +683,11 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 
 /* ===== FILTER TOOLBAR ===== */
 .filter-toolbar {
-    display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;
-    margin-bottom: 1.25rem; padding: 0.85rem 1rem;
+    display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;
+    margin-bottom: 1.25rem; padding: 0.75rem 1rem;
     background: var(--bg-card); border-radius: var(--radius);
     border: 1px solid var(--border-color); box-shadow: var(--shadow);
+    row-gap: 0.5rem;
 }
 .filter-toolbar-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
 .filter-chip {
@@ -1006,6 +1007,9 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
             <button data-filter="fruit" onclick="filterItems('fruit')">Fruits</button>
             <button data-filter="wild_fruit" onclick="filterItems('wild_fruit')">Wild Fruits</button>
             <button data-filter="seed" onclick="filterItems('seed')">Seeds</button>
+            <button data-filter="vegetable" onclick="filterItems('vegetable')">Vegetables</button>
+            <button data-filter="dry_fruit" onclick="filterItems('dry_fruit')">Dry Fruits</button>
+            <button data-filter="flower" onclick="filterItems('flower')">Flowers</button>
             <button data-filter="favorites" onclick="filterItems('favorites')">⭐ Collection</button>
             <button id="ordersTabBtn" onclick="openOrders()" class="hidden">📦 Orders</button>
         </nav>
@@ -1044,6 +1048,9 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
                 <option value="fruit">🍎 Fruits</option>
                 <option value="wild_fruit">🫐 Wild Fruits</option>
                 <option value="seed">🌰 Seeds</option>
+                <option value="vegetable">🥦 Vegetables</option>
+                <option value="dry_fruit">🥜 Dry Fruits</option>
+                <option value="flower">🌸 Flowers</option>
                 <option value="favorites">⭐ Collection</option>
                 <option value="orders">📦 My Orders</option>
             </select>
@@ -1139,6 +1146,9 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
         <div class="filter-chip" data-health="fruit" onclick="filterByHealth('fruit',this)">🍎 Fruits</div>
         <div class="filter-chip" data-health="wild_fruit" onclick="filterByHealth('wild_fruit',this)">🫐 Wild</div>
         <div class="filter-chip" data-health="seed" onclick="filterByHealth('seed',this)">🌱 Seeds</div>
+        <div class="filter-chip" data-health="vegetable" onclick="filterByHealth('vegetable',this)">🥦 Vegetables</div>
+        <div class="filter-chip" data-health="dry_fruit" onclick="filterByHealth('dry_fruit',this)">🥜 Dry Fruits</div>
+        <div class="filter-chip" data-health="flower" onclick="filterByHealth('flower',this)">🌸 Flowers</div>
         <div class="filter-divider"></div>
         <span class="filter-toolbar-label">Price</span>
         <div class="price-range-wrap">
@@ -1374,6 +1384,9 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
                             <option value="fruit">🍎 Fruit</option>
                             <option value="wild_fruit">🫐 Wild Fruit</option>
                             <option value="seed">🌱 Seed</option>
+                            <option value="vegetable">🥦 Vegetable</option>
+                            <option value="dry_fruit">🥜 Dry Fruit</option>
+                            <option value="flower">🌸 Flower</option>
                         </select>
                         <input id="ap_price" class="form-input" type="number" placeholder="Price (₹)" min="0.01" step="0.01">
                         <div style="display:flex;gap:0.5rem">
@@ -1885,9 +1898,9 @@ window.loadProductsFromFirestore = loadCatalogFromFirestore;
 function inferQuantityType(type) {
     if (!type) return 'bunch';
     const t = String(type).toLowerCase();
-    if (t.includes('leaf') || t.includes('leave') || t.includes('powder')) return 'bunch';
-    if (t.includes('seed')) return 'g';
-    if (t.includes('fruit') || t.includes('wild')) return 'kg';
+    if (t.includes('leaf') || t.includes('leave') || t.includes('powder') || t.includes('flower')) return 'bunch';
+    if (t.includes('seed') || t.includes('dry_fruit') || t === 'dry fruit') return 'g';
+    if (t.includes('fruit') || t.includes('wild') || t.includes('vegetable')) return 'kg';
     return 'bunch';
 }
 
@@ -1960,6 +1973,9 @@ window.autoFillQuantityType = function() {
     if (type === 'leaf') { qt.value = 'bunch'; minQty.value = '1'; step.value = '1'; }
     else if (type === 'fruit' || type === 'wild_fruit') { qt.value = 'kg'; minQty.value = '0.5'; step.value = '0.5'; }
     else if (type === 'seed') { qt.value = 'g'; minQty.value = '100'; step.value = '50'; }
+    else if (type === 'vegetable') { qt.value = 'kg'; minQty.value = '0.5'; step.value = '0.5'; }
+    else if (type === 'dry_fruit') { qt.value = 'g'; minQty.value = '100'; step.value = '50'; }
+    else if (type === 'flower') { qt.value = 'bunch'; minQty.value = '1'; step.value = '1'; }
 };
 
 // Random ratings for social proof
