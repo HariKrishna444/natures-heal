@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="max-age=31536000">
     <title>Nature's Heal — Pure Herbal Products</title>
-    <link rel="manifest" href="/natures-heal/manifest.json">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icon_192.png" type="image/png">
     <meta name="theme-color" content="#059669">
     <meta name="description" content="100% natural herbal powders, seeds & botanical products. Free delivery on orders above ₹499. Cash on Delivery available.">
     <meta name="keywords" content="herbal products, natural powders, botanical seeds, curry leaves, organic herbs, India, Hyderabad">
@@ -1506,7 +1507,7 @@ window.signInWithGoogle = async function() {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
         window.currentUser = user;
-        onLoginSuccess(user.uid, user.displayName, user.email, user.photoURL);
+        if (window.onLoginSuccess) window.onLoginSuccess(user.uid, user.displayName, user.email, user.photoURL);
 
         // Close whichever modal triggered sign-in
         closeAuthModal();
@@ -1577,7 +1578,7 @@ window.verifyOTP = async function() {
         const result = await window.otpConfirmationResult.confirm(otp);
         const user = result.user;
         const name = "User " + user.phoneNumber.slice(-4);
-        onLoginSuccess(user.uid, name, user.phoneNumber, null);
+        if (window.onLoginSuccess) window.onLoginSuccess(user.uid, name, user.phoneNumber, null);
         closeAuthModal();
         showToast("✅ Login successful!");
     } catch(e) {
@@ -1598,7 +1599,7 @@ onAuthStateChanged(auth, (user) => {
         const name = user.displayName || user.phoneNumber || 'User';
         const email = user.email || user.phoneNumber || '';
         const photo = user.photoURL || 'https://i.pravatar.cc/40?u=' + user.uid;
-        onLoginSuccess(user.uid, name, email, photo);
+        if (window.onLoginSuccess) window.onLoginSuccess(user.uid, name, email, photo);
 
         // If admin is already logged in and tried to open admin panel, open it now
         if (user.email === ADMIN_EMAIL && window._pendingAdminOpen) {
@@ -1781,6 +1782,7 @@ function onLoginSuccess(uid, name, email, photo) {
         });
     }
 }
+window.onLoginSuccess = onLoginSuccess;
 
 function updateUserUI(user) {
     const name = user?.name || localStorage.getItem('user_name');
@@ -3485,7 +3487,7 @@ function toggleChat() {
     win.classList.toggle('open', chatOpen);
     if (chatOpen && chatHistory.length === 0) {
             addChatMessage('bot', "Namaste! 🌿 I'm <strong>Vaidya</strong>, your Herbal Wellness Guide at Nature's Heal.<br><br>Ask me about any herb, health concern, or product — I'm here to help!<br><br>Try: <em>\"which fruit is good for hair?\"</em> or <em>\"herbs for diabetes\"</em> 😊", true);
-}
+}}
 window.toggleChat = toggleChat;
 
 function addChatMessage(role, text, isHtml = false) {
@@ -3840,4 +3842,4 @@ window.onload = function() {
 };
 </script>
 </body>
-</html>
+</html>              
