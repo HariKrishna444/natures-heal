@@ -12,6 +12,27 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" id="canonicalTag" href="https://naturesheal.web.app/">
 
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": "Nature's Heal",
+      "url": "https://naturesheal.web.app",
+      "description": "Natural herbal products in India — 100% pure powders, seeds & botanical products delivered in Hyderabad.",
+      "telephone": "+918919011159",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Hyderabad",
+        "addressRegion": "Telangana",
+        "addressCountry": "IN"
+      },
+      "sameAs": ["https://naturesheal.web.app"],
+      "openingHours": "Mo-Su 09:00-21:00",
+      "priceRange": "₹"
+    }
+    </script>
+
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Nature's Heal">
@@ -35,7 +56,6 @@
 
     <link rel="apple-touch-icon" href="icon_192.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
 
     <style>
@@ -3464,13 +3484,7 @@ function toggleChat() {
     const win = document.getElementById('chatWindow');
     win.classList.toggle('open', chatOpen);
     if (chatOpen && chatHistory.length === 0) {
-        const keySet = GROQ_API_KEY && GROQ_API_KEY !== 'YOUR_GROQ_API_KEY_HERE';
-        if (keySet) {
-            addChatMessage('bot', "Namaste! 🌿 I'm Vaidya, your Herbal AI assistant powered by Groq. Ask me about any plant, herb, or health concern and I'll recommend the right products for you!");
-        } else {
-            addChatMessage('bot', "Namaste! 🌿 I'm Vaidya, your Herbal AI assistant.\n\n⚙️ Setup needed: Open index.html, find GROQ_API_KEY and paste your free key from console.groq.com\n\nNo credit card needed — completely free!");
-        }
-    }
+            addChatMessage('bot', "Namaste! 🌿 I'm <strong>Vaidya</strong>, your Herbal Wellness Guide at Nature's Heal.<br><br>Ask me about any herb, health concern, or product — I'm here to help!<br><br>Try: <em>\"which fruit is good for hair?\"</em> or <em>\"herbs for diabetes\"</em> 😊", true);
 }
 window.toggleChat = toggleChat;
 
@@ -3502,21 +3516,284 @@ function showChatTyping() {
 }
 function hideChatTyping() { document.getElementById('chatTyping')?.remove(); }
 
-// ===== GROQ CHATBOT =====
-async function groqRequest(messages, systemPrompt, retries = 2, delayMs = 1500) {
-    for (let attempt = 0; attempt <= retries; attempt++) {
-        const response = await fetch('http://localhost:3000/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages, systemPrompt })
-        });
-        if (response.ok) return response;
-        if (response.status === 429 && attempt < retries) {
-            await new Promise(r => setTimeout(r, delayMs * (attempt + 1)));
-            continue;
+// ===== LOCAL RULE-BASED CHATBOT (no API key needed) =====
+const CHAT_KB = [
+    // ── HAIR ──
+    { k: ['hair fall','hair loss','hairfall','thinning hair','bald','baldness','hair growth'],
+      a: `🌿 <strong>Best herbs for hair fall & growth:</strong><br><br>
+▸ <strong>Amla (Indian Gooseberry)</strong> – Rich in Vitamin C & antioxidants. Mix amla powder with water or coconut oil and apply to roots 30 mins before washing. Also drink 1 tsp in warm water daily.<br>
+▸ <strong>Bhringraj</strong> – Called the "king of hair herbs". Apply bhringraj powder paste to scalp twice a week to reduce shedding.<br>
+▸ <strong>Curry Leaves</strong> – Prevent premature greying and strengthen follicles. Boil a handful in coconut oil and massage into scalp.<br>
+▸ <strong>Brahmi</strong> – Strengthens hair roots and reduces stress-related hair loss. Take 1 tsp powder with warm milk at bedtime.<br><br>
+💡 <em>All these herbs are available at Nature's Heal. Note: herbs support wellness but don't replace a doctor's advice if hair loss is severe.</em>` },
+
+    { k: ['amla','gooseberry','indian gooseberry','amalaki'],
+      a: `🌿 <strong>Amla (Indian Gooseberry)</strong> – Nature's richest source of Vitamin C!<br><br>
+▸ <strong>For Hair:</strong> Apply amla powder paste to scalp — prevents greying, boosts growth, strengthens roots.<br>
+▸ <strong>For Immunity:</strong> 1 tsp amla powder in warm water every morning on an empty stomach.<br>
+▸ <strong>For Skin:</strong> High antioxidants fight free radicals, giving skin a natural glow.<br>
+▸ <strong>For Digestion:</strong> Stimulates digestive enzymes; great taken after meals.<br>
+▸ <strong>For Eyes:</strong> Rich in Vitamin A; supports vision health.<br><br>
+📌 <em>Amla is one of three fruits in the famous Triphala blend. Available at Nature's Heal!</em>` },
+
+    { k: ['bhringraj'],
+      a: `🌿 <strong>Bhringraj</strong> – The "King of Hair Herbs" in Ayurveda!<br><br>
+▸ Promotes hair regrowth by improving blood circulation to scalp follicles.<br>
+▸ Apply as a paste (powder + water or oil) to scalp for 45 mins, 2–3 times a week.<br>
+▸ Internally: 1 tsp powder with warm water helps liver health and reduces stress (a major hair-fall trigger).<br>
+▸ Mix with amla powder for a powerful hair mask.<br><br>
+💡 Consistency is key — expect visible results in 8–12 weeks of regular use.` },
+
+    { k: ['curry leaves','kadi patta'],
+      a: `🌿 <strong>Curry Leaves</strong> – A kitchen herb with incredible health powers!<br><br>
+▸ <strong>Hair:</strong> Reverses premature greying; boil 15–20 leaves in 4 tbsp coconut oil for 5 min, cool and massage scalp.<br>
+▸ <strong>Anaemia:</strong> Rich in iron and folic acid — great for women with low haemoglobin.<br>
+▸ <strong>Diabetes:</strong> Helps regulate blood sugar levels when consumed regularly.<br>
+▸ <strong>Digestion:</strong> Add to meals daily or chew 8–10 fresh leaves on an empty stomach every morning.<br><br>
+📌 <em>Best consumed fresh, but dried curry leaf powder from Nature's Heal works great too!</em>` },
+
+    // ── SKIN ──
+    { k: ['skin','glow','acne','pimple','dark spot','fairness','complexion','skin care'],
+      a: `🌿 <strong>Best herbs for healthy glowing skin:</strong><br><br>
+▸ <strong>Neem</strong> – Natural antibiotic; fights acne, bacteria, and inflammation. Apply neem powder paste as a face mask twice a week.<br>
+▸ <strong>Turmeric</strong> – Curcumin brightens skin, reduces dark spots. Mix a pinch in warm milk or use as a face pack with honey.<br>
+▸ <strong>Amla</strong> – Vitamin C powerhouse that boosts collagen for plump, youthful skin.<br>
+▸ <strong>Flaxseeds</strong> – Omega-3 keeps skin hydrated and reduces inflammation from inside. Eat 1 tbsp daily.<br>
+▸ <strong>Sandalwood powder</strong> – Natural cooling agent; reduces tan and gives natural glow.<br><br>
+💡 <em>Inner nourishment matters as much as outer care — drink 2–3 litres of water daily alongside herbal remedies.</em>` },
+
+    { k: ['neem'],
+      a: `🌿 <strong>Neem</strong> – The ultimate natural antibiotic!<br><br>
+▸ <strong>Skin:</strong> Apply neem powder paste to acne, pimples, or rashes; its antibacterial action clears them fast.<br>
+▸ <strong>Blood Purifier:</strong> Drink neem leaf decoction (boil 10 leaves in 2 cups water, strain, drink warm) to detox blood.<br>
+▸ <strong>Immunity:</strong> Regular use helps the body fight infections naturally.<br>
+▸ <strong>Scalp:</strong> Anti-fungal; controls dandruff when massaged as a paste into scalp.<br><br>
+⚠️ <em>Neem is bitter and potent — start with small amounts. Avoid during pregnancy.</em>` },
+
+    // ── IMMUNITY ──
+    { k: ['immunity','immune','cold','flu','fever','infection','fall sick','sick','weak'],
+      a: `🌿 <strong>Boost your immunity naturally:</strong><br><br>
+▸ <strong>Tulsi (Holy Basil)</strong> – Chew 5–7 leaves every morning or drink tulsi tea. Fights colds, stress, and respiratory infections.<br>
+▸ <strong>Giloy (Guduchi)</strong> – Known as "Amrita" (nectar of immortality). Excellent for fever, dengue recovery, and chronic infections.<br>
+▸ <strong>Amla</strong> – 1 tsp powder in warm water daily gives you 20x the Vitamin C of an orange!<br>
+▸ <strong>Ashwagandha</strong> – Adaptogen that reduces cortisol and strengthens the immune response.<br>
+▸ <strong>Kalonji (Black Seeds)</strong> – "A cure for everything except death" (ancient saying). Add ½ tsp to honey daily.<br><br>
+💡 <em>The golden trio for immunity: Tulsi + Giloy + Amla taken together is highly effective.</em>` },
+
+    { k: ['tulsi','holy basil'],
+      a: `🌿 <strong>Tulsi (Holy Basil)</strong> – Queen of Herbs!<br><br>
+▸ Chew 5 fresh leaves every morning to boost immunity and purify blood.<br>
+▸ Tulsi tea (boil leaves in water with ginger): instant relief from cold, sore throat, cough.<br>
+▸ Anti-stress: adaptogen that lowers cortisol — drink 1 cup tulsi tea when anxious.<br>
+▸ Respiratory health: inhale steam from tulsi + ginger water for blocked nose.<br>
+▸ Skin: apply fresh tulsi juice to pimples overnight for quick relief.<br><br>
+📌 <em>Tulsi is sacred in Indian culture for a reason — it truly is a full-body healer!</em>` },
+
+    { k: ['giloy','guduchi'],
+      a: `🌿 <strong>Giloy (Guduchi / Amrita)</strong> – The Immunity Powerhouse!<br><br>
+▸ Best for: chronic fever, dengue, chikungunya recovery, boosting platelet count.<br>
+▸ How to use: Boil 1 tsp giloy powder in 2 cups water, reduce to 1 cup, drink warm twice daily.<br>
+▸ Also available as giloy juice or tablets for convenience.<br>
+▸ Anti-inflammatory: helps with arthritis and joint pain when used regularly.<br>
+▸ Detoxifies liver and kidneys naturally.<br><br>
+💡 <em>During seasonal flu outbreaks, giloy + tulsi + ginger tea is your best natural defence.</em>` },
+
+    { k: ['ashwagandha','withania'],
+      a: `🌿 <strong>Ashwagandha</strong> – The Stress Buster & Energy Booster!<br><br>
+▸ <strong>Stress & Anxiety:</strong> Reduces cortisol by 30% with regular use (1 tsp powder + warm milk at bedtime).<br>
+▸ <strong>Energy & Stamina:</strong> Ancient warriors used it for strength — great for gym-goers and working professionals.<br>
+▸ <strong>Sleep:</strong> Ashwagandha milk at night (ashwagandha + warm milk + honey) promotes deep sleep.<br>
+▸ <strong>Thyroid:</strong> Supports both hypo- and hyperthyroid conditions (consult doctor first).<br>
+▸ <strong>Immunity:</strong> Improves white blood cell count and body's defence mechanism.<br><br>
+💡 <em>Best results in 4–8 weeks of daily use. Pair with a nutritious diet for maximum benefit.</em>` },
+
+    // ── DIABETES ──
+    { k: ['diabetes','blood sugar','sugar','diabetic','insulin'],
+      a: `🌿 <strong>Natural support for blood sugar management:</strong><br><br>
+▸ <strong>Methi (Fenugreek)</strong> – Soak 1 tsp overnight, drink the water and eat the seeds every morning. Slows sugar absorption.<br>
+▸ <strong>Karela (Bitter Gourd)</strong> – Drink 30ml karela juice on empty stomach; contains plant-based insulin-like compounds.<br>
+▸ <strong>Jamun Seeds</strong> – Dry and powder them. ½ tsp with water twice daily controls post-meal blood sugar spikes.<br>
+▸ <strong>Giloy</strong> – Helps in insulin production and sensitivity.<br>
+▸ <strong>Curry Leaves</strong> – Add to every meal; reduces glycaemic index naturally.<br><br>
+⚠️ <em>These herbs complement medical treatment but do NOT replace prescribed medications. Always inform your doctor.</em>` },
+
+    { k: ['methi','fenugreek'],
+      a: `🌿 <strong>Methi (Fenugreek)</strong> – The Blood Sugar & Cholesterol Fighter!<br><br>
+▸ <strong>Diabetes:</strong> Soak 1 tsp seeds overnight → eat seeds and drink water next morning. Contains galactomannan which slows sugar absorption.<br>
+▸ <strong>Cholesterol:</strong> Regular use reduces LDL ("bad") cholesterol significantly.<br>
+▸ <strong>Hair:</strong> Apply methi paste to scalp → strengthens hair, reduces dandruff.<br>
+▸ <strong>Lactation:</strong> Boosts breast milk production in new mothers.<br>
+▸ <strong>Joint Pain:</strong> Methi powder with warm water reduces inflammation.<br><br>
+📌 <em>Methi is bitter — mix in curries, parathas, or just swallow with water. Your taste buds will adjust!</em>` },
+
+    // ── DIGESTION ──
+    { k: ['digestion','digestive','gas','bloating','constipation','acidity','stomach','bowel','ibs'],
+      a: `🌿 <strong>Natural remedies for digestion & gut health:</strong><br><br>
+▸ <strong>Ajwain (Carom Seeds)</strong> – Instant relief from gas and acidity. Chew ½ tsp with a pinch of salt and warm water after meals.<br>
+▸ <strong>Jeera (Cumin)</strong> – Boil 1 tsp in a cup of water, drink warm — classic remedy for bloating and indigestion.<br>
+▸ <strong>Fennel Seeds (Saunf)</strong> – Chew a pinch after every meal to prevent bloating and freshen breath.<br>
+▸ <strong>Triphala</strong> – Gentle overnight laxative for chronic constipation. 1 tsp with warm water before bed.<br>
+▸ <strong>Curry Leaves</strong> – Stimulate digestive enzymes; add to every meal.<br><br>
+💡 <em>The golden rule: eat slowly, chew thoroughly, avoid cold water with meals — herbs work even better with good habits!</em>` },
+
+    { k: ['triphala'],
+      a: `🌿 <strong>Triphala</strong> – Ayurveda's Most Famous Formula!<br><br>
+Triphala = <strong>Amla + Haritaki + Bibhitaki</strong> (three powerful fruits combined).<br><br>
+▸ <strong>Constipation:</strong> 1 tsp in warm water before bed — gentle, non-habit-forming laxative.<br>
+▸ <strong>Detox:</strong> Cleanses the colon and removes toxins (ama) accumulated over time.<br>
+▸ <strong>Eyes:</strong> Wash eyes with cold triphala water (strain well) to reduce strain and redness.<br>
+▸ <strong>Weight Loss:</strong> Improves metabolism and reduces fat accumulation over 3 months.<br>
+▸ <strong>Skin:</strong> Internal detox leads to clearer, brighter skin.<br><br>
+⏰ <em>Best taken at bedtime or early morning. Results are gradual but lasting — be consistent for 3 months.</em>` },
+
+    { k: ['ajwain','carom'],
+      a: `🌿 <strong>Ajwain (Carom Seeds)</strong> – Instant Gas & Acidity Buster!<br><br>
+▸ Chew ½ tsp with a pinch of black salt and sip warm water → relieves gas in 10 minutes.<br>
+▸ Ajwain water: boil 1 tsp in 2 cups water, strain and drink warm for acidity and bloating.<br>
+▸ For babies: ajwain water (very diluted) relieves infant colic safely.<br>
+▸ Cold & cough: inhale steam with ajwain added to boiling water.<br>
+▸ Arthritis: ajwain seed paste with warm mustard oil gives pain relief when applied.<br><br>
+📌 <em>Keep ajwain on your dinner table! A pinch after every meal prevents digestive issues naturally.</em>` },
+
+    { k: ['jeera','cumin'],
+      a: `🌿 <strong>Jeera (Cumin)</strong> – The Digestive Hero!<br><br>
+▸ Jeera water: Boil 1 tsp in 1.5 cups water, strain and drink warm first thing in morning — fights bloating, kick-starts metabolism.<br>
+▸ Sprinkle roasted jeera powder on raita, buttermilk, and curries for easy digestion.<br>
+▸ Rich in iron — helpful for anaemia, especially in women.<br>
+▸ Reduces LDL cholesterol and supports heart health.<br>
+▸ Jeera + ajwain + fennel mixed equally = powerful digestive blend to keep at home.<br><br>
+💡 <em>Try jeera water every morning for 30 days — most people notice flatter stomach and more energy!</em>` },
+
+    // ── WEIGHT LOSS ──
+    { k: ['weight loss','obesity','fat','slim','overweight','weight management'],
+      a: `🌿 <strong>Natural support for healthy weight management:</strong><br><br>
+▸ <strong>Triphala</strong> – Detoxes gut, improves metabolism. 1 tsp in warm water at bedtime for 3 months.<br>
+▸ <strong>Methi Seeds</strong> – High fibre keeps you full longer. Soak overnight and eat in morning.<br>
+▸ <strong>Jeera Water</strong> – Boosts metabolism by 2–3x. Drink first thing in morning.<br>
+▸ <strong>Sabja Seeds (Basil Seeds)</strong> – Soak 1 tsp in water for 10 mins; they expand 30x! Drink before meals to curb appetite.<br>
+▸ <strong>Ashwagandha</strong> – Reduces stress-related binge eating by lowering cortisol.<br><br>
+💡 <em>No herb is a magic pill! Combine these with a 30-minute daily walk and reduced sugar intake for real results.</em>` },
+
+    { k: ['sabja','basil seeds','tukmaria'],
+      a: `🌿 <strong>Sabja Seeds (Sweet Basil Seeds / Tukmaria)</strong> – The Cooling Superfood!<br><br>
+▸ Soak 1 tsp in a glass of water for 10–15 minutes — they swell into jelly-like balls (30x their size!).<br>
+▸ <strong>Weight Loss:</strong> The swollen seeds fill your stomach — drink before meals to eat less naturally.<br>
+▸ <strong>Cooling:</strong> Excellent in summer — mix in sharbat, lemonade, or coconut water to prevent heat stroke.<br>
+▸ <strong>Blood Sugar:</strong> Slows digestion and glucose absorption.<br>
+▸ <strong>Constipation:</strong> High fibre content acts as a gentle natural laxative.<br><br>
+🥤 <em>Sabja + rose water + sugar = classic Indian "Falooda" base. Delicious and healthy!</em>` },
+
+    // ── STRESS / SLEEP ──
+    { k: ['stress','anxiety','tension','mental health','sleep','insomnia','relax'],
+      a: `🌿 <strong>Natural herbs for stress, anxiety & better sleep:</strong><br><br>
+▸ <strong>Ashwagandha</strong> – #1 Ayurvedic adaptogen. 1 tsp in warm milk with honey at bedtime. Reduces cortisol (stress hormone) significantly.<br>
+▸ <strong>Brahmi</strong> – "Brain herb" — improves focus, reduces anxiety, supports memory. 1 tsp powder with warm water or ghee.<br>
+▸ <strong>Tulsi Tea</strong> – A cup of tulsi tea in the evening calms the nervous system and eases anxiety.<br>
+▸ <strong>Jatamansi</strong> – Powerful nerve tonic for insomnia and chronic stress; take ½ tsp before bed.<br><br>
+🧘 <em>Herbs + 20 minutes of daily meditation + phone-free 30 mins before sleep = life-changing combination for mental wellness.</em>` },
+
+    { k: ['brahmi','bacopa'],
+      a: `🌿 <strong>Brahmi</strong> – The Memory & Brain Herb!<br><br>
+▸ <strong>Memory & Focus:</strong> Students and professionals swear by brahmi. 1 tsp powder with warm milk before study/work.<br>
+▸ <strong>Stress:</strong> Calms hyperactive mind; natural anti-anxiety without making you drowsy.<br>
+▸ <strong>Hair:</strong> Brahmi oil or paste strengthens hair roots and promotes thickness.<br>
+▸ <strong>Children:</strong> Small dose brahmi powder in warm milk helps with attention and learning (ADHD support).<br><br>
+📌 <em>Brahmi ghee (brahmi cooked in clarified butter) is an ancient Ayurvedic super-food for the brain — try it!</em>` },
+
+    // ── MORINGA ──
+    { k: ['moringa','drumstick','sahjan'],
+      a: `🌿 <strong>Moringa (Drumstick / Miracle Tree)</strong> – Called the World's Most Nutritious Plant!<br><br>
+▸ Contains 7x Vitamin C of oranges, 4x calcium of milk, 4x Vitamin A of carrots, 3x potassium of bananas!<br>
+▸ <strong>Daily nutrition:</strong> Add 1 tsp moringa powder to smoothies, dals, or warm water every morning.<br>
+▸ <strong>Energy:</strong> Natural energy booster — better than caffeine, no crash.<br>
+▸ <strong>Lactation:</strong> Boosts breast milk production dramatically.<br>
+▸ <strong>Blood Sugar:</strong> Isothiocyanates in moringa help regulate glucose levels.<br><br>
+🌟 <em>If you could only choose ONE herb, moringa might be it — it genuinely is a superfood.</em>` },
+
+    // ── FLAXSEEDS ──
+    { k: ['flaxseed','flax','alsi','linseed'],
+      a: `🌿 <strong>Flaxseeds (Alsi)</strong> – Plant-Based Omega-3 Powerhouse!<br><br>
+▸ <strong>Heart Health:</strong> Reduces LDL cholesterol and blood pressure. 1 tbsp ground flaxseed daily in your diet.<br>
+▸ <strong>Skin & Hair:</strong> Omega-3 from inside gives natural moisture to skin and reduces hair breakage.<br>
+▸ <strong>Hormones:</strong> Lignans in flaxseeds balance estrogen levels — helpful for PCOS and menopause.<br>
+▸ <strong>Constipation:</strong> High fibre — mix 1 tbsp in water or add to food daily.<br>
+▸ <strong>Diabetes:</strong> Slows sugar absorption after meals.<br><br>
+💡 <em>Always grind flaxseeds before eating — whole seeds pass through undigested. Store ground powder in fridge!</em>` },
+
+    // ── KALONJI ──
+    { k: ['kalonji','black seed','nigella','black cumin'],
+      a: `🌿 <strong>Kalonji (Black Seeds / Nigella Sativa)</strong> – "A cure for everything except death"!<br><br>
+▸ <strong>Immunity:</strong> ½ tsp with a teaspoon of honey every morning on empty stomach for 3 months.<br>
+▸ <strong>Hair:</strong> Kalonji oil massaged into scalp 2x a week — reduces hair fall, promotes growth.<br>
+▸ <strong>Respiratory:</strong> Thymoquinone in kalonji is a natural bronchodilator — great for asthma and allergies.<br>
+▸ <strong>Diabetes & BP:</strong> Regular use significantly improves both conditions in clinical studies.<br><br>
+📌 <em>Kalonji seeds are slightly bitter. Mix in honey or black seed oil for a better experience!</em>` },
+
+    // ── STORE INFO ──
+    { k: ['delivery','shipping','order','cod','cash on delivery','price','cost','how to order'],
+      a: `🛒 <strong>Nature's Heal — Store Information:</strong><br><br>
+▸ <strong>Free Delivery:</strong> On all orders above ₹499!<br>
+▸ <strong>Cash on Delivery (COD):</strong> Available — pay when you receive your order.<br>
+▸ <strong>Delivery Time:</strong> Hyderabad: 1–2 days | Other cities: 3–5 days.<br>
+▸ <strong>WhatsApp Orders:</strong> Chat with us on <strong>+91 89190 11159</strong> for custom orders, bulk pricing, or queries.<br>
+▸ <strong>Quality Promise:</strong> 100% natural, no chemicals, no artificial colours.<br><br>
+💬 <em>For fastest service, WhatsApp us — we usually reply within minutes!</em>` },
+
+    { k: ['whatsapp','contact','phone','number','call','reach'],
+      a: `📞 <strong>Reach Nature's Heal:</strong><br><br>
+▸ <strong>WhatsApp:</strong> <a href="https://wa.me/918919011159" target="_blank" style="color:#25D366;font-weight:700"><i class="fab fa-whatsapp"></i> +91 89190 11159</a><br>
+▸ <strong>Location:</strong> Hyderabad, Telangana, India<br>
+▸ <strong>Hours:</strong> Mon–Sat, 9 AM – 9 PM IST<br><br>
+We'd love to help you find the right herbs for your needs! Feel free to WhatsApp for personalised recommendations.` },
+
+    // ── GENERAL GREETINGS ──
+    { k: ['hello','hi','hey','namaste','namaskar','hii','helo'],
+      a: `Namaste! 🌿 I'm <strong>Vaidya</strong>, your herbal wellness guide at Nature's Heal!<br><br>
+I can help you with:<br>
+▸ Which herb is good for hair, skin, digestion, immunity, diabetes, stress...<br>
+▸ How to use any herb (dosage, timing, combinations)<br>
+▸ Product info and store details<br><br>
+What health concern can I help you with today? 😊` },
+
+    { k: ['thanks','thank you','thank','tysm','ty'],
+      a: `🌿 You're most welcome! Remember, nature has a remedy for almost everything — it just takes patience and consistency.<br><br>
+Feel free to ask anything else anytime. Stay healthy! 🙏` },
+
+    { k: ['bye','goodbye','see you','cya','ok bye'],
+      a: `Take care! 🌿 Wishing you vibrant health. Come back anytime you need herbal guidance. Namaste! 🙏` },
+];
+
+function localChatReply(text) {
+    const q = text.toLowerCase().replace(/[^\w\s]/g,' ');
+    // Try to match keywords
+    for (const entry of CHAT_KB) {
+        if (entry.k.some(kw => q.includes(kw))) {
+            return entry.a;
         }
-        return response;
     }
+    // Fuzzy: partial matches
+    for (const entry of CHAT_KB) {
+        if (entry.k.some(kw => kw.split(' ').some(w => w.length > 3 && q.includes(w)))) {
+            return entry.a;
+        }
+    }
+    // Check catalog
+    const catalog = window.appState?.catalogData || [];
+    const matched = catalog.find(p => p.name && q.includes(p.name.toLowerCase().split(' ')[0]));
+    if (matched) {
+        return `🌿 <strong>${matched.name}</strong><br><br>${matched.uses || matched.description || 'A wonderful natural product available at Nature\'s Heal.'}<br><br>💰 Price: ₹${matched.price} per ${matched.quantityType||'unit'}<br><br>🛒 Add it to your cart or <a href="https://wa.me/918919011159" target="_blank" style="color:#25D366;font-weight:700">WhatsApp us</a> to order!`;
+    }
+    // Default
+    return `🌿 I'm not sure about that specific query yet, but I'd love to help!<br><br>You can ask me about:<br>
+▸ Hair fall, hair growth<br>
+▸ Skin glow, acne, dark spots<br>
+▸ Immunity boosters<br>
+▸ Diabetes, blood sugar<br>
+▸ Digestion, gas, bloating<br>
+▸ Stress, sleep, anxiety<br>
+▸ Weight loss, energy<br>
+▸ Specific herbs: amla, ashwagandha, triphala, neem, tulsi…<br><br>
+Or <a href="https://wa.me/918919011159" target="_blank" style="color:#25D366;font-weight:700"><i class="fab fa-whatsapp"></i> WhatsApp us</a> for personalised guidance! 🙏`;
 }
 
 async function sendChat() {
@@ -3529,75 +3806,12 @@ async function sendChat() {
     addChatMessage('user', text);
     showChatTyping();
 
-    // Build catalog context
-    const catalog = (window.appState?.catalogData || []).slice(0, 20).map(p =>
-        `${p.name} (${p.type}, ₹${p.price}/${p.quantityType||'unit'}): ${p.uses || p.description || ''}`
-    ).join('\n');
+    // Simulate a brief thinking delay for natural feel
+    await new Promise(r => setTimeout(r, 650 + Math.random() * 500));
+    hideChatTyping();
 
-    // Build conversation history for Groq (OpenAI format)
-    const recentHistory = chatHistory.slice(-12).map(m => ({
-        role: m.role, // 'user' or 'assistant'
-        content: m.content
-    }));
-
-    const systemInstruction = `You are Vaidya 🌿, a warm Ayurvedic & Herbal AI assistant for Nature's Heal — a trusted herbal products store in Hyderabad, India.
-
-OUR LIVE CATALOG:
-${catalog}
-
-HERBAL KNOWLEDGE:
-LEAVES: Curry Leaves (hair, anaemia, diabetes), Neem (skin, blood purifier), Tulsi (immunity, stress), Ashwagandha (energy, stamina), Brahmi (memory), Amla (Vitamin C, hair), Moringa (superfood), Giloy (immunity, fever), Bhringraj (hair growth), Triphala (digestion).
-SEEDS: Sabja (cooling, weight loss), Flaxseeds (omega-3, heart), Jeera (digestion, bloating), Ajwain (gas, acidity), Fennel (bloating), Kalonji (immunity, hair), Methi (diabetes, cholesterol).
-FRUITS: Haritaki (digestion), Bibhitaki (respiratory), Amla (immunity), Karela (diabetes), Jamun seeds (diabetes).
-
-CONDITIONS:
-Hair Fall → Bhringraj, Amla, Curry Leaves, Brahmi
-Diabetes → Karela, Jamun, Methi, Giloy
-Digestion/Gas → Ajwain, Jeera, Fennel, Triphala, Curry Leaves
-Immunity → Tulsi, Giloy, Amla, Ashwagandha, Kalonji
-Skin Glow → Neem, Turmeric, Amla, Flaxseed
-Stress → Ashwagandha, Brahmi, Tulsi
-Weight Loss → Triphala, Methi, Jeera water, Sabja seeds
-
-STORE INFO: Free delivery above ₹499. COD available. WhatsApp: +91 89190 11159. Hyderabad delivery 1–2 days.
-
-STYLE: Be warm like a trusted family Vaidya. Give practical tips (how to use, when, with what). Keep responses to 3–4 short paragraphs. Always note herbs support wellness but don't replace doctors.`;
-
-    try {
-        const response = await groqRequest(
-            [...recentHistory, { role: 'user', content: text }],
-            systemInstruction
-        );
-
-        hideChatTyping();
-
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            if (response.status === 429) {
-                addChatMessage('bot', `🙏 Vaidya is a little busy right now! Please try again in a moment, or reach us directly on <a href="https://wa.me/918919011159" target="_blank" style="color:#25D366;font-weight:700"><i class="fab fa-whatsapp"></i> WhatsApp</a> for instant help 🌿`, true);
-            } else if (response.status === 401) {
-                addChatMessage('bot', '⚠️ API key issue. Please contact the store admin.');
-            } else {
-                addChatMessage('bot', `⚠️ Something went wrong (${response.status}). Please try again or <a href="https://wa.me/918919011159" target="_blank" style="color:#25D366;font-weight:700">WhatsApp us</a> 🌿`, true);
-            }
-            return;
-        }
-
-        const data = await response.json();
-        const reply = data?.choices?.[0]?.message?.content
-            || 'Sorry, I could not get a response. Please try again!';
-
-        const cleaned = reply
-            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.+?)\*/g, '<em>$1</em>')
-            .replace(/^•/gm, '▸');
-
-        addChatMessage('bot', cleaned, true);
-    } catch(e) {
-        hideChatTyping();
-        console.error('Groq chat error:', e);
-        addChatMessage('bot', `⚠️ Connection error. Check your internet and try again, or <a href="https://wa.me/918919011159" target="_blank" style="color:#25D366;font-weight:700"><i class="fab fa-whatsapp"></i> WhatsApp us</a> 🌿`, true);
-    }
+    const reply = localChatReply(text);
+    addChatMessage('bot', reply, true);
 }
 window.sendChat = sendChat;
 
