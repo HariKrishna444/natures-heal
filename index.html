@@ -2173,9 +2173,12 @@ window.addToCartFromModal = function(id) {
 // ===== CART =====
 function addToCartSimple(id) {
     // Use == for type-coerced comparison since Firestore IDs may be strings or numbers
-    const item = window.appState.cart.find(i => i.id == id);
-    if (item) item.qty += 1;
-    else window.appState.cart.push({ id, qty: 1 });
+    const prod = window.appState.catalogData.find(p => p.id == id);
+    const minQty = (prod && prod.minQty) ? prod.minQty : 1;
+    const step   = (prod && prod.step)   ? prod.step   : minQty;
+    const existing = window.appState.cart.find(i => i.id == id);
+    if (existing) existing.qty = Math.round((existing.qty + step) * 1000) / 1000;
+    else window.appState.cart.push({ id, qty: minQty });
     persistCart();
     updateCartBadge();
     renderCartItems();
@@ -3375,13 +3378,17 @@ function generateInvoicePDF(order) {
         </div>
     </div></body></html>`;
 
+    // Download as HTML file directly — no print dialog, no new tab
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const win = window.open(url, '_blank');
-    if (win) {
-        win.onload = () => { setTimeout(() => { win.print(); }, 400); };
-    }
-    showToast("📄 Invoice opened — print to save PDF");
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'NaturesHeal_Invoice_' + orderId + '.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    showToast("📄 Invoice downloaded!");
 }
 window.generateInvoicePDF = generateInvoicePDF;
 
@@ -3842,4 +3849,4 @@ window.onload = function() {
 };
 </script>
 </body>
-</html>              
+</html>
