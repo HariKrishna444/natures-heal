@@ -5,38 +5,36 @@ on:
     branches:
       - main
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 📥 Checkout repo
+      # 📥 Checkout
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # ⚙️ Setup Node
-      - name: Setup Node
+      # ⚙️ Node 24
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '24'
 
-      # 🔐 Authenticate with Google Cloud
-      - name: Authenticate to Google Cloud
+      # 🔐 Google Auth (FIXED)
+      - name: Google Auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
 
       # 🔧 Install Firebase CLI
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      # 🚀 Deploy ONLY hosting (safe mode)
-      - name: Deploy Hosting
+      # 🚀 Deploy Hosting
+      - name: Deploy to Firebase Hosting
         run: firebase deploy --only hosting --project natures-heal --non-interactive
 
-      # ✅ Mark success explicitly
+      # ✅ Done
       - name: Done
-        run: echo "Hosting deployed successfully"
+        run: echo "Deploy finished"
