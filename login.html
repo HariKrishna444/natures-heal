@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nature's Heal: Login</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+<style>
+body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
+</style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen p-4">
+
+<div class="bg-white p-8 rounded-[2.5rem] shadow-2xl w-full max-w-md space-y-4">
+
+<!-- LOGO -->
+<div class="text-center mb-6">
+    <div class="bg-emerald-600 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+        <i class="fas fa-leaf text-white text-xl"></i>
+    </div>
+    <h2 class="text-3xl font-black text-slate-800">Welcome Back</h2>
+    <p class="text-slate-500">Sign in to complete your order</p>
+</div>
+
+<!-- EMAIL -->
+<input id="email" type="email" placeholder="Email"
+class="w-full p-3 border rounded-xl">
+
+<input id="password" type="password" placeholder="Password"
+class="w-full p-3 border rounded-xl">
+
+<button onclick="emailLogin()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold">
+Login with Email
+</button>
+
+<!-- GOOGLE LOGIN (ICON ONLY STYLE) -->
+<button onclick="googleLogin()" 
+class="w-full flex items-center justify-center gap-3 border py-3 rounded-xl font-semibold hover:bg-gray-100">
+
+    <i class="fab fa-google text-red-500 text-lg"></i>
+    <span>Continue with Google</span>
+
+</button>
+
+<!-- PHONE INPUT -->
+<div class="flex">
+  <span class="px-3 flex items-center bg-gray-100 border rounded-l-xl">
+    <i class="fas fa-phone text-green-600"></i>
+  </span>
+  <input id="phone" type="tel" placeholder="9876543210" maxlength="10"
+    class="w-full p-3 border border-l-0 rounded-r-xl">
+</div>
+
+<div id="recaptcha"></div>
+
+<!-- SEND OTP (PHONE ICON ADDED) -->
+<button onclick="sendOTP()" 
+class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+
+    <i class="fas fa-mobile-alt"></i>
+    Send OTP
+
+</button>
+
+<!-- OTP INPUT -->
+<input id="otp" placeholder="Enter OTP"
+class="w-full p-3 border rounded-xl">
+
+<button onclick="verifyOTP()" 
+class="w-full bg-green-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2">
+
+    <i class="fas fa-check-circle"></i>
+    Verify OTP
+
+</button>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  setPersistence,
+  browserLocalPersistence,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
+  authDomain: "naturesheal.firebaseapp.com",
+  projectId: "naturesheal"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+setPersistence(auth, browserLocalPersistence);
+
+// EMAIL
+window.emailLogin = async function () {
+  const email = email.value;
+  const password = password.value;
+
+  try {
+    const res = await signInWithEmailAndPassword(auth, email, password);
+    saveUser(res.user);
+  } catch (err) {
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+    saveUser(res.user);
+  }
+};
+
+// GOOGLE
+window.googleLogin = async function () {
+  const provider = new GoogleAuthProvider();
+  const res = await signInWithPopup(auth, provider);
+  saveUser(res.user);
+};
+
+// OTP
+let confirmationResult;
+
+window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha', {
+  size: 'invisible'
+});
+
+window.sendOTP = async function () {
+  let phone = document.getElementById('phone').value.replace(/\D/g, "");
+
+  if (phone.length !== 10) return alert("Invalid number");
+
+  phone = "+91" + phone;
+
+  confirmationResult = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
+  alert("OTP sent");
+};
+
+window.verifyOTP = async function () {
+  const code = document.getElementById('otp').value;
+
+  const res = await confirmationResult.confirm(code);
+  saveUser(res.user);
+};
+
+// SAVE USER
+function saveUser(user) {
+  localStorage.setItem('user_name', user.displayName || "User");
+  localStorage.setItem('user_email', user.email || "");
+  localStorage.setItem('user_uid', user.uid);
+  localStorage.setItem('user_photo', user.photoURL || "");
+
+  window.location.href = "index.html";
+}
+
+onAuthStateChanged(auth, (user) => {
+  if (user && !localStorage.getItem('user_name')) {
+    saveUser(user);
+  }
+});
+</script>
+
+</body>
+</html>
