@@ -3517,7 +3517,7 @@ async function sendChat() {
     showChatTyping();
 
     // Guard: key not set
-    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'AIzaSyCAWD200URoPdfkVnTgo66H77_BIRsjimo') {
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === '') {
         hideChatTyping();
         addChatMessage('bot', '⚙️ Chatbot not configured yet.\n\nAdmin: open this file, find GEMINI_API_KEY near line 3460, and paste your free key from aistudio.google.com/app/apikey (no credit card needed!) 🌿');
         return;
