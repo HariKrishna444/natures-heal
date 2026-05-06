@@ -405,26 +405,31 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 
 /* ===== ORDERS MODAL ===== */
 .order-card {
-    border: 1px solid var(--border-color); border-radius: 1rem; padding: 1rem;
-    background: var(--bg-body); margin-bottom: 0.75rem;
+    border: 1px solid var(--border-color); border-radius: 1.25rem;
+    padding: 1.1rem 1.1rem 0.9rem;
+    background: var(--bg-card); margin-bottom: 0.85rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05); transition: box-shadow 0.2s;
 }
-.order-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.6rem; }
-.order-amount { font-size: 1.05rem; font-weight: 800; color: #059669; }
-.order-date { font-size: 0.7rem; color: var(--text-muted); }
+.order-card:hover { box-shadow: 0 6px 24px rgba(5,150,105,0.1); }
+.order-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+.order-amount { font-size: 1.15rem; font-weight: 800; color: #059669; font-family: 'Poppins', sans-serif; letter-spacing: -0.01em; }
+.order-date { font-size: 0.68rem; color: var(--text-muted); margin-top: 0.15rem; display: flex; align-items: center; gap: 0.25rem; }
 .order-status {
     display: inline-flex; align-items: center; gap: 0.3rem;
-    padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 700;
-    margin-bottom: 0.5rem;
+    padding: 0.25rem 0.7rem; border-radius: 9999px; font-size: 0.68rem; font-weight: 700;
+    flex-shrink: 0; letter-spacing: 0.01em;
 }
-.status-pending { background: #fef9c3; color: #a16207; }
-.status-shipped { background: #dbeafe; color: #1d4ed8; }
-.status-delivered { background: #d1fae5; color: #065f46; }
-.status-cancelled { background: #fee2e2; color: #dc2626; }
-.status-cod { background: #ede9fe; color: #6d28d9; }
+.status-pending { background: #fef9c3; color: #a16207; border: 1px solid #fde68a; }
+.status-shipped { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.status-delivered { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.status-cancelled { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+.status-cod { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
 .order-items { font-size: 0.78rem; color: var(--text-muted); }
 .order-payment-badge {
-    display: inline-flex; align-items: center; gap: 0.25rem;
-    font-size: 0.68rem; color: var(--text-muted); margin-top: 0.4rem;
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.68rem; color: var(--text-muted); font-weight: 600;
+    margin: 0.4rem 0 0.25rem; background: var(--bg-body);
+    padding: 0.25rem 0.6rem; border-radius: 0.4rem; border: 1px solid var(--border-color);
 }
 
 /* ===== ITEM DETAIL MODAL ===== */
@@ -634,12 +639,13 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 
 /* ===== CANCEL ORDER BTN ===== */
 .cancel-order-btn {
-    font-size: 0.68rem; font-weight: 700; color: #dc2626;
-    background: #fee2e2; border: none; border-radius: 0.4rem;
-    padding: 0.25rem 0.6rem; cursor: pointer; transition: all 0.2s; margin-top: 0.5rem;
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.72rem; font-weight: 700; color: #dc2626;
+    background: #fee2e2; border: 1px solid #fca5a5; border-radius: 0.6rem;
+    padding: 0.4rem 0.8rem; cursor: pointer; transition: all 0.2s;
 }
-.cancel-order-btn:hover { background: #dc2626; color: white; }
-.cancel-order-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.cancel-order-btn:hover { background: #dc2626; color: white; border-color: #dc2626; transform: translateY(-1px); }
+.cancel-order-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 /* ===== SEARCH SUGGESTIONS DROPDOWN ===== */
 .search-suggestions {
@@ -785,132 +791,190 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 .text-sm { font-size: 0.875rem; }
 .text-muted { color: var(--text-muted); }
 
-/* ===== AI CHATBOT ===== */
+/* ===== AI CHATBOT — Redesigned ===== */
 #chatFab {
     position: fixed; bottom: 9.25rem; right: 1.5rem; z-index: 50;
-    width: 3.25rem; height: 3.25rem; border-radius: 50%;
-    background: linear-gradient(135deg, #059669, #047857);
+    width: 3.5rem; height: 3.5rem; border-radius: 1rem;
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
     color: white; display: flex; align-items: center; justify-content: center;
-    font-size: 1.25rem; box-shadow: 0 4px 20px rgba(5,150,105,0.45);
-    transition: all 0.25s; border: none; cursor: pointer;
+    font-size: 1.25rem; box-shadow: 0 6px 24px rgba(5,150,105,0.40);
+    transition: all 0.25s cubic-bezier(0.4,0,0.2,1); border: none; cursor: pointer;
 }
-#chatFab:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(5,150,105,0.6); }
+#chatFab:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 32px rgba(5,150,105,0.55); }
 #chatFab .chat-pulse {
-    position: absolute; top: -3px; right: -3px;
-    width: 12px; height: 12px; background: #f43f5e; border-radius: 50%;
+    position: absolute; top: -4px; right: -4px;
+    width: 13px; height: 13px; background: #f43f5e; border-radius: 50%;
     border: 2px solid white; animation: chatPulse 2s infinite;
 }
-@keyframes chatPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.3);opacity:0.7} }
+@keyframes chatPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.35);opacity:0.75} }
 
 #chatWindow {
-    position: fixed; bottom: 13rem; right: 1.5rem; z-index: 60;
-    width: min(380px, calc(100vw - 2rem)); height: 520px;
-    background: var(--bg-card); border-radius: 1.25rem;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.25); border: 1px solid var(--border-color);
+    position: fixed; bottom: 13.5rem; right: 1.5rem; z-index: 60;
+    width: min(390px, calc(100vw - 2rem)); height: 540px;
+    background: var(--bg-card); border-radius: 1.5rem;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.22), 0 4px 16px rgba(0,0,0,0.08);
+    border: 1px solid var(--border-color);
     display: flex; flex-direction: column; overflow: hidden;
-    transform: scale(0.9) translateY(20px); opacity: 0;
-    transition: all 0.3s cubic-bezier(0.4,0,0.2,1); pointer-events: none;
+    transform: scale(0.92) translateY(16px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); pointer-events: none;
 }
 #chatWindow.open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+
 .chat-header {
-    background: linear-gradient(135deg, #059669, #047857);
-    padding: 0.85rem 1rem; display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0;
+    background: linear-gradient(135deg, #059669 0%, #065f46 100%);
+    padding: 1rem 1.1rem 0.9rem; display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0;
 }
 .chat-header-avatar {
-    width: 2.25rem; height: 2.25rem; border-radius: 50%;
-    background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.4);
+    width: 2.5rem; height: 2.5rem; border-radius: 0.85rem;
+    background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem; flex-shrink: 0; border: 1.5px solid rgba(255,255,255,0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 .chat-header-info { flex: 1; min-width: 0; }
-.chat-header-name { color: white; font-weight: 700; font-size: 0.875rem; }
-.chat-header-status { color: rgba(255,255,255,0.75); font-size: 0.7rem; display: flex; align-items: center; gap: 0.3rem; }
-.chat-online-dot { width: 6px; height: 6px; background: #a7f3d0; border-radius: 50%; animation: chatPulse 2s infinite; }
-.chat-close-btn { color: rgba(255,255,255,0.7); font-size: 0.85rem; padding: 0.25rem; flex-shrink: 0; }
-.chat-close-btn:hover { color: white; }
+.chat-header-name { color: white; font-weight: 700; font-size: 0.9rem; letter-spacing: -0.01em; }
+.chat-header-status { color: rgba(255,255,255,0.75); font-size: 0.68rem; display: flex; align-items: center; gap: 0.35rem; margin-top: 0.1rem; }
+.chat-online-dot { width: 7px; height: 7px; background: #a7f3d0; border-radius: 50%; animation: chatPulse 2s infinite; }
+.chat-close-btn { color: rgba(255,255,255,0.75); font-size: 0.85rem; padding: 0.4rem; flex-shrink: 0; background: rgba(255,255,255,0.1); border-radius: 0.5rem; transition: all 0.15s; }
+.chat-close-btn:hover { color: white; background: rgba(255,255,255,0.2); }
+
 .chat-messages {
-    flex: 1; overflow-y: auto; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.6rem;
-    scroll-behavior: smooth;
+    flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 0.65rem;
+    scroll-behavior: smooth; background: var(--bg-body);
 }
-.chat-msg { display: flex; gap: 0.5rem; align-items: flex-end; max-width: 88%; }
+.dark .chat-messages { background: #020617; }
+
+.chat-msg { display: flex; gap: 0.5rem; align-items: flex-end; max-width: 90%; }
 .chat-msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
 .chat-bubble {
-    padding: 0.55rem 0.85rem; border-radius: 1rem; font-size: 0.82rem; line-height: 1.55;
+    padding: 0.6rem 0.9rem; border-radius: 1.1rem; font-size: 0.825rem; line-height: 1.6;
     max-width: 100%; word-break: break-word;
 }
 .chat-msg.bot .chat-bubble {
-    background: var(--bg-body); color: var(--text-main); border: 1px solid var(--border-color);
-    border-bottom-left-radius: 0.2rem;
+    background: var(--bg-card); color: var(--text-main);
+    border: 1px solid var(--border-color); border-bottom-left-radius: 0.25rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 .chat-msg.user .chat-bubble {
-    background: #059669; color: white; border-bottom-right-radius: 0.2rem;
+    background: linear-gradient(135deg, #059669, #047857); color: white;
+    border-bottom-right-radius: 0.25rem;
+    box-shadow: 0 2px 8px rgba(5,150,105,0.3);
 }
 .chat-msg-avatar {
-    width: 1.75rem; height: 1.75rem; border-radius: 50%; flex-shrink: 0;
+    width: 1.85rem; height: 1.85rem; border-radius: 0.6rem; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; font-size: 0.75rem;
 }
 .chat-msg.bot .chat-msg-avatar { background: #d1fae5; color: #059669; }
 .chat-msg.user .chat-msg-avatar { background: #059669; color: white; }
-.chat-typing {
-    display: flex; gap: 0.5rem; align-items: flex-end; max-width: 88%;
-}
-.chat-typing .chat-bubble { display: flex; gap: 4px; align-items: center; padding: 0.65rem 0.85rem; }
-.typing-dot { width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; animation: typingBounce 1.2s infinite; }
+
+.chat-typing { display: flex; gap: 0.5rem; align-items: flex-end; max-width: 90%; }
+.chat-typing .chat-bubble { display: flex; gap: 5px; align-items: center; padding: 0.7rem 0.9rem; }
+.typing-dot { width: 7px; height: 7px; background: #cbd5e1; border-radius: 50%; animation: typingBounce 1.2s infinite; }
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 @keyframes typingBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+
 .chat-input-row {
-    border-top: 1px solid var(--border-color); padding: 0.6rem 0.75rem;
+    border-top: 1px solid var(--border-color); padding: 0.75rem;
     display: flex; gap: 0.5rem; align-items: flex-end; flex-shrink: 0;
     background: var(--bg-card);
 }
 .chat-input {
-    flex: 1; border: 1.5px solid var(--border-color); border-radius: 0.75rem;
-    padding: 0.5rem 0.75rem; font-size: 0.82rem; background: var(--input-bg);
-    color: var(--text-main); outline: none; resize: none; min-height: 2.25rem;
+    flex: 1; border: 1.5px solid var(--border-color); border-radius: 0.85rem;
+    padding: 0.55rem 0.85rem; font-size: 0.825rem; background: var(--bg-body);
+    color: var(--text-main); outline: none; resize: none; min-height: 2.35rem;
     max-height: 5rem; line-height: 1.45; font-family: inherit; transition: border-color 0.2s;
 }
-.chat-input:focus { border-color: #059669; }
+.chat-input:focus { border-color: #059669; box-shadow: 0 0 0 3px rgba(5,150,105,0.1); }
 .chat-input::placeholder { color: #94a3b8; }
 .chat-send-btn {
-    width: 2.25rem; height: 2.25rem; border-radius: 50%; background: #059669; color: white;
-    display: flex; align-items: center; justify-content: center; font-size: 0.82rem;
+    width: 2.35rem; height: 2.35rem; border-radius: 0.75rem;
+    background: linear-gradient(135deg, #059669, #047857); color: white;
+    display: flex; align-items: center; justify-content: center; font-size: 0.85rem;
     border: none; cursor: pointer; flex-shrink: 0; transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(5,150,105,0.3);
 }
-.chat-send-btn:hover { background: #047857; transform: scale(1.05); }
-.chat-suggestions { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0 0.85rem 0.6rem; flex-shrink: 0; }
-.chat-sug-btn {
-    font-size: 0.68rem; font-weight: 600; padding: 0.25rem 0.6rem;
-    border-radius: 9999px; background: #ecfdf5; color: #065f46;
-    border: 1px solid #a7f3d0; cursor: pointer; transition: all 0.15s;
-}
-.chat-sug-btn:hover { background: #059669; color: white; border-color: #059669; }
+.chat-send-btn:hover { transform: scale(1.06); box-shadow: 0 4px 14px rgba(5,150,105,0.45); }
 
-/* ===== ANALYTICS DASHBOARD ===== */
+.chat-suggestions {
+    display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.5rem 0.75rem 0.15rem; flex-shrink: 0;
+    background: var(--bg-card);
+}
+.chat-sug-btn {
+    font-size: 0.68rem; font-weight: 600; padding: 0.28rem 0.65rem;
+    border-radius: 9999px; background: #ecfdf5; color: #065f46;
+    border: 1px solid #a7f3d0; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.chat-sug-btn:hover { background: #059669; color: white; border-color: #059669; transform: translateY(-1px); }
+
+/* ===== ANALYTICS DASHBOARD — Redesigned ===== */
+.analytics-wrap { padding: 0.25rem 0; }
 .analytics-grid {
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.25rem;
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem; margin-bottom: 1.25rem;
 }
 @media(min-width:640px){ .analytics-grid { grid-template-columns: repeat(4,1fr); } }
 .analytics-card {
-    background: var(--bg-body); border: 1px solid var(--border-color);
-    border-radius: 0.85rem; padding: 0.85rem; text-align: center;
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: 1.1rem; padding: 1rem 0.9rem; text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05); transition: transform 0.2s;
 }
-.analytics-value { font-size: 1.4rem; font-weight: 800; color: #4f46e5; display: block; }
+.analytics-card:hover { transform: translateY(-2px); }
+.analytics-icon {
+    width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; margin: 0 auto 0.6rem;
+    display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.analytics-value { font-size: 1.45rem; font-weight: 800; display: block; font-family: 'Poppins', sans-serif; letter-spacing: -0.02em; }
 .analytics-label { font-size: 0.68rem; color: var(--text-muted); font-weight: 600; margin-top: 0.15rem; }
-.analytics-sub { font-size: 0.7rem; color: #059669; font-weight: 700; margin-top: 0.2rem; }
-.analytics-section-title { font-size: 0.82rem; font-weight: 700; color: var(--text-main); margin: 1rem 0 0.6rem; display: flex; align-items: center; gap: 0.4rem; }
+.analytics-sub { font-size: 0.68rem; font-weight: 700; margin-top: 0.25rem; }
+.analytics-section-title {
+    font-size: 0.78rem; font-weight: 800; color: var(--text-main);
+    margin: 1.25rem 0 0.75rem; display: flex; align-items: center; gap: 0.5rem;
+    text-transform: uppercase; letter-spacing: 0.04em;
+}
+.analytics-section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--border-color);
+}
 .top-product-row {
-    display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border-color); font-size: 0.78rem;
+    display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 0.75rem;
+    border-radius: 0.75rem; margin-bottom: 0.35rem; font-size: 0.78rem;
+    background: var(--bg-body); border: 1px solid var(--border-color); transition: background 0.15s;
 }
-.top-product-rank { font-weight: 800; color: #4f46e5; width: 1.2rem; flex-shrink: 0; }
+.top-product-row:hover { background: #ecfdf5; border-color: #a7f3d0; }
+.dark .top-product-row:hover { background: #0a2a1a; }
+.top-product-rank {
+    font-weight: 800; font-size: 0.78rem; width: 1.5rem; height: 1.5rem;
+    border-radius: 0.4rem; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-family: 'Poppins', sans-serif;
+}
+.rank-1 { background: linear-gradient(135deg, #fbbf24, #d97706); color: white; }
+.rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: white; }
+.rank-3 { background: linear-gradient(135deg, #c07b3e, #92400e); color: white; }
+.rank-other { background: var(--border-color); color: var(--text-muted); }
 .top-product-bar {
-    height: 6px; border-radius: 9999px; background: linear-gradient(90deg, #059669, #34d399);
-    min-width: 4px; transition: width 0.6s ease;
+    height: 5px; border-radius: 9999px;
+    background: linear-gradient(90deg, #059669, #34d399);
+    min-width: 4px; transition: width 0.7s cubic-bezier(0.4,0,0.2,1);
+    margin-top: 0.3rem;
 }
-.revenue-bar-wrap { background: var(--bg-body); border-radius: 0.65rem; padding: 0.6rem 0.75rem; margin-bottom: 0.4rem; }
-.revenue-bar-label { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main); }
-.revenue-bar-track { background: var(--border-color); border-radius: 9999px; height: 8px; overflow: hidden; }
-.revenue-bar-fill { height: 100%; border-radius: 9999px; background: linear-gradient(90deg, #4f46e5, #7c3aed); transition: width 0.8s ease; }
+.revenue-bar-wrap {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: 0.75rem; padding: 0.65rem 0.85rem; margin-bottom: 0.4rem;
+    transition: border-color 0.15s;
+}
+.revenue-bar-wrap:hover { border-color: #a7f3d0; }
+.revenue-bar-label { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text-main); }
+.revenue-bar-track { background: var(--bg-body); border-radius: 9999px; height: 7px; overflow: hidden; }
+.revenue-bar-fill { height: 100%; border-radius: 9999px; background: linear-gradient(90deg, #059669, #34d399); transition: width 0.8s ease; }
+.analytics-stat-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 1.25rem;
+}
+.analytics-stat-pill {
+    background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.85rem;
+    padding: 0.7rem; display: flex; align-items: center; gap: 0.6rem;
+}
+.analytics-stat-pill .sp-icon { width: 2rem; height: 2rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; }
+.analytics-stat-pill .sp-val { font-size: 1rem; font-weight: 800; color: var(--text-main); font-family: 'Poppins', sans-serif; line-height: 1.2; }
+.analytics-stat-pill .sp-label { font-size: 0.62rem; color: var(--text-muted); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -1398,7 +1462,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
         <div class="chat-header-avatar">🌿</div>
         <div class="chat-header-info">
             <div class="chat-header-name">Herbal AI Assistant</div>
-            <div class="chat-header-status"><span class="chat-online-dot"></span> Powered by Claude AI</div>
+            <div class="chat-header-status"><span class="chat-online-dot"></span> Powered by Hari Krishna</div>
         </div>
         <button class="chat-close-btn" onclick="toggleChat()"><i class="fas fa-times"></i></button>
     </div>
@@ -3074,9 +3138,9 @@ function renderOrdersList(orders) {
             </div>
             <div class="order-payment-badge"><i class="fas fa-credit-card"></i> ${payMethod}</div>
             <div class="order-items" style="margin-top:0.5rem">${itemsHTML}</div>
-            <div style="display:flex;gap:0.5rem;margin-top:0.6rem;flex-wrap:wrap">
-                <button onclick="downloadInvoiceById('${o.id}')" style="font-size:0.68rem;font-weight:700;color:#4f46e5;background:#ede9fe;border:none;border-radius:0.4rem;padding:0.3rem 0.7rem;cursor:pointer;display:flex;align-items:center;gap:0.3rem;transition:all 0.2s" onmouseover="this.style.background='#4f46e5';this.style.color='white'" onmouseout="this.style.background='#ede9fe';this.style.color='#4f46e5'">
-                    <i class="fas fa-file-invoice"></i> Download Invoice
+            <div style="display:flex;gap:0.5rem;margin-top:0.85rem;flex-wrap:wrap">
+                <button onclick="downloadInvoiceById('${o.id}')" style="display:inline-flex;align-items:center;gap:0.4rem;font-size:0.72rem;font-weight:700;color:white;background:linear-gradient(135deg,#4f46e5,#6d28d9);border:none;border-radius:0.6rem;padding:0.45rem 0.9rem;cursor:pointer;box-shadow:0 2px 8px rgba(79,70,229,0.3);transition:all 0.2s" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 14px rgba(79,70,229,0.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(79,70,229,0.3)'">
+                    <i class="fas fa-file-invoice-dollar"></i> Download Invoice
                 </button>
                 ${canCancel ? `<button class="cancel-order-btn" style="margin-top:0" onclick="cancelOrder('${o.id}', this)"><i class="fas fa-times-circle"></i> Cancel Order</button>` : ''}
             </div>
@@ -3352,13 +3416,17 @@ function generateInvoicePDF(order) {
         </div>
     </div></body></html>`;
 
+    // Mobile-safe download: create an anchor with `download` attribute
     const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const win = window.open(url, '_blank');
-    if (win) {
-        win.onload = () => { setTimeout(() => { win.print(); }, 400); };
-    }
-    showToast("📄 Invoice opened — print to save PDF");
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NaturesHeal-Invoice-${orderId}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+    showToast("📄 Invoice downloaded! Open in browser → Print → Save as PDF");
 }
 window.generateInvoicePDF = generateInvoicePDF;
 
@@ -3409,49 +3477,68 @@ async function loadAdminAnalytics() {
     const maxDay = Math.max(...Object.values(dayRevenue), 1);
 
     el.innerHTML = `
+    <div class="analytics-wrap">
     <div class="analytics-grid">
         <div class="analytics-card">
-            <span class="analytics-value">₹${totalRevenue.toFixed(0)}</span>
+            <div class="analytics-icon" style="background:#ecfdf5;color:#059669"><i class="fas fa-rupee-sign"></i></div>
+            <span class="analytics-value" style="color:#059669">₹${totalRevenue.toFixed(0)}</span>
             <div class="analytics-label">Total Revenue</div>
-            <div class="analytics-sub">Avg ₹${avgOrder.toFixed(0)}/order</div>
+            <div class="analytics-sub" style="color:#059669">avg ₹${avgOrder.toFixed(0)}/order</div>
         </div>
         <div class="analytics-card">
-            <span class="analytics-value">${orders.length}</span>
+            <div class="analytics-icon" style="background:#eff6ff;color:#3b82f6"><i class="fas fa-shopping-bag"></i></div>
+            <span class="analytics-value" style="color:#3b82f6">${orders.length}</span>
             <div class="analytics-label">Total Orders</div>
-            <div class="analytics-sub">${delivered} delivered</div>
+            <div class="analytics-sub" style="color:#059669">${delivered} delivered ✅</div>
         </div>
         <div class="analytics-card">
-            <span class="analytics-value">${pending}</span>
+            <div class="analytics-icon" style="background:#fef9c3;color:#d97706"><i class="fas fa-clock"></i></div>
+            <span class="analytics-value" style="color:#d97706">${pending}</span>
             <div class="analytics-label">Pending</div>
-            <div class="analytics-sub">${cancelled} cancelled</div>
+            <div class="analytics-sub" style="color:#ef4444">${cancelled} cancelled</div>
         </div>
         <div class="analytics-card">
-            <span class="analytics-value">${Math.round(codOrders/orders.length*100)}%</span>
+            <div class="analytics-icon" style="background:#f0fdf4;color:#059669"><i class="fas fa-motorcycle"></i></div>
+            <span class="analytics-value" style="color:#059669">${Math.round(codOrders/Math.max(orders.length,1)*100)}%</span>
             <div class="analytics-label">COD Rate</div>
-            <div class="analytics-sub">${onlineOrders} online paid</div>
+            <div class="analytics-sub" style="color:#4f46e5">${onlineOrders} online paid</div>
         </div>
     </div>
 
-    <div class="analytics-section-title"><i class="fas fa-fire" style="color:#f59e0b"></i> Top Products by Revenue</div>
-    ${topProducts.map((p, i) => `
+    <div class="analytics-section-title"><i class="fas fa-fire" style="color:#f59e0b"></i> Top Products</div>
+    ${topProducts.map((p, i) => {
+        const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-other';
+        return `
     <div class="top-product-row">
-        <span class="top-product-rank">${i+1}</span>
+        <div class="top-product-rank ${rankClass}">${i+1}</div>
         <div style="flex:1;min-width:0">
-            <div style="font-weight:700;font-size:0.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(p.name)}</div>
-            <div class="top-product-bar" style="width:${Math.round(p.revenue/maxRev*100)}%;margin-top:0.25rem"></div>
+            <div style="font-weight:700;font-size:0.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-main)">${escapeHTML(p.name)}</div>
+            <div class="top-product-bar" style="width:${Math.round(p.revenue/maxRev*100)}%"></div>
         </div>
         <div style="text-align:right;flex-shrink:0;margin-left:0.5rem">
             <div style="font-weight:800;font-size:0.82rem;color:#059669">₹${p.revenue.toFixed(0)}</div>
-            <div style="font-size:0.65rem;color:var(--text-muted)">${p.count} orders</div>
+            <div style="font-size:0.62rem;color:var(--text-muted)">${p.count} orders</div>
         </div>
-    </div>`).join('')}
+    </div>`}).join('')}
 
-    <div class="analytics-section-title" style="margin-top:1.25rem"><i class="fas fa-chart-bar" style="color:#4f46e5"></i> Revenue — Last 7 Days</div>
+    <div class="analytics-section-title" style="margin-top:1.25rem"><i class="fas fa-chart-bar" style="color:#4f46e5"></i> Revenue (7 Days)</div>
     ${Object.entries(dayRevenue).map(([day, rev]) => `
     <div class="revenue-bar-wrap">
-        <div class="revenue-bar-label"><span>${day}</span><span>₹${rev.toFixed(0)}</span></div>
+        <div class="revenue-bar-label"><span>${day}</span><span style="color:#059669">₹${rev.toFixed(0)}</span></div>
         <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:${Math.round(rev/maxDay*100)}%"></div></div>
-    </div>`).join('')}`;
+    </div>`).join('')}
+
+    <div class="analytics-stat-row">
+        <div class="analytics-stat-pill">
+            <div class="sp-icon" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-credit-card"></i></div>
+            <div><div class="sp-val">${onlineOrders}</div><div class="sp-label">Online Paid</div></div>
+        </div>
+        <div class="analytics-stat-pill">
+            <div class="sp-icon" style="background:#fef9c3;color:#d97706"><i class="fas fa-money-bill-wave"></i></div>
+            <div><div class="sp-val">${codOrders}</div><div class="sp-label">Cash on Delivery</div></div>
+        </div>
+    </div>
+    </div>`;
 }
 
 // ===== AI CHATBOT =====
