@@ -13,28 +13,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      # 📥 Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      # ⚙️ Setup Node
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
+      # 🔐 Authenticate with Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+      # 🔧 Install Firebase CLI
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      # 🔍 DEBUG STEP
-      - name: Check Firebase Login
-        run: firebase projects:list
+      # 🚀 Deploy ONLY hosting (safe mode)
+      - name: Deploy Hosting
+        run: firebase deploy --only hosting --project natures-heal --non-interactive
 
-      # 🔍 DEBUG STEP
-      - name: Show files
-        run: ls -la
-
-      - name: Deploy to Firebase
-        run: firebase deploy --only hosting --project natures-heal --debug
+      # ✅ Mark success explicitly
+      - name: Done
+        run: echo "Hosting deployed successfully"
