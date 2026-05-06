@@ -27,4 +27,3 @@ jobs:
 
       - name: Deploy to Firebase
         run: firebase deploy --only hosting --project naturesheal
-        working-directory: natures-heal-main
