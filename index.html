@@ -2596,6 +2596,9 @@ async function loadAdminOrders() {
         <i class="fas fa-spinner fa-spin" style="color:#059669"></i> Loading orders...
     </div>`;
     const orders = await loadAllOrders();
+    // Cache for invoice lookup
+    if (!window._orderCache) window._orderCache = {};
+    orders.forEach(o => { window._orderCache[o.id] = o; });
 
     if (!orders.length) {
         list.innerHTML = `<p style="color:var(--text-muted)">No orders yet.</p>`;
@@ -2633,7 +2636,7 @@ async function loadAdminOrders() {
                 <div style="border-top:1px solid var(--border-color);padding-top:0.35rem">${itemsHTML}</div>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:0.4rem">
                     <span style="font-size:0.68rem;color:var(--text-muted)"><i class="fas fa-clock" style="margin-right:0.2rem"></i>${date}</span>
-                    <button onclick="generateInvoicePDF(${JSON.stringify({ id: o.id, total: o.total, user: o.user, items: o.items, payment: o.payment }).replace(/</g,'&lt;')})" style="font-size:0.67rem;font-weight:700;color:#4f46e5;background:#ede9fe;border:none;border-radius:0.4rem;padding:0.25rem 0.6rem;cursor:pointer;display:flex;align-items:center;gap:0.3rem">
+                    <button onclick="downloadInvoiceById('${o.id}')" style="font-size:0.67rem;font-weight:700;color:#4f46e5;background:#ede9fe;border:none;border-radius:0.4rem;padding:0.25rem 0.6rem;cursor:pointer;display:flex;align-items:center;gap:0.3rem">
                         <i class="fas fa-file-invoice"></i> Invoice
                     </button>
                 </div>
@@ -3012,9 +3015,14 @@ window.cancelOrder = async function(orderId, btn) {
     }
 };
 
+// Order cache map so invoice buttons can look up by ID without inline JSON
+window._orderCache = {};
+
 // Helper: render orders (extracted so cancelOrder can refresh list)
 function renderOrdersList(orders) {
     const list = document.getElementById('ordersList');
+    // Store all orders in cache for invoice lookup
+    orders.forEach(o => { window._orderCache[o.id] = o; });
     if (!orders.length) {
         list.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-muted)">
             <i class="fas fa-box-open" style="font-size:2rem;display:block;margin-bottom:0.75rem;opacity:0.4"></i>
@@ -3063,7 +3071,7 @@ function renderOrdersList(orders) {
             <div class="order-payment-badge"><i class="fas fa-credit-card"></i> ${payMethod}</div>
             <div class="order-items" style="margin-top:0.5rem">${itemsHTML}</div>
             <div style="display:flex;gap:0.5rem;margin-top:0.6rem;flex-wrap:wrap">
-                <button onclick="generateInvoicePDF(${JSON.stringify({ id: o.id, total: o.total, user: o.user, items: o.items, payment: o.payment }).replace(/</g,'&lt;')})" style="font-size:0.68rem;font-weight:700;color:#4f46e5;background:#ede9fe;border:none;border-radius:0.4rem;padding:0.3rem 0.7rem;cursor:pointer;display:flex;align-items:center;gap:0.3rem;transition:all 0.2s" onmouseover="this.style.background='#4f46e5';this.style.color='white'" onmouseout="this.style.background='#ede9fe';this.style.color='#4f46e5'">
+                <button onclick="downloadInvoiceById('${o.id}')" style="font-size:0.68rem;font-weight:700;color:#4f46e5;background:#ede9fe;border:none;border-radius:0.4rem;padding:0.3rem 0.7rem;cursor:pointer;display:flex;align-items:center;gap:0.3rem;transition:all 0.2s" onmouseover="this.style.background='#4f46e5';this.style.color='white'" onmouseout="this.style.background='#ede9fe';this.style.color='#4f46e5'">
                     <i class="fas fa-file-invoice"></i> Download Invoice
                 </button>
                 ${canCancel ? `<button class="cancel-order-btn" style="margin-top:0" onclick="cancelOrder('${o.id}', this)"><i class="fas fa-times-circle"></i> Cancel Order</button>` : ''}
@@ -3247,6 +3255,12 @@ if ("serviceWorker" in navigator) {
 }
 
 // ===== INVOICE PDF GENERATOR =====
+window.downloadInvoiceById = function(orderId) {
+    const order = window._orderCache && window._orderCache[orderId];
+    if (!order) { showToast("Invoice data not found. Please reopen Orders.", true); return; }
+    generateInvoicePDF(order);
+};
+
 function generateInvoicePDF(order) {
     const items = order.items || [];
     const total = order.total || items.reduce((s,i) => s + (i.price * i.qty), 0);
