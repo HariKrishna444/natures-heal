@@ -641,7 +641,6 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 .cancel-order-btn:hover { background: #dc2626; color: white; }
 .cancel-order-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-<<<<<<< HEAD
 /* ===== SEARCH SUGGESTIONS DROPDOWN ===== */
 .search-suggestions {
     position: absolute; top: calc(100% + 6px); left: 0; right: 0;
@@ -774,9 +773,6 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
     border: 1px solid #a7f3d0;
 }
 .concern-active-badge button { color: #065f46; font-size: 0.65rem; padding: 0; margin-left: 0.2rem; }
-=======
-/* ===== EMPTY STATE ===== */
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
 .empty-state { grid-column: 1/-1; text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
 .empty-state i { font-size: 2rem; display: block; margin-bottom: 0.75rem; opacity: 0.4; }
 
@@ -867,16 +863,10 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
         </nav>
 
         <div class="header-right">
-<<<<<<< HEAD
             <div class="search-wrap" style="position:relative">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" id="searchInput" placeholder="Search plants, benefits..." autocomplete="off">
                 <div id="searchSuggestions" class="search-suggestions"></div>
-=======
-            <div class="search-wrap">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" placeholder="Search plants...">
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
             </div>
 
             <button class="cart-btn" onclick="toggleCartSidebar()">
@@ -951,7 +941,6 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
         </div>
     </div>
 
-<<<<<<< HEAD
     <!-- SHOP BY CONCERN -->
     <div class="concern-section">
         <div class="section-header" style="margin-bottom:0.85rem">
@@ -1013,8 +1002,6 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
         <button class="filter-clear-btn" id="filterClearBtn" onclick="clearAllFilters()">✕ Clear</button>
     </div>
 
-=======
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
     <!-- CATALOG -->
     <div class="section-header">
         <h2 class="section-title">Botanical Catalog</h2>
@@ -1075,17 +1062,12 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
                 <input id="sh_phone" type="tel" class="form-input" placeholder="Phone Number (10 digits)" maxlength="10" inputmode="numeric" required>
                 <input id="sh_email" type="email" class="form-input" placeholder="Email Address" required>
                 <textarea id="sh_address" class="form-input form-textarea" placeholder="Complete Delivery Address" minlength="10" required></textarea>
-<<<<<<< HEAD
                 <div style="display:flex;gap:0.6rem;align-items:flex-end">
                     <div style="flex:1">
                         <input id="sh_pincode" type="tel" class="form-input" placeholder="Pincode (6 digits)" maxlength="6" inputmode="numeric" onchange="checkShippingEDD(this.value)">
                     </div>
                     <div id="eddResult" style="font-size:0.75rem;color:#059669;font-weight:700;padding:0.4rem 0;white-space:nowrap"></div>
                 </div>
-=======
-
-                <!-- Payment Choice -->
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
                 <div>
                     <p style="font-size:0.82rem;font-weight:700;color:var(--text-muted);margin-bottom:0.5rem">Choose Payment Method</p>
                     <div class="payment-options">
@@ -1165,15 +1147,11 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
                         <button onclick="verifyOTP()" class="submit-btn" id="verifyOtpBtn">
                             Verify & Login
                         </button>
-<<<<<<< HEAD
                         <div class="otp-resend-row">
                             <button onclick="switchToPhoneInput()" style="text-align:left;font-size:0.8rem;color:#059669;font-weight:600;padding:0.25rem">← Change number</button>
                             <span>Resend in <span id="otpTimerDisplay">30s</span></span>
                         </div>
                         <button id="resendOtpBtn" class="resend-btn" onclick="resendOTP()" disabled style="text-align:center">🔄 Resend OTP</button>
-=======
-                        <button onclick="switchToPhoneInput()" style="text-align:center;font-size:0.8rem;color:#059669;font-weight:600;padding:0.25rem">← Change number</button>
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
                     </div>
                 </div>
             </div>
@@ -1319,42 +1297,6 @@ const firebaseConfig = {
     appId: "1:429407436276:web:2cb0470eecbf9ed349cda1"
 };
 
-<<<<<<< HEAD
-=======
-/*
- ╔══════════════════════════════════════════════════════════════╗
- ║  FIRESTORE SECURITY RULES — Apply in Firebase Console        ║
- ║  Firebase → Firestore → Rules                                ║
- ╠══════════════════════════════════════════════════════════════╣
- ║                                                              ║
- ║  rules_version = '2';                                        ║
- ║  service cloud.firestore {                                   ║
- ║    match /databases/{database}/documents {                   ║
- ║      function isAdmin() {                                    ║
- ║        return request.auth != null &&                        ║
- ║               request.auth.token.email == "ADMIN@EMAIL.COM"; ║
- ║      }                                                       ║
- ║      match /products/{id} {                                  ║
- ║        allow read: if true;                                  ║
- ║        allow write: if isAdmin();                            ║
- ║      }                                                       ║
- ║      match /orders/{id} {                                    ║
- ║        allow create: if request.auth != null;                ║
- ║        allow read: if isAdmin() ||                           ║
- ║          (request.auth != null &&                            ║
- ║           request.auth.uid == resource.data.user_uid);       ║
- ║        allow update: if isAdmin();                           ║
- ║      }                                                       ║
- ║      match /users_shipping/{id} {                            ║
- ║        allow read, write: if request.auth != null &&         ║
- ║          request.auth.uid == resource.data.user_uid;         ║
- ║      }                                                       ║
- ║    }                                                         ║
- ║  }                                                           ║
- ╚══════════════════════════════════════════════════════════════╝
-*/
-
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -1429,11 +1371,8 @@ window.sendOTP = async function() {
         document.getElementById('otpInputView').style.display = 'block';
         document.getElementById('otpSentTo').textContent = '+91 ' + phone;
         showToast("OTP sent to +91" + phone);
-<<<<<<< HEAD
         _lastPhone = phone;
         startOTPTimer();
-=======
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
     } catch(e) {
         showToast("OTP send failed: " + (e.message || e.code), true);
         btn.disabled = false; btn.innerHTML = 'Send OTP';
@@ -1791,7 +1730,6 @@ function showCatalogError(msg) {
 
 function getFilteredData() {
     const term = (document.getElementById('searchInput')?.value || "").toLowerCase();
-<<<<<<< HEAD
     const catType = localStorage.getItem('selectedFilter') || 'all';
     const healthType = window._activeHealthFilter || 'all';
     const concern = window._activeConcern;
@@ -1821,16 +1759,6 @@ function getFilteredData() {
         const matchPrice = (pMin === null || item.price >= pMin) && (pMax === null || item.price <= pMax);
 
         return matchCat && matchHealth && matchSearch && matchConcern && matchPrice;
-=======
-    const type = localStorage.getItem('selectedFilter') || 'all';
-    return window.appState.catalogData.filter(item => {
-        const matchType = type === 'all' || item.type === type ||
-            (type === 'favorites' && window.appState.favorites.includes(item.id));
-        const matchSearch = (item.name || "").toLowerCase().includes(term) ||
-            (item.uses || "").toLowerCase().includes(term) ||
-            (item.scientific || "").toLowerCase().includes(term);
-        return matchType && matchSearch;
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
     });
 }
 
@@ -1966,7 +1894,6 @@ window.openModalById = function(id) {
                 🛒 Add to Cart
                </button>`
         }
-<<<<<<< HEAD
 
         <!-- EDD widget -->
         <div class="edd-wrap" style="margin-top:0.9rem">
@@ -1981,14 +1908,11 @@ window.openModalById = function(id) {
             </div>
         </div>
 
-=======
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
         <div style="margin-top:0.75rem;text-align:center">
             <a href="https://wa.me/${918919011159}?text=Hi%2C%20I%20want%20to%20order%20${encodeURIComponent(item.name)}" target="_blank" style="font-size:0.8rem;color:#25D366;font-weight:600">
                 <i class="fab fa-whatsapp"></i> Order directly on WhatsApp
             </a>
         </div>
-<<<<<<< HEAD
 
         <!-- Frequently Bought Together -->
         ${(function(){
@@ -2008,8 +1932,6 @@ window.openModalById = function(id) {
                 </div>
             </div>`;
         })()}
-=======
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
     </div>`;
 
     document.getElementById('itemModal').classList.remove('hidden');
@@ -2409,7 +2331,6 @@ window.handleMobileFilter = function(val) {
 };
 
 let searchDebounce;
-<<<<<<< HEAD
 document.getElementById('searchInput').oninput = (e) => {
     clearTimeout(searchDebounce);
     const term = e.target.value;
@@ -2420,11 +2341,6 @@ document.getElementById('searchInput').oninput = (e) => {
 };
 document.getElementById('searchInput').onfocus = (e) => {
     if (e.target.value.length >= 2) showSuggestions(e.target.value);
-=======
-document.getElementById('searchInput').oninput = () => {
-    clearTimeout(searchDebounce);
-    searchDebounce = setTimeout(() => renderItems(getFilteredData()), 300);
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
 };
 
 // ===== THEME =====
@@ -2665,7 +2581,6 @@ window.adminAddProduct = async function() {
     }
 };
 
-<<<<<<< HEAD
 // ===== HEALTH CONCERN KEYWORDS MAP =====
 const CONCERN_KEYWORDS = {
     immunity: ['immunity','immune','cold','fever','vitamin','antioxidant','infection','flu','viral','antiviral','antibacterial','antibiotic','resist','tulsi','giloy','amla','neem','turmeric'],
@@ -2887,9 +2802,6 @@ window.resendOTP = async function() {
         if (btn) { btn.disabled = false; btn.textContent = '🔄 Resend OTP'; }
     }
 };
-=======
-// ===== CANCEL ORDER =====
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
 window.cancelOrder = async function(orderId, btn) {
     if (!confirm("Cancel this order? This action cannot be undone.")) return;
     btn.disabled = true;
@@ -3159,8 +3071,4 @@ window.onload = function() {
 };
 </script>
 </body>
-<<<<<<< HEAD
 </html>
-=======
-</html>
->>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
