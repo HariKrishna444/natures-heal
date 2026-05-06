@@ -3463,7 +3463,7 @@ function toggleChat() {
     const win = document.getElementById('chatWindow');
     win.classList.toggle('open', chatOpen);
     if (chatOpen && chatHistory.length === 0) {
-        const keySet = GEMINI_API_KEY && GEMINI_API_KEY !== 'YOUR_GEMINI_API_KEY_HERE';
+        const keySet = GEMINI_API_KEY && GEMINI_API_KEY !== 'AIzaSyCAWD200URoPdfkVnTgo66H77_BIRsjimo';
         if (keySet) {
             addChatMessage('bot', "Namaste! 🌿 I'm Vaidya, your Herbal AI assistant powered by Google Gemini. Ask me about any plant, herb, or health concern and I'll recommend the right products for you!");
         } else {
