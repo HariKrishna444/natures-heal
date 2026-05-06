@@ -5,6 +5,12 @@ on:
     branches:
       - main
 
+<<<<<<< HEAD
+=======
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+>>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -12,18 +18,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+<<<<<<< HEAD
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
+=======
+>>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
       - uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+<<<<<<< HEAD
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
       - name: Deploy to Firebase
         run: firebase deploy --only hosting --project naturesheal
         working-directory: natures-heal-main
+=======
+      - run: npm install -g firebase-tools
+
+      - run: firebase deploy --only hosting --project naturesheal
+>>>>>>> b6fe99c9213790370fbaa1d9fcbea70e3debea57
