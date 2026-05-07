@@ -5,12 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="max-age=31536000">
     <title>Nature's Heal — Pure Herbal Products</title>
-    <link rel="manifest" href="/natures-heal/manifest.json">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icon_192.png" type="image/png">
     <meta name="theme-color" content="#059669">
     <meta name="description" content="100% natural herbal powders, seeds & botanical products. Free delivery on orders above ₹499. Cash on Delivery available.">
     <meta name="keywords" content="herbal products, natural powders, botanical seeds, curry leaves, organic herbs, India, Hyderabad">
     <meta name="robots" content="index, follow">
     <link rel="canonical" id="canonicalTag" href="https://naturesheal.web.app/">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "name": "Nature's Heal",
+      "url": "https://naturesheal.web.app",
+      "description": "Natural herbal products in India — 100% pure powders, seeds & botanical products delivered in Hyderabad.",
+      "telephone": "+918919011159",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Hyderabad",
+        "addressRegion": "Telangana",
+        "addressCountry": "IN"
+      },
+      "sameAs": ["https://naturesheal.web.app"],
+      "openingHours": "Mo-Su 09:00-21:00",
+      "priceRange": "₹"
+    }
+    </script>
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
@@ -35,19 +57,18 @@
 
     <link rel="apple-touch-icon" href="icon_192.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
 
     <style>
 /* ===== CSS VARIABLES ===== */
 :root {
-    --bg-body: #f0fdf4; --bg-card: #ffffff; --text-main: #0f172a; --text-muted: #475569;
+    --bg-body: #f0fdf4; --bg-card: #ffffff; --text-main: #0f172a; --text-muted: #334155;
     --header-bg: #059669; --border-color: #d1fae5; --input-bg: #ffffff; --footer-bg: #0f172a;
     --hero-bg: #064e3b; --cart-bg: #ffffff; --shadow: 0 4px 24px rgba(5,150,105,0.10);
     --radius: 1.25rem;
 }
 .dark {
-    --bg-body: #020617; --bg-card: #0f172a; --text-main: #f1f5f9; --text-muted: #94a3b8;
+    --bg-body: #020617; --bg-card: #0f172a; --text-main: #f1f5f9; --text-muted: #b0bec5;
     --header-bg: #064e3b; --border-color: #1e293b; --input-bg: #1e293b; --cart-bg: #0f172a;
     --shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
@@ -88,12 +109,12 @@ header {
 .logo-text { font-family: 'Poppins', sans-serif; font-size: 1.4rem; font-weight: 800; color: white; letter-spacing: -0.02em; }
 .logo-text span { color: #a7f3d0; }
 
-.nav-links { display: none; gap: 1.5rem; }
-@media(min-width:768px){ .nav-links { display: flex; } }
+.nav-links { display: none; gap: 1rem; }
+@media(min-width:768px){ .nav-links { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; margin-left: 1.5rem; } }
 .nav-links button {
-    color: rgba(255,255,255,0.85); font-size: 0.875rem; font-weight: 600;
-    padding: 0.35rem 0; border-bottom: 2px solid transparent;
-    transition: all 0.2s; background: none;
+    color: rgba(255,255,255,0.85); font-size: 0.8rem; font-weight: 600;
+    padding: 0.35rem 0.25rem; border-bottom: 2px solid transparent;
+    transition: all 0.2s; background: none; white-space: nowrap;
 }
 .nav-links button:hover, .nav-links button.active { color: white; border-color: white; }
 
@@ -632,6 +653,97 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 }
 .footer-policy button:hover { color: rgba(255,255,255,0.8); }
 
+/* ===== STICKY CART BUTTON ===== */
+#stickyCartBtn {
+    position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 50;
+    background: #059669; color: white;
+    padding: 0.65rem 1.25rem; border-radius: 9999px;
+    font-weight: 700; font-size: 0.875rem;
+    box-shadow: 0 4px 20px rgba(5,150,105,0.45);
+    display: none; align-items: center; gap: 0.5rem;
+    transition: all 0.2s; border: none; cursor: pointer;
+    animation: bounceIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+}
+#stickyCartBtn:hover { background: #047857; transform: translateY(-2px); box-shadow: 0 6px 28px rgba(5,150,105,0.55); }
+#stickyCartBtn.visible { display: flex; }
+#stickyCartCount {
+    background: #f43f5e; color: white; font-size: 0.65rem; font-weight: 700;
+    padding: 1px 6px; border-radius: 9999px; min-width: 1.1rem; text-align: center;
+}
+@keyframes bounceIn {
+    from { opacity: 0; transform: scale(0.5) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ===== DAILY HEALTH TIP STRIP ===== */
+.health-tip-strip {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 1rem; padding: 0.75rem 1rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1.5rem; cursor: pointer;
+    transition: transform 0.2s;
+}
+.health-tip-strip:hover { transform: translateY(-1px); }
+.tip-icon { font-size: 1.4rem; flex-shrink: 0; }
+.tip-content { flex: 1; min-width: 0; }
+.tip-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: rgba(255,255,255,0.8); margin-bottom: 0.15rem; }
+.tip-text { font-size: 0.82rem; font-weight: 700; color: white; line-height: 1.4; }
+.tip-next { font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.75); white-space: nowrap; flex-shrink: 0; }
+
+/* ===== NOTIFY ME / PRE-ORDER BUTTON ===== */
+.notify-me-btn {
+    width: 100%; margin-top: 1.25rem; padding: 0.9rem; border-radius: 1rem;
+    background: linear-gradient(135deg, #6366f1, #4f46e5); color: white;
+    font-weight: 700; font-size: 0.92rem; transition: all 0.2s; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+.notify-me-btn:hover { background: linear-gradient(135deg, #4f46e5, #3730a3); transform: translateY(-1px); }
+.card-notify-btn {
+    width: 100%; padding: 0.5rem; border-radius: 0.65rem; font-size: 0.72rem; font-weight: 700;
+    background: linear-gradient(135deg, #6366f1, #4f46e5); color: white;
+    border: none; cursor: pointer; transition: all 0.2s; margin-top: 0.4rem;
+}
+.card-notify-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ===== LIMITED OFFER BADGE ===== */
+.limited-offer-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: linear-gradient(135deg, #f43f5e, #e11d48);
+    color: white; padding: 0.12rem 0.55rem; border-radius: 9999px;
+    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.03em;
+    position: absolute; top: 0.4rem; left: 0.4rem;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.8} }
+
+/* ===== COMBO PACK CARD ===== */
+.combo-section { margin-bottom: 2rem; }
+.combo-grid { display: grid; grid-template-columns: 1fr; gap: 0.85rem; }
+@media(min-width:640px){ .combo-grid { grid-template-columns: repeat(2,1fr); } }
+@media(min-width:1024px){ .combo-grid { grid-template-columns: repeat(3,1fr); } }
+.combo-card {
+    background: linear-gradient(135deg, #064e3b, #065f46);
+    border-radius: 1.25rem; padding: 1rem 1.25rem;
+    display: flex; align-items: center; gap: 1rem;
+    cursor: pointer; transition: all 0.25s; border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 4px 16px rgba(5,150,105,0.2);
+}
+.combo-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(5,150,105,0.3); }
+.combo-emojis { font-size: 2rem; flex-shrink: 0; }
+.combo-info { flex: 1; min-width: 0; }
+.combo-name { font-size: 0.88rem; font-weight: 800; color: #6ee7b7; margin-bottom: 0.2rem; }
+.combo-desc { font-size: 0.72rem; color: rgba(255,255,255,0.75); line-height: 1.4; margin-bottom: 0.4rem; }
+.combo-pricing { display: flex; align-items: center; gap: 0.5rem; }
+.combo-price { font-size: 1rem; font-weight: 800; color: #34d399; }
+.combo-original { font-size: 0.75rem; color: rgba(255,255,255,0.45); text-decoration: line-through; }
+.combo-save { font-size: 0.65rem; font-weight: 700; background: #f43f5e; color: white; padding: 0.1rem 0.45rem; border-radius: 9999px; }
+.combo-add-btn {
+    background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.75rem;
+    font-weight: 700; font-size: 0.78rem; border: none; cursor: pointer; white-space: nowrap;
+    transition: all 0.2s; flex-shrink: 0;
+}
+.combo-add-btn:hover { background: #047857; }
+
 /* ===== CANCEL ORDER BTN ===== */
 .cancel-order-btn {
     font-size: 0.68rem; font-weight: 700; color: #dc2626;
@@ -663,9 +775,10 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 /* ===== FILTER TOOLBAR ===== */
 .filter-toolbar {
     display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;
-    margin-bottom: 1.25rem; padding: 0.85rem 1rem;
+    margin-bottom: 1.5rem; padding: 1rem 1.25rem;
     background: var(--bg-card); border-radius: var(--radius);
     border: 1px solid var(--border-color); box-shadow: var(--shadow);
+    row-gap: 0.65rem;
 }
 .filter-toolbar-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
 .filter-chip {
@@ -937,6 +1050,11 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
     </div>
 </div>
 
+<!-- STICKY CART BUTTON -->
+<button id="stickyCartBtn" onclick="toggleCartSidebar()">
+    🛒 Cart <span id="stickyCartCount">0</span>
+</button>
+
 <!-- WHATSAPP FAB -->
 <a id="whatsappFab" href="https://wa.me/918919011159?text=Hi%2C%20I%20want%20to%20place%20an%20order%20from%20Nature%27s%20Heal" target="_blank" title="Order via WhatsApp">
     <i class="fab fa-whatsapp"></i>
@@ -985,6 +1103,9 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
             <button data-filter="fruit" onclick="filterItems('fruit')">Fruits</button>
             <button data-filter="wild_fruit" onclick="filterItems('wild_fruit')">Wild Fruits</button>
             <button data-filter="seed" onclick="filterItems('seed')">Seeds</button>
+            <button data-filter="vegetable" onclick="filterItems('vegetable')">Vegetables</button>
+            <button data-filter="dry_fruit" onclick="filterItems('dry_fruit')">Dry Fruits</button>
+            <button data-filter="flower" onclick="filterItems('flower')">Flowers</button>
             <button data-filter="favorites" onclick="filterItems('favorites')">⭐ Collection</button>
             <button id="ordersTabBtn" onclick="openOrders()" class="hidden">📦 Orders</button>
         </nav>
@@ -1023,6 +1144,9 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
                 <option value="fruit">🍎 Fruits</option>
                 <option value="wild_fruit">🫐 Wild Fruits</option>
                 <option value="seed">🌰 Seeds</option>
+                <option value="vegetable">🥦 Vegetables</option>
+                <option value="dry_fruit">🥜 Dry Fruits</option>
+                <option value="flower">🌸 Flowers</option>
                 <option value="favorites">⭐ Collection</option>
                 <option value="orders">📦 My Orders</option>
             </select>
@@ -1036,7 +1160,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
     <!-- HERO -->
     <section class="hero">
         <div class="hero-badge"><i class="fas fa-certificate"></i> Verified Natural Products</div>
-        <h1 class="text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight">Discover the Power of Nature's Elements</h1>
+        <h1 class="text-2xl sm:text-3xl md:text-5xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight">Find Natural Remedies for Your Health Problems</h1>
         <p>Pure herbal powders, seeds & botanical treasures — sourced responsibly, delivered to your door.</p>
         <div class="hero-btns">
             <button class="btn-primary" onclick="document.getElementById('gridContainer').scrollIntoView({behavior:'smooth'})">
@@ -1065,6 +1189,64 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
         <div class="proof-item">
             <div class="proof-icon purple"><i class="fab fa-whatsapp"></i></div>
             <div class="proof-text"><strong>WhatsApp</strong> Support</div>
+        </div>
+    </div>
+
+    <!-- DAILY HEALTH TIP STRIP -->
+    <div class="health-tip-strip" id="healthTipStrip" onclick="rotateHealthTip()">
+        <div class="tip-icon">📊</div>
+        <div class="tip-content">
+            <div class="tip-label">Daily Health Tip</div>
+            <div class="tip-text" id="healthTipText">Loading tip...</div>
+        </div>
+        <div class="tip-next">Tap for next →</div>
+    </div>
+
+    <!-- COMBO PACKS -->
+    <div class="combo-section">
+        <div class="section-header" style="margin-bottom:0.85rem">
+            <h2 class="section-title">🎁 Combo Packs — Best Value</h2>
+        </div>
+        <div class="combo-grid">
+            <div class="combo-card" onclick="addComboToCart(['aloe','amla'])">
+                <div class="combo-emojis">🌵+🫐</div>
+                <div class="combo-info">
+                    <div class="combo-name">Glow &amp; Immunity Combo</div>
+                    <div class="combo-desc">Aloe Vera + Amla Powder — Skin glow + daily immunity boost</div>
+                    <div class="combo-pricing">
+                        <span class="combo-price">₹199</span>
+                        <span class="combo-original">₹280</span>
+                        <span class="combo-save">Save 29%</span>
+                    </div>
+                </div>
+                <button class="combo-add-btn">+ Cart</button>
+            </div>
+            <div class="combo-card" onclick="addComboToCart(['ashwagandha','brahmi'])">
+                <div class="combo-emojis">🌿+🧠</div>
+                <div class="combo-info">
+                    <div class="combo-name">Stress &amp; Focus Combo</div>
+                    <div class="combo-desc">Ashwagandha + Brahmi — Calm stress &amp; sharpen memory</div>
+                    <div class="combo-pricing">
+                        <span class="combo-price">₹249</span>
+                        <span class="combo-original">₹340</span>
+                        <span class="combo-save">Save 27%</span>
+                    </div>
+                </div>
+                <button class="combo-add-btn">+ Cart</button>
+            </div>
+            <div class="combo-card" onclick="addComboToCart(['triphala','moringa'])">
+                <div class="combo-emojis">💚+🥬</div>
+                <div class="combo-info">
+                    <div class="combo-name">Detox &amp; Nutrition Combo</div>
+                    <div class="combo-desc">Triphala + Moringa — Full-body cleanse &amp; superfood nutrition</div>
+                    <div class="combo-pricing">
+                        <span class="combo-price">₹229</span>
+                        <span class="combo-original">₹310</span>
+                        <span class="combo-save">Save 26%</span>
+                    </div>
+                </div>
+                <button class="combo-add-btn">+ Cart</button>
+            </div>
         </div>
     </div>
 
@@ -1118,6 +1300,9 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
         <div class="filter-chip" data-health="fruit" onclick="filterByHealth('fruit',this)">🍎 Fruits</div>
         <div class="filter-chip" data-health="wild_fruit" onclick="filterByHealth('wild_fruit',this)">🫐 Wild</div>
         <div class="filter-chip" data-health="seed" onclick="filterByHealth('seed',this)">🌱 Seeds</div>
+        <div class="filter-chip" data-health="vegetable" onclick="filterByHealth('vegetable',this)">🥦 Vegetables</div>
+        <div class="filter-chip" data-health="dry_fruit" onclick="filterByHealth('dry_fruit',this)">🥜 Dry Fruits</div>
+        <div class="filter-chip" data-health="flower" onclick="filterByHealth('flower',this)">🌸 Flowers</div>
         <div class="filter-divider"></div>
         <span class="filter-toolbar-label">Price</span>
         <div class="price-range-wrap">
@@ -1353,6 +1538,9 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
                             <option value="fruit">🍎 Fruit</option>
                             <option value="wild_fruit">🫐 Wild Fruit</option>
                             <option value="seed">🌱 Seed</option>
+                            <option value="vegetable">🥦 Vegetable</option>
+                            <option value="dry_fruit">🥜 Dry Fruit</option>
+                            <option value="flower">🌸 Flower</option>
                         </select>
                         <input id="ap_price" class="form-input" type="number" placeholder="Price (₹)" min="0.01" step="0.01">
                         <div style="display:flex;gap:0.5rem">
@@ -1486,7 +1674,7 @@ window.signInWithGoogle = async function() {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
         window.currentUser = user;
-        onLoginSuccess(user.uid, user.displayName, user.email, user.photoURL);
+        if (window.onLoginSuccess) window.onLoginSuccess(user.uid, user.displayName, user.email, user.photoURL);
 
         // Close whichever modal triggered sign-in
         closeAuthModal();
@@ -1557,7 +1745,7 @@ window.verifyOTP = async function() {
         const result = await window.otpConfirmationResult.confirm(otp);
         const user = result.user;
         const name = "User " + user.phoneNumber.slice(-4);
-        onLoginSuccess(user.uid, name, user.phoneNumber, null);
+        if (window.onLoginSuccess) window.onLoginSuccess(user.uid, name, user.phoneNumber, null);
         closeAuthModal();
         showToast("✅ Login successful!");
     } catch(e) {
@@ -1578,7 +1766,7 @@ onAuthStateChanged(auth, (user) => {
         const name = user.displayName || user.phoneNumber || 'User';
         const email = user.email || user.phoneNumber || '';
         const photo = user.photoURL || 'https://i.pravatar.cc/40?u=' + user.uid;
-        onLoginSuccess(user.uid, name, email, photo);
+        if (window.onLoginSuccess) window.onLoginSuccess(user.uid, name, email, photo);
 
         // If admin is already logged in and tried to open admin panel, open it now
         if (user.email === ADMIN_EMAIL && window._pendingAdminOpen) {
@@ -1761,6 +1949,7 @@ function onLoginSuccess(uid, name, email, photo) {
         });
     }
 }
+window.onLoginSuccess = onLoginSuccess;
 
 function updateUserUI(user) {
     const name = user?.name || localStorage.getItem('user_name');
@@ -1863,9 +2052,9 @@ window.loadProductsFromFirestore = loadCatalogFromFirestore;
 function inferQuantityType(type) {
     if (!type) return 'bunch';
     const t = String(type).toLowerCase();
-    if (t.includes('leaf') || t.includes('leave') || t.includes('powder')) return 'bunch';
-    if (t.includes('seed')) return 'g';
-    if (t.includes('fruit') || t.includes('wild')) return 'kg';
+    if (t.includes('leaf') || t.includes('leave') || t.includes('powder') || t.includes('flower')) return 'bunch';
+    if (t.includes('seed') || t.includes('dry_fruit') || t === 'dry fruit') return 'g';
+    if (t.includes('fruit') || t.includes('wild') || t.includes('vegetable')) return 'kg';
     return 'bunch';
 }
 
@@ -1906,7 +2095,7 @@ function getFilteredData() {
     return window.appState.catalogData.filter(item => {
         // Category nav filter (from top nav)
         const matchCat = catType === 'all' || item.type === catType ||
-            (catType === 'favorites' && window.appState.favorites.includes(item.id));
+            (catType === 'favorites' && window.appState.favorites.map(String).includes(String(item.id)));
         // Health filter toolbar (type chip)
         const matchHealth = healthType === 'all' || item.type === healthType;
         // Search term
@@ -1938,6 +2127,9 @@ window.autoFillQuantityType = function() {
     if (type === 'leaf') { qt.value = 'bunch'; minQty.value = '1'; step.value = '1'; }
     else if (type === 'fruit' || type === 'wild_fruit') { qt.value = 'kg'; minQty.value = '0.5'; step.value = '0.5'; }
     else if (type === 'seed') { qt.value = 'g'; minQty.value = '100'; step.value = '50'; }
+    else if (type === 'vegetable') { qt.value = 'kg'; minQty.value = '0.5'; step.value = '0.5'; }
+    else if (type === 'dry_fruit') { qt.value = 'g'; minQty.value = '100'; step.value = '50'; }
+    else if (type === 'flower') { qt.value = 'bunch'; minQty.value = '1'; step.value = '1'; }
 };
 
 // Random ratings for social proof
@@ -1963,7 +2155,7 @@ function renderItems(items) {
     }
 
     items.forEach((item, idx) => {
-        const isFav = window.appState.favorites.includes(item.id);
+        const isFav = window.appState.favorites.map(String).includes(String(item.id));
         const inCart = window.appState.cart.some(c => c.id == item.id);
         const isOutOfStock = item.stock === '0' || item.stock === 'out';
         const isBestseller = item.bestseller === '1' || item.bestseller === 'true';
@@ -1978,11 +2170,14 @@ function renderItems(items) {
             isUrgent ? 'show-urgency' : ''
         ].join(' ');
 
+        const limitedOffer = item.limited_offer === 'true' || item.limited_offer === '1' || (idx % 5 === 0 && !isOutOfStock);
+        const isBestSellerPricing = isBestseller;
+
         container.insertAdjacentHTML('beforeend', `
-        <div class="${cardClasses}" onclick="openModalById(${item.id})">
+        <div class="${cardClasses}" onclick="openModalById('${item.id}')" style="cursor:pointer">
             <div class="card-img-wrap">
                 <img src="${safeURL(item.image)}" loading="lazy" alt="${escapeHTML(item.name)}">
-                <div class="card-type-badge">${String(item.type || "botanical").replace('_', ' ')}</div>
+                ${limitedOffer && !isOutOfStock ? `<div class="limited-offer-badge">🔥 Limited Offer</div>` : `<div class="card-type-badge">${String(item.type || "botanical").replace('_', ' ')}</div>`}
                 <div class="card-bestseller">🏆 Best Seller</div>
                 <div class="stock-badge">Out of Stock</div>
                 <div class="urgency-tag">Only ${item.stock} left!</div>
@@ -1990,9 +2185,9 @@ function renderItems(items) {
                     <button class="card-action-btn" onclick="event.stopPropagation();toggleFav(event,${item.id})" title="Wishlist">
                         <i class="${isFav ? 'fas text-rose-500' : 'far'} fa-heart" style="color:${isFav ? '#f43f5e' : '#94a3b8'}"></i>
                     </button>
-                    <button class="card-action-btn" onclick="event.stopPropagation();addToCartSimple(${item.id})" title="Add to cart" ${isOutOfStock ? 'disabled' : ''}>
+                    ${!isOutOfStock ? `<button class="card-action-btn" onclick="event.stopPropagation();addToCartSimple('${item.id}')" title="Add to cart">
                         <i class="fas ${inCart ? 'fa-shopping-cart' : 'fa-cart-plus'}" style="color:${inCart ? '#059669' : '#94a3b8'}"></i>
-                    </button>
+                    </button>` : ''}
                 </div>
             </div>
             <div class="card-body">
@@ -2000,9 +2195,11 @@ function renderItems(items) {
                 <div class="card-scientific">${escapeHTML(item.scientific || '')}</div>
                 <div class="card-desc">${escapeHTML(item.description || '')}</div>
                 <div class="card-footer">
-                    <span class="card-price">₹${(item.price || 0).toFixed(item.quantityType === 'g' ? 2 : 0)}<span style="font-size:0.6rem;font-weight:500;color:var(--text-muted)">/${item.quantityType || 'unit'}</span></span>
+                    <span class="card-price">₹${(item.price || 0).toFixed(item.quantityType === 'g' ? 2 : 0)}<span style="font-size:0.6rem;font-weight:500;color:var(--text-muted)">/${item.quantityType === 'piece' ? 'pc' : (item.quantityType || 'unit')}</span></span>
                     <span class="card-stars">${stars} <span style="color:var(--text-muted);font-size:0.6rem">(${count})</span></span>
                 </div>
+                ${isBestSellerPricing ? `<div style="font-size:0.62rem;font-weight:700;color:#d97706;margin-top:0.2rem">⭐ Best Seller</div>` : ''}
+                ${isOutOfStock ? `<button class="card-notify-btn" onclick="event.stopPropagation();notifyMe('${escapeHTML(item.name)}')"><i class="fas fa-bell"></i> Notify Me When Available</button>` : ''}
             </div>
         </div>`);
     });
@@ -2010,7 +2207,7 @@ function renderItems(items) {
 
 // ===== ITEM DETAIL MODAL =====
 window.openModalById = function(id) {
-    const item = window.appState.catalogData.find(i => i.id == id);
+    const item = window.appState.catalogData.find(i => String(i.id) === String(id));
     if (!item) return;
     const isOutOfStock = item.stock === '0' || item.stock === 'out';
     const { r, count } = getStarRating(item.id);
@@ -2055,7 +2252,14 @@ window.openModalById = function(id) {
             </ul>
         </div>
         ${isOutOfStock
-            ? `<button class="item-modal-cta" style="background:#6b7280;cursor:not-allowed" disabled>Out of Stock</button>`
+            ? `<div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:1.25rem">
+                <button class="notify-me-btn" onclick="notifyMe('${escapeHTML(item.name).replace(/'/g,"\\'")}')">
+                    <i class="fas fa-bell"></i> Notify Me When Available
+                </button>
+                <button class="item-modal-cta" style="background:linear-gradient(135deg,#f59e0b,#d97706)" onclick="preOrderWhatsApp('${escapeHTML(item.name).replace(/'/g,"\\'")}')">
+                    <i class="fab fa-whatsapp"></i> Pre-Order via WhatsApp
+                </button>
+               </div>`
             : `<button class="item-modal-cta" onclick="addToCartFromModal(${item.id}); closeItemModal(); openCartSidebar();">
                 🛒 Add to Cart
                </button>`
@@ -2151,9 +2355,12 @@ window.addToCartFromModal = function(id) {
 // ===== CART =====
 function addToCartSimple(id) {
     // Use == for type-coerced comparison since Firestore IDs may be strings or numbers
-    const item = window.appState.cart.find(i => i.id == id);
-    if (item) item.qty += 1;
-    else window.appState.cart.push({ id, qty: 1 });
+    const prod = window.appState.catalogData.find(p => p.id == id);
+    const minQty = (prod && prod.minQty) ? prod.minQty : 1;
+    const step   = (prod && prod.step)   ? prod.step   : minQty;
+    const existing = window.appState.cart.find(i => i.id == id);
+    if (existing) existing.qty = Math.round((existing.qty + step) * 1000) / 1000;
+    else window.appState.cart.push({ id, qty: minQty });
     persistCart();
     updateCartBadge();
     renderCartItems();
@@ -2225,6 +2432,14 @@ function updateCartBadge() {
     const count = window.appState.cart.length;
     b.textContent = count;
     b.style.display = count > 0 ? 'block' : 'none';
+
+    // Update sticky cart button
+    const stickyBtn = document.getElementById('stickyCartBtn');
+    const stickyCount = document.getElementById('stickyCartCount');
+    if (stickyBtn && stickyCount) {
+        stickyCount.textContent = count;
+        stickyBtn.classList.toggle('visible', count > 0);
+    }
 }
 
 function updatePlaceOrderButton() {
@@ -2373,8 +2588,12 @@ window.submitOrder = async function(event) {
             // Generate invoice PDF
             setTimeout(() => generateInvoicePDF({ ...orderData, id: orderRef?.id || ('COD-' + Date.now()), payment: { method: 'COD' } }), 600);
 
-            // Send WhatsApp confirmation
-            const waMsg = `Hi! I placed an order on Nature's Heal.\n\nName: ${safeName}\nPhone: ${phone}\nItems: ${items.map(i => i.name + ' x' + i.qty).join(', ')}\nTotal: ₹${total}\nAddress: ${safeAddress}\n\nPayment: Cash on Delivery`;
+            // Send WhatsApp confirmation with product images
+            const itemLines = items.map(i => {
+                const imgLine = i.image ? `\nImage: ${i.image}` : '';
+                return `• ${i.name} × ${i.qty} ${i.quantityType || 'unit'} = ₹${(i.price * i.qty).toFixed(0)}${imgLine}`;
+            }).join('\n');
+            const waMsg = `🌿 *New Order — Nature's Heal*\n\nName: ${safeName}\nPhone: ${phone}\nEmail: ${email}\n\n*Items:*\n${itemLines}\n\n*Total: ₹${total}*\nAddress: ${safeAddress}\n\nPayment: Cash on Delivery\n\n_Order placed via naturesheal.web.app_`;
             setTimeout(() => {
                 window.open(`https://wa.me/${918919011159}?text=${encodeURIComponent(waMsg)}`, '_blank');
             }, 800);
@@ -2478,8 +2697,9 @@ window.closeOrders = function() {
 // ===== FAVORITES =====
 window.toggleFav = function(e, id) {
     e.stopPropagation();
-    const favs = window.appState.favorites;
-    window.appState.favorites = favs.includes(id) ? favs.filter(i => i !== id) : [...favs, id];
+    const sid = String(id);
+    const favs = window.appState.favorites.map(String);
+    window.appState.favorites = favs.includes(sid) ? favs.filter(i => i !== sid) : [...favs, sid];
     localStorage.setItem('favorites', JSON.stringify(window.appState.favorites));
     renderItems(getFilteredData());
 };
@@ -3352,13 +3572,18 @@ function generateInvoicePDF(order) {
         </div>
     </div></body></html>`;
 
-    const blob = new Blob([html], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const win = window.open(url, '_blank');
-    if (win) {
-        win.onload = () => { setTimeout(() => { win.print(); }, 400); };
-    }
-    showToast("📄 Invoice opened — print to save PDF");
+    // Open in new window and trigger print-to-PDF dialog
+    const win = window.open('', '_blank', 'width=750,height=900');
+    if (!win) { showToast("Allow popups to download invoice", true); return; }
+    win.document.write(html);
+    win.document.close();
+    win.onload = function() {
+        setTimeout(() => {
+            win.focus();
+            win.print();
+        }, 400);
+    };
+    showToast("📄 Invoice ready — Save as PDF from print dialog!");
 }
 window.generateInvoicePDF = generateInvoicePDF;
 
@@ -3463,14 +3688,8 @@ function toggleChat() {
     const win = document.getElementById('chatWindow');
     win.classList.toggle('open', chatOpen);
     if (chatOpen && chatHistory.length === 0) {
-        const keySet = GEMINI_API_KEY && GEMINI_API_KEY !== '';
-        if (keySet) {
-            addChatMessage('bot', "Namaste! 🌿 I'm Vaidya, your Herbal AI assistant powered by Google Gemini. Ask me about any plant, herb, or health concern and I'll recommend the right products for you!");
-        } else {
-            addChatMessage('bot', "Namaste! 🌿 I'm Vaidya, your Herbal AI assistant.\n\n⚙️ Setup needed: Open index.html, find GEMINI_API_KEY and paste your free key from aistudio.google.com/app/apikey\n\nNo credit card needed — completely free!");
-        }
-    }
-}
+            addChatMessage('bot', "Namaste! 🌿 I'm <strong>Vaidya</strong>, your Herbal Wellness Guide at Nature's Heal.<br><br>Ask me about any herb, health concern, or product — I'm here to help!<br><br>Try: <em>\"which fruit is good for hair?\"</em> or <em>\"herbs for diabetes\"</em> 😊", true);
+}}
 window.toggleChat = toggleChat;
 
 function addChatMessage(role, text, isHtml = false) {
@@ -3501,10 +3720,285 @@ function showChatTyping() {
 }
 function hideChatTyping() { document.getElementById('chatTyping')?.remove(); }
 
-// ===== GEMINI API KEY =====
-// FREE — Get yours at: https://aistudio.google.com/app/apikey (no credit card needed)
-// Paste your key between the quotes below:
-const GEMINI_API_KEY = "AIzaSyCAWD200URoPdfkVnTgo66H77_BIRsjimo";
+// ===== LOCAL RULE-BASED CHATBOT (no API key needed) =====
+const CHAT_KB = [
+    // ── HAIR ──
+    { k: ['hair fall','hair loss','hairfall','thinning hair','bald','baldness','hair growth'],
+      a: `🌿 <strong>Best herbs for hair fall & growth:</strong><br><br>
+▸ <strong>Amla (Indian Gooseberry)</strong> – Rich in Vitamin C & antioxidants. Mix amla powder with water or coconut oil and apply to roots 30 mins before washing. Also drink 1 tsp in warm water daily.<br>
+▸ <strong>Bhringraj</strong> – Called the "king of hair herbs". Apply bhringraj powder paste to scalp twice a week to reduce shedding.<br>
+▸ <strong>Curry Leaves</strong> – Prevent premature greying and strengthen follicles. Boil a handful in coconut oil and massage into scalp.<br>
+▸ <strong>Brahmi</strong> – Strengthens hair roots and reduces stress-related hair loss. Take 1 tsp powder with warm milk at bedtime.<br><br>
+💡 <em>All these herbs are available at Nature's Heal. Note: herbs support wellness but don't replace a doctor's advice if hair loss is severe.</em>` },
+
+    { k: ['amla','gooseberry','indian gooseberry','amalaki'],
+      a: `🌿 <strong>Amla (Indian Gooseberry)</strong> – Nature's richest source of Vitamin C!<br><br>
+▸ <strong>For Hair:</strong> Apply amla powder paste to scalp — prevents greying, boosts growth, strengthens roots.<br>
+▸ <strong>For Immunity:</strong> 1 tsp amla powder in warm water every morning on an empty stomach.<br>
+▸ <strong>For Skin:</strong> High antioxidants fight free radicals, giving skin a natural glow.<br>
+▸ <strong>For Digestion:</strong> Stimulates digestive enzymes; great taken after meals.<br>
+▸ <strong>For Eyes:</strong> Rich in Vitamin A; supports vision health.<br><br>
+📌 <em>Amla is one of three fruits in the famous Triphala blend. Available at Nature's Heal!</em>` },
+
+    { k: ['bhringraj'],
+      a: `🌿 <strong>Bhringraj</strong> – The "King of Hair Herbs" in Ayurveda!<br><br>
+▸ Promotes hair regrowth by improving blood circulation to scalp follicles.<br>
+▸ Apply as a paste (powder + water or oil) to scalp for 45 mins, 2–3 times a week.<br>
+▸ Internally: 1 tsp powder with warm water helps liver health and reduces stress (a major hair-fall trigger).<br>
+▸ Mix with amla powder for a powerful hair mask.<br><br>
+💡 Consistency is key — expect visible results in 8–12 weeks of regular use.` },
+
+    { k: ['curry leaves','kadi patta'],
+      a: `🌿 <strong>Curry Leaves</strong> – A kitchen herb with incredible health powers!<br><br>
+▸ <strong>Hair:</strong> Reverses premature greying; boil 15–20 leaves in 4 tbsp coconut oil for 5 min, cool and massage scalp.<br>
+▸ <strong>Anaemia:</strong> Rich in iron and folic acid — great for women with low haemoglobin.<br>
+▸ <strong>Diabetes:</strong> Helps regulate blood sugar levels when consumed regularly.<br>
+▸ <strong>Digestion:</strong> Add to meals daily or chew 8–10 fresh leaves on an empty stomach every morning.<br><br>
+📌 <em>Best consumed fresh, but dried curry leaf powder from Nature's Heal works great too!</em>` },
+
+    // ── SKIN ──
+    { k: ['skin','glow','acne','pimple','dark spot','fairness','complexion','skin care'],
+      a: `🌿 <strong>Best herbs for healthy glowing skin:</strong><br><br>
+▸ <strong>Neem</strong> – Natural antibiotic; fights acne, bacteria, and inflammation. Apply neem powder paste as a face mask twice a week.<br>
+▸ <strong>Turmeric</strong> – Curcumin brightens skin, reduces dark spots. Mix a pinch in warm milk or use as a face pack with honey.<br>
+▸ <strong>Amla</strong> – Vitamin C powerhouse that boosts collagen for plump, youthful skin.<br>
+▸ <strong>Flaxseeds</strong> – Omega-3 keeps skin hydrated and reduces inflammation from inside. Eat 1 tbsp daily.<br>
+▸ <strong>Sandalwood powder</strong> – Natural cooling agent; reduces tan and gives natural glow.<br><br>
+💡 <em>Inner nourishment matters as much as outer care — drink 2–3 litres of water daily alongside herbal remedies.</em>` },
+
+    { k: ['neem'],
+      a: `🌿 <strong>Neem</strong> – The ultimate natural antibiotic!<br><br>
+▸ <strong>Skin:</strong> Apply neem powder paste to acne, pimples, or rashes; its antibacterial action clears them fast.<br>
+▸ <strong>Blood Purifier:</strong> Drink neem leaf decoction (boil 10 leaves in 2 cups water, strain, drink warm) to detox blood.<br>
+▸ <strong>Immunity:</strong> Regular use helps the body fight infections naturally.<br>
+▸ <strong>Scalp:</strong> Anti-fungal; controls dandruff when massaged as a paste into scalp.<br><br>
+⚠️ <em>Neem is bitter and potent — start with small amounts. Avoid during pregnancy.</em>` },
+
+    // ── IMMUNITY ──
+    { k: ['immunity','immune','cold','flu','fever','infection','fall sick','sick','weak'],
+      a: `🌿 <strong>Boost your immunity naturally:</strong><br><br>
+▸ <strong>Tulsi (Holy Basil)</strong> – Chew 5–7 leaves every morning or drink tulsi tea. Fights colds, stress, and respiratory infections.<br>
+▸ <strong>Giloy (Guduchi)</strong> – Known as "Amrita" (nectar of immortality). Excellent for fever, dengue recovery, and chronic infections.<br>
+▸ <strong>Amla</strong> – 1 tsp powder in warm water daily gives you 20x the Vitamin C of an orange!<br>
+▸ <strong>Ashwagandha</strong> – Adaptogen that reduces cortisol and strengthens the immune response.<br>
+▸ <strong>Kalonji (Black Seeds)</strong> – "A cure for everything except death" (ancient saying). Add ½ tsp to honey daily.<br><br>
+💡 <em>The golden trio for immunity: Tulsi + Giloy + Amla taken together is highly effective.</em>` },
+
+    { k: ['tulsi','holy basil'],
+      a: `🌿 <strong>Tulsi (Holy Basil)</strong> – Queen of Herbs!<br><br>
+▸ Chew 5 fresh leaves every morning to boost immunity and purify blood.<br>
+▸ Tulsi tea (boil leaves in water with ginger): instant relief from cold, sore throat, cough.<br>
+▸ Anti-stress: adaptogen that lowers cortisol — drink 1 cup tulsi tea when anxious.<br>
+▸ Respiratory health: inhale steam from tulsi + ginger water for blocked nose.<br>
+▸ Skin: apply fresh tulsi juice to pimples overnight for quick relief.<br><br>
+📌 <em>Tulsi is sacred in Indian culture for a reason — it truly is a full-body healer!</em>` },
+
+    { k: ['giloy','guduchi'],
+      a: `🌿 <strong>Giloy (Guduchi / Amrita)</strong> – The Immunity Powerhouse!<br><br>
+▸ Best for: chronic fever, dengue, chikungunya recovery, boosting platelet count.<br>
+▸ How to use: Boil 1 tsp giloy powder in 2 cups water, reduce to 1 cup, drink warm twice daily.<br>
+▸ Also available as giloy juice or tablets for convenience.<br>
+▸ Anti-inflammatory: helps with arthritis and joint pain when used regularly.<br>
+▸ Detoxifies liver and kidneys naturally.<br><br>
+💡 <em>During seasonal flu outbreaks, giloy + tulsi + ginger tea is your best natural defence.</em>` },
+
+    { k: ['ashwagandha','withania'],
+      a: `🌿 <strong>Ashwagandha</strong> – The Stress Buster & Energy Booster!<br><br>
+▸ <strong>Stress & Anxiety:</strong> Reduces cortisol by 30% with regular use (1 tsp powder + warm milk at bedtime).<br>
+▸ <strong>Energy & Stamina:</strong> Ancient warriors used it for strength — great for gym-goers and working professionals.<br>
+▸ <strong>Sleep:</strong> Ashwagandha milk at night (ashwagandha + warm milk + honey) promotes deep sleep.<br>
+▸ <strong>Thyroid:</strong> Supports both hypo- and hyperthyroid conditions (consult doctor first).<br>
+▸ <strong>Immunity:</strong> Improves white blood cell count and body's defence mechanism.<br><br>
+💡 <em>Best results in 4–8 weeks of daily use. Pair with a nutritious diet for maximum benefit.</em>` },
+
+    // ── DIABETES ──
+    { k: ['diabetes','blood sugar','sugar','diabetic','insulin'],
+      a: `🌿 <strong>Natural support for blood sugar management:</strong><br><br>
+▸ <strong>Methi (Fenugreek)</strong> – Soak 1 tsp overnight, drink the water and eat the seeds every morning. Slows sugar absorption.<br>
+▸ <strong>Karela (Bitter Gourd)</strong> – Drink 30ml karela juice on empty stomach; contains plant-based insulin-like compounds.<br>
+▸ <strong>Jamun Seeds</strong> – Dry and powder them. ½ tsp with water twice daily controls post-meal blood sugar spikes.<br>
+▸ <strong>Giloy</strong> – Helps in insulin production and sensitivity.<br>
+▸ <strong>Curry Leaves</strong> – Add to every meal; reduces glycaemic index naturally.<br><br>
+⚠️ <em>These herbs complement medical treatment but do NOT replace prescribed medications. Always inform your doctor.</em>` },
+
+    { k: ['methi','fenugreek'],
+      a: `🌿 <strong>Methi (Fenugreek)</strong> – The Blood Sugar & Cholesterol Fighter!<br><br>
+▸ <strong>Diabetes:</strong> Soak 1 tsp seeds overnight → eat seeds and drink water next morning. Contains galactomannan which slows sugar absorption.<br>
+▸ <strong>Cholesterol:</strong> Regular use reduces LDL ("bad") cholesterol significantly.<br>
+▸ <strong>Hair:</strong> Apply methi paste to scalp → strengthens hair, reduces dandruff.<br>
+▸ <strong>Lactation:</strong> Boosts breast milk production in new mothers.<br>
+▸ <strong>Joint Pain:</strong> Methi powder with warm water reduces inflammation.<br><br>
+📌 <em>Methi is bitter — mix in curries, parathas, or just swallow with water. Your taste buds will adjust!</em>` },
+
+    // ── DIGESTION ──
+    { k: ['digestion','digestive','gas','bloating','constipation','acidity','stomach','bowel','ibs'],
+      a: `🌿 <strong>Natural remedies for digestion & gut health:</strong><br><br>
+▸ <strong>Ajwain (Carom Seeds)</strong> – Instant relief from gas and acidity. Chew ½ tsp with a pinch of salt and warm water after meals.<br>
+▸ <strong>Jeera (Cumin)</strong> – Boil 1 tsp in a cup of water, drink warm — classic remedy for bloating and indigestion.<br>
+▸ <strong>Fennel Seeds (Saunf)</strong> – Chew a pinch after every meal to prevent bloating and freshen breath.<br>
+▸ <strong>Triphala</strong> – Gentle overnight laxative for chronic constipation. 1 tsp with warm water before bed.<br>
+▸ <strong>Curry Leaves</strong> – Stimulate digestive enzymes; add to every meal.<br><br>
+💡 <em>The golden rule: eat slowly, chew thoroughly, avoid cold water with meals — herbs work even better with good habits!</em>` },
+
+    { k: ['triphala'],
+      a: `🌿 <strong>Triphala</strong> – Ayurveda's Most Famous Formula!<br><br>
+Triphala = <strong>Amla + Haritaki + Bibhitaki</strong> (three powerful fruits combined).<br><br>
+▸ <strong>Constipation:</strong> 1 tsp in warm water before bed — gentle, non-habit-forming laxative.<br>
+▸ <strong>Detox:</strong> Cleanses the colon and removes toxins (ama) accumulated over time.<br>
+▸ <strong>Eyes:</strong> Wash eyes with cold triphala water (strain well) to reduce strain and redness.<br>
+▸ <strong>Weight Loss:</strong> Improves metabolism and reduces fat accumulation over 3 months.<br>
+▸ <strong>Skin:</strong> Internal detox leads to clearer, brighter skin.<br><br>
+⏰ <em>Best taken at bedtime or early morning. Results are gradual but lasting — be consistent for 3 months.</em>` },
+
+    { k: ['ajwain','carom'],
+      a: `🌿 <strong>Ajwain (Carom Seeds)</strong> – Instant Gas & Acidity Buster!<br><br>
+▸ Chew ½ tsp with a pinch of black salt and sip warm water → relieves gas in 10 minutes.<br>
+▸ Ajwain water: boil 1 tsp in 2 cups water, strain and drink warm for acidity and bloating.<br>
+▸ For babies: ajwain water (very diluted) relieves infant colic safely.<br>
+▸ Cold & cough: inhale steam with ajwain added to boiling water.<br>
+▸ Arthritis: ajwain seed paste with warm mustard oil gives pain relief when applied.<br><br>
+📌 <em>Keep ajwain on your dinner table! A pinch after every meal prevents digestive issues naturally.</em>` },
+
+    { k: ['jeera','cumin'],
+      a: `🌿 <strong>Jeera (Cumin)</strong> – The Digestive Hero!<br><br>
+▸ Jeera water: Boil 1 tsp in 1.5 cups water, strain and drink warm first thing in morning — fights bloating, kick-starts metabolism.<br>
+▸ Sprinkle roasted jeera powder on raita, buttermilk, and curries for easy digestion.<br>
+▸ Rich in iron — helpful for anaemia, especially in women.<br>
+▸ Reduces LDL cholesterol and supports heart health.<br>
+▸ Jeera + ajwain + fennel mixed equally = powerful digestive blend to keep at home.<br><br>
+💡 <em>Try jeera water every morning for 30 days — most people notice flatter stomach and more energy!</em>` },
+
+    // ── WEIGHT LOSS ──
+    { k: ['weight loss','obesity','fat','slim','overweight','weight management'],
+      a: `🌿 <strong>Natural support for healthy weight management:</strong><br><br>
+▸ <strong>Triphala</strong> – Detoxes gut, improves metabolism. 1 tsp in warm water at bedtime for 3 months.<br>
+▸ <strong>Methi Seeds</strong> – High fibre keeps you full longer. Soak overnight and eat in morning.<br>
+▸ <strong>Jeera Water</strong> – Boosts metabolism by 2–3x. Drink first thing in morning.<br>
+▸ <strong>Sabja Seeds (Basil Seeds)</strong> – Soak 1 tsp in water for 10 mins; they expand 30x! Drink before meals to curb appetite.<br>
+▸ <strong>Ashwagandha</strong> – Reduces stress-related binge eating by lowering cortisol.<br><br>
+💡 <em>No herb is a magic pill! Combine these with a 30-minute daily walk and reduced sugar intake for real results.</em>` },
+
+    { k: ['sabja','basil seeds','tukmaria'],
+      a: `🌿 <strong>Sabja Seeds (Sweet Basil Seeds / Tukmaria)</strong> – The Cooling Superfood!<br><br>
+▸ Soak 1 tsp in a glass of water for 10–15 minutes — they swell into jelly-like balls (30x their size!).<br>
+▸ <strong>Weight Loss:</strong> The swollen seeds fill your stomach — drink before meals to eat less naturally.<br>
+▸ <strong>Cooling:</strong> Excellent in summer — mix in sharbat, lemonade, or coconut water to prevent heat stroke.<br>
+▸ <strong>Blood Sugar:</strong> Slows digestion and glucose absorption.<br>
+▸ <strong>Constipation:</strong> High fibre content acts as a gentle natural laxative.<br><br>
+🥤 <em>Sabja + rose water + sugar = classic Indian "Falooda" base. Delicious and healthy!</em>` },
+
+    // ── STRESS / SLEEP ──
+    { k: ['stress','anxiety','tension','mental health','sleep','insomnia','relax'],
+      a: `🌿 <strong>Natural herbs for stress, anxiety & better sleep:</strong><br><br>
+▸ <strong>Ashwagandha</strong> – #1 Ayurvedic adaptogen. 1 tsp in warm milk with honey at bedtime. Reduces cortisol (stress hormone) significantly.<br>
+▸ <strong>Brahmi</strong> – "Brain herb" — improves focus, reduces anxiety, supports memory. 1 tsp powder with warm water or ghee.<br>
+▸ <strong>Tulsi Tea</strong> – A cup of tulsi tea in the evening calms the nervous system and eases anxiety.<br>
+▸ <strong>Jatamansi</strong> – Powerful nerve tonic for insomnia and chronic stress; take ½ tsp before bed.<br><br>
+🧘 <em>Herbs + 20 minutes of daily meditation + phone-free 30 mins before sleep = life-changing combination for mental wellness.</em>` },
+
+    { k: ['brahmi','bacopa'],
+      a: `🌿 <strong>Brahmi</strong> – The Memory & Brain Herb!<br><br>
+▸ <strong>Memory & Focus:</strong> Students and professionals swear by brahmi. 1 tsp powder with warm milk before study/work.<br>
+▸ <strong>Stress:</strong> Calms hyperactive mind; natural anti-anxiety without making you drowsy.<br>
+▸ <strong>Hair:</strong> Brahmi oil or paste strengthens hair roots and promotes thickness.<br>
+▸ <strong>Children:</strong> Small dose brahmi powder in warm milk helps with attention and learning (ADHD support).<br><br>
+📌 <em>Brahmi ghee (brahmi cooked in clarified butter) is an ancient Ayurvedic super-food for the brain — try it!</em>` },
+
+    // ── MORINGA ──
+    { k: ['moringa','drumstick','sahjan'],
+      a: `🌿 <strong>Moringa (Drumstick / Miracle Tree)</strong> – Called the World's Most Nutritious Plant!<br><br>
+▸ Contains 7x Vitamin C of oranges, 4x calcium of milk, 4x Vitamin A of carrots, 3x potassium of bananas!<br>
+▸ <strong>Daily nutrition:</strong> Add 1 tsp moringa powder to smoothies, dals, or warm water every morning.<br>
+▸ <strong>Energy:</strong> Natural energy booster — better than caffeine, no crash.<br>
+▸ <strong>Lactation:</strong> Boosts breast milk production dramatically.<br>
+▸ <strong>Blood Sugar:</strong> Isothiocyanates in moringa help regulate glucose levels.<br><br>
+🌟 <em>If you could only choose ONE herb, moringa might be it — it genuinely is a superfood.</em>` },
+
+    // ── FLAXSEEDS ──
+    { k: ['flaxseed','flax','alsi','linseed'],
+      a: `🌿 <strong>Flaxseeds (Alsi)</strong> – Plant-Based Omega-3 Powerhouse!<br><br>
+▸ <strong>Heart Health:</strong> Reduces LDL cholesterol and blood pressure. 1 tbsp ground flaxseed daily in your diet.<br>
+▸ <strong>Skin & Hair:</strong> Omega-3 from inside gives natural moisture to skin and reduces hair breakage.<br>
+▸ <strong>Hormones:</strong> Lignans in flaxseeds balance estrogen levels — helpful for PCOS and menopause.<br>
+▸ <strong>Constipation:</strong> High fibre — mix 1 tbsp in water or add to food daily.<br>
+▸ <strong>Diabetes:</strong> Slows sugar absorption after meals.<br><br>
+💡 <em>Always grind flaxseeds before eating — whole seeds pass through undigested. Store ground powder in fridge!</em>` },
+
+    // ── KALONJI ──
+    { k: ['kalonji','black seed','nigella','black cumin'],
+      a: `🌿 <strong>Kalonji (Black Seeds / Nigella Sativa)</strong> – "A cure for everything except death"!<br><br>
+▸ <strong>Immunity:</strong> ½ tsp with a teaspoon of honey every morning on empty stomach for 3 months.<br>
+▸ <strong>Hair:</strong> Kalonji oil massaged into scalp 2x a week — reduces hair fall, promotes growth.<br>
+▸ <strong>Respiratory:</strong> Thymoquinone in kalonji is a natural bronchodilator — great for asthma and allergies.<br>
+▸ <strong>Diabetes & BP:</strong> Regular use significantly improves both conditions in clinical studies.<br><br>
+📌 <em>Kalonji seeds are slightly bitter. Mix in honey or black seed oil for a better experience!</em>` },
+
+    // ── STORE INFO ──
+    { k: ['delivery','shipping','order','cod','cash on delivery','price','cost','how to order'],
+      a: `🛒 <strong>Nature's Heal — Store Information:</strong><br><br>
+▸ <strong>Free Delivery:</strong> On all orders above ₹499!<br>
+▸ <strong>Cash on Delivery (COD):</strong> Available — pay when you receive your order.<br>
+▸ <strong>Delivery Time:</strong> Hyderabad: 1–2 days | Other cities: 3–5 days.<br>
+▸ <strong>WhatsApp Orders:</strong> Chat with us on <strong>+91 89190 11159</strong> for custom orders, bulk pricing, or queries.<br>
+▸ <strong>Quality Promise:</strong> 100% natural, no chemicals, no artificial colours.<br><br>
+💬 <em>For fastest service, WhatsApp us — we usually reply within minutes!</em>` },
+
+    { k: ['whatsapp','contact','phone','number','call','reach'],
+      a: `📞 <strong>Reach Nature's Heal:</strong><br><br>
+▸ <strong>WhatsApp:</strong> <a href="https://wa.me/918919011159" target="_blank" style="color:#25D366;font-weight:700"><i class="fab fa-whatsapp"></i> +91 89190 11159</a><br>
+▸ <strong>Location:</strong> Hyderabad, Telangana, India<br>
+▸ <strong>Hours:</strong> Mon–Sat, 9 AM – 9 PM IST<br><br>
+We'd love to help you find the right herbs for your needs! Feel free to WhatsApp for personalised recommendations.` },
+
+    // ── GENERAL GREETINGS ──
+    { k: ['hello','hi','hey','namaste','namaskar','hii','helo'],
+      a: `Namaste! 🌿 I'm <strong>Vaidya</strong>, your herbal wellness guide at Nature's Heal!<br><br>
+I can help you with:<br>
+▸ Which herb is good for hair, skin, digestion, immunity, diabetes, stress...<br>
+▸ How to use any herb (dosage, timing, combinations)<br>
+▸ Product info and store details<br><br>
+What health concern can I help you with today? 😊` },
+
+    { k: ['thanks','thank you','thank','tysm','ty'],
+      a: `🌿 You're most welcome! Remember, nature has a remedy for almost everything — it just takes patience and consistency.<br><br>
+Feel free to ask anything else anytime. Stay healthy! 🙏` },
+
+    { k: ['bye','goodbye','see you','cya','ok bye'],
+      a: `Take care! 🌿 Wishing you vibrant health. Come back anytime you need herbal guidance. Namaste! 🙏` },
+];
+
+function localChatReply(text) {
+    const q = text.toLowerCase().replace(/[^\w\s]/g,' ');
+    // Try to match keywords
+    for (const entry of CHAT_KB) {
+        if (entry.k.some(kw => q.includes(kw))) {
+            return entry.a;
+        }
+    }
+    // Fuzzy: partial matches
+    for (const entry of CHAT_KB) {
+        if (entry.k.some(kw => kw.split(' ').some(w => w.length > 3 && q.includes(w)))) {
+            return entry.a;
+        }
+    }
+    // Check catalog
+    const catalog = window.appState?.catalogData || [];
+    const matched = catalog.find(p => p.name && q.includes(p.name.toLowerCase().split(' ')[0]));
+    if (matched) {
+        return `🌿 <strong>${matched.name}</strong><br><br>${matched.uses || matched.description || 'A wonderful natural product available at Nature\'s Heal.'}<br><br>💰 Price: ₹${matched.price} per ${matched.quantityType||'unit'}<br><br>🛒 Add it to your cart or <a href="https://wa.me/918919011159" target="_blank" style="color:#25D366;font-weight:700">WhatsApp us</a> to order!`;
+    }
+    // Default
+    return `🌿 I'm not sure about that specific query yet, but I'd love to help!<br><br>You can ask me about:<br>
+▸ Hair fall, hair growth<br>
+▸ Skin glow, acne, dark spots<br>
+▸ Immunity boosters<br>
+▸ Diabetes, blood sugar<br>
+▸ Digestion, gas, bloating<br>
+▸ Stress, sleep, anxiety<br>
+▸ Weight loss, energy<br>
+▸ Specific herbs: amla, ashwagandha, triphala, neem, tulsi…<br><br>
+Or <a href="https://wa.me/918919011159" target="_blank" style="color:#25D366;font-weight:700"><i class="fab fa-whatsapp"></i> WhatsApp us</a> for personalised guidance! 🙏`;
+}
 
 async function sendChat() {
     const input = document.getElementById('chatInput');
@@ -3516,117 +4010,88 @@ async function sendChat() {
     addChatMessage('user', text);
     showChatTyping();
 
-    // Guard: key not set
-    if (!GEMINI_API_KEY || GEMINI_API_KEY === '') {
-        hideChatTyping();
-        addChatMessage('bot', '⚙️ Chatbot not configured yet.\n\nAdmin: open this file, find GEMINI_API_KEY near line 3460, and paste your free key from aistudio.google.com/app/apikey (no credit card needed!) 🌿');
-        return;
-    }
+    // Simulate a brief thinking delay for natural feel
+    await new Promise(r => setTimeout(r, 650 + Math.random() * 500));
+    hideChatTyping();
 
-    // Build catalog context
-    const catalog = (window.appState?.catalogData || []).slice(0, 20).map(p =>
-        `${p.name} (${p.type}, ₹${p.price}/${p.quantityType||'unit'}): ${p.uses || p.description || ''}`
-    ).join('\n');
-
-    // Build conversation history for Gemini (alternating user/model)
-    const historyForGemini = [];
-    const recentHistory = chatHistory.slice(-12);
-    for (let i = 0; i < recentHistory.length; i++) {
-        const m = recentHistory[i];
-        historyForGemini.push({
-            role: m.role === 'user' ? 'user' : 'model',
-            parts: [{ text: m.content }]
-        });
-    }
-
-    const systemInstruction = `You are Vaidya 🌿, a warm Ayurvedic & Herbal AI assistant for Nature's Heal — a trusted herbal products store in Hyderabad, India.
-
-OUR LIVE CATALOG:
-${catalog}
-
-HERBAL KNOWLEDGE:
-LEAVES: Curry Leaves (hair, anaemia, diabetes), Neem (skin, blood purifier), Tulsi (immunity, stress), Ashwagandha (energy, stamina), Brahmi (memory), Amla (Vitamin C, hair), Moringa (superfood), Giloy (immunity, fever), Bhringraj (hair growth), Triphala (digestion).
-SEEDS: Sabja (cooling, weight loss), Flaxseeds (omega-3, heart), Jeera (digestion, bloating), Ajwain (gas, acidity), Fennel (bloating), Kalonji (immunity, hair), Methi (diabetes, cholesterol).
-FRUITS: Haritaki (digestion), Bibhitaki (respiratory), Amla (immunity), Karela (diabetes), Jamun seeds (diabetes).
-
-CONDITIONS:
-Hair Fall → Bhringraj, Amla, Curry Leaves, Brahmi
-Diabetes → Karela, Jamun, Methi, Giloy
-Digestion/Gas → Ajwain, Jeera, Fennel, Triphala, Curry Leaves
-Immunity → Tulsi, Giloy, Amla, Ashwagandha, Kalonji
-Skin Glow → Neem, Turmeric, Amla, Flaxseed
-Stress → Ashwagandha, Brahmi, Tulsi
-Weight Loss → Triphala, Methi, Jeera water, Sabja seeds
-
-STORE INFO: Free delivery above ₹499. COD available. WhatsApp: +91 89190 11159. Hyderabad delivery 1–2 days.
-
-STYLE: Be warm like a trusted family Vaidya. Give practical tips (how to use, when, with what). Keep responses to 3–4 short paragraphs. Always note herbs support wellness but don't replace doctors.`;
-
-    try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-        const body = {
-            system_instruction: { parts: [{ text: systemInstruction }] },
-            contents: [
-                ...historyForGemini,
-                { role: 'user', parts: [{ text: text }] }
-            ],
-            generationConfig: {
-                maxOutputTokens: 800,
-                temperature: 0.7,
-                topP: 0.9
-            },
-            safetySettings: [
-                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
-                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
-                { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
-                { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }
-            ]
-        };
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            hideChatTyping();
-            if (response.status === 400 && err?.error?.message?.includes('API key')) {
-                addChatMessage('bot', '⚠️ Invalid Gemini API key. Please check the key in the code and try again.');
-            } else {
-                addChatMessage('bot', `⚠️ Error ${response.status}. Please try again or reach us on WhatsApp +91 89190 11159 🌿`);
-            }
-            return;
-        }
-
-        const data = await response.json();
-        hideChatTyping();
-
-        // Extract text from Gemini response
-        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text
-            || data?.candidates?.[0]?.output
-            || 'Sorry, I could not get a response. Please try again!';
-
-        // Clean up markdown bold (**text**) → just text for cleaner display
-        const cleaned = reply
-            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.+?)\*/g, '<em>$1</em>')
-            .replace(/^•/gm, '▸');
-
-        addChatMessage('bot', cleaned, true); // true = allow HTML
-    } catch(e) {
-        hideChatTyping();
-        console.error('Gemini chat error:', e);
-        addChatMessage('bot', '⚠️ Connection error. Check your internet and try again, or reach us on WhatsApp +91 89190 11159 🌿');
-    }
+    const reply = localChatReply(text);
+    addChatMessage('bot', reply, true);
 }
 window.sendChat = sendChat;
 
 window.sendChatSuggestion = function(text) {
     document.getElementById('chatInput').value = text;
     sendChat();
+};
+
+// ===== DAILY HEALTH TIPS =====
+const HEALTH_TIPS = [
+    "💧 Drink warm water with lemon + honey every morning to boost digestion and immunity.",
+    "🌿 Add 1 tsp Amla powder to your diet daily — it has 20× more Vitamin C than oranges!",
+    "🫧 Chewing 5 Tulsi leaves on empty stomach strengthens your respiratory system.",
+    "🌱 Ashwagandha + warm milk at night = deep sleep and stress relief within 2 weeks.",
+    "🫙 Triphala taken before bed gently cleanses the gut without side effects.",
+    "☀️ Moringa leaves powder in the morning provides iron, calcium and all 9 essential amino acids.",
+    "🌿 Curry leaves every morning can reduce hair fall by 40% within a month.",
+    "🫚 Flaxseeds soaked overnight improve Omega-3 absorption by 3× vs dry consumption.",
+    "🌸 Hibiscus tea (2 cups/day) can lower blood pressure as effectively as some medications.",
+    "🧴 Neem paste on skin for 15 min/week keeps acne and fungal infections at bay.",
+];
+let _tipIdx = 0;
+function initHealthTip() {
+    _tipIdx = Math.floor(Math.random() * HEALTH_TIPS.length);
+    const el = document.getElementById('healthTipText');
+    if (el) el.textContent = HEALTH_TIPS[_tipIdx];
+}
+window.rotateHealthTip = function() {
+    _tipIdx = (_tipIdx + 1) % HEALTH_TIPS.length;
+    const el = document.getElementById('healthTipText');
+    if (el) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(4px)';
+        el.style.transition = 'all 0.2s';
+        setTimeout(() => {
+            el.textContent = HEALTH_TIPS[_tipIdx];
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+        }, 200);
+    }
+};
+
+// ===== NOTIFY ME =====
+window.notifyMe = function(productName) {
+    const phone = prompt(`We'll notify you on WhatsApp when "${productName}" is back in stock!\n\nEnter your WhatsApp number (10 digits):`);
+    if (!phone) return;
+    if (!/^[6-9]\d{9}$/.test(phone.trim())) { showToast("Enter valid 10-digit number", true); return; }
+    const msg = `Hi! Please notify me when *${productName}* is back in stock at Nature's Heal. My number: +91${phone.trim()}`;
+    window.open(`https://wa.me/918919011159?text=${encodeURIComponent(msg)}`, '_blank');
+    showToast("✅ We'll WhatsApp you when it's back!");
+};
+
+// ===== PRE-ORDER =====
+window.preOrderWhatsApp = function(productName) {
+    const msg = `Hi! I'd like to *pre-order* "${productName}" from Nature's Heal. Please let me know when it will be available and the price.`;
+    window.open(`https://wa.me/918919011159?text=${encodeURIComponent(msg)}`, '_blank');
+};
+
+// ===== ADD COMBO TO CART =====
+window.addComboToCart = function(keywords) {
+    const catalog = window.appState.catalogData || [];
+    let added = 0;
+    keywords.forEach(kw => {
+        const prod = catalog.find(p => (p.name || '').toLowerCase().includes(kw.toLowerCase()));
+        if (prod && prod.stock !== '0') {
+            addToCartSimple(prod.id);
+            added++;
+        }
+    });
+    if (added > 0) {
+        showToast(`🎁 Combo added! ${added} items in cart`);
+        openCartSidebar();
+    } else {
+        const msg = `Hi! I want to order the *Combo Pack* (${keywords.join(' + ')}) from Nature's Heal. Please share the details!`;
+        window.open(`https://wa.me/918919011159?text=${encodeURIComponent(msg)}`, '_blank');
+    }
 };
 
 // ===== INIT =====
@@ -3646,6 +4111,8 @@ window.onload = function() {
     // Cart
     updateCartBadge();
     updatePlaceOrderButton();
+    // Daily health tip
+    initHealthTip();
 };
 </script>
 </body>
