@@ -603,7 +603,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 .footer-socials { display: flex; justify-content: center; gap: 1.25rem; margin-bottom: 2rem; }
 .footer-socials a { width: 2.4rem; height: 2.4rem; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.6); font-size: 0.95rem; transition: all 0.2s; }
 .footer-socials a:hover { background: #059669; color: white; transform: translateY(-2px); }
-.footer-copy { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+.footer-copy { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); cursor: pointer; padding: 0.75rem 1rem; display: inline-block; user-select: none; -webkit-user-select: none; border-radius: 0.5rem; transition: color 0.2s; }
 
 /* ===== ADMIN TRIGGER ===== */
 .admin-trigger { display: none; }
@@ -1353,7 +1353,10 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
             <button onclick="openPolicy('shipping')">Shipping Policy</button>
         </div>
         <!-- Admin access: 5x click logo -->
-        <div class="footer-copy" onclick="handleAdminTrigger()">© 2026 Nature's Heal · All rights reserved</div>
+        <div class="footer-copy" id="adminFooterTrigger"
+            onclick="handleAdminTrigger()"
+            ontouchend="event.preventDefault(); handleAdminTrigger();"
+            title="Tap 5× to open admin">© 2026 Nature's Heal · All rights reserved</div>
     </div>
 </footer>
 
@@ -1527,9 +1530,20 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
             </div>
             <!-- Combos Tab -->
             <div id="adminCombosTab" style="display:none">
+                <!-- Firestore rules reminder -->
+                <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:0.75rem;padding:0.85rem 1rem;margin-bottom:1rem;font-size:0.78rem">
+                    <p style="font-weight:700;color:#92400e;margin-bottom:0.4rem">⚠️ First-time setup: Add Firestore Rules</p>
+                    <p style="color:#78350f;margin-bottom:0.5rem">In Firebase Console → Firestore → Rules, add these lines inside the <code>match /databases/{database}/documents</code> block:</p>
+                    <pre id="firestoreRulesPre" style="background:#0f172a;color:#a7f3d0;padding:0.65rem;border-radius:0.5rem;font-size:0.68rem;overflow-x:auto;white-space:pre-wrap;cursor:pointer" onclick="copyFirestoreRules()" title="Click to copy">match /combos/{id} {
+  allow read: if true;
+  allow write: if request.auth != null
+    &amp;&amp; request.auth.token.email == "harikrishnarock444@gmail.com";
+}</pre>
+                    <button onclick="copyFirestoreRules()" style="font-size:0.7rem;font-weight:700;background:#059669;color:white;border:none;border-radius:0.4rem;padding:0.3rem 0.75rem;cursor:pointer;margin-top:0.35rem"><i class="fas fa-copy"></i> Copy Rules</button>
+                </div>
                 <div id="adminCombosList"></div>
                 <div style="margin-top:1.5rem;padding:1rem;background:var(--bg-body);border-radius:1rem;border:1px solid var(--border-color)">
-                    <h4 style="font-size:0.9rem;font-weight:700;color:#059669;margin-bottom:1rem">➕ Add / Edit Combo Pack</h4>
+                    <h4 style="font-size:0.9rem;font-weight:700;color:#059669;margin-bottom:1rem">➕ Add New Combo Pack</h4>
                     <div class="form-group">
                         <input id="cb_name" class="form-input" placeholder="Combo Name (e.g. Hair & Glow Combo)">
                         <input id="cb_emojis" class="form-input" placeholder="Emojis (e.g. 🌿+💆)">
@@ -2848,6 +2862,28 @@ window.toggleTheme = function() {
 // ===== ADMIN: COMBOS =====
 window._combosCache = [];
 
+// Copy Firestore rules to clipboard
+window.copyFirestoreRules = function() {
+    const rules = `match /combos/{id} {
+  allow read: if true;
+  allow write: if request.auth != null
+    && request.auth.token.email == "harikrishnarock444@gmail.com";
+}`;
+    navigator.clipboard.writeText(rules).then(() => {
+        showToast('✅ Rules copied! Paste in Firebase Console → Firestore → Rules');
+    }).catch(() => {
+        // Fallback: select the pre text
+        const pre = document.getElementById('firestoreRulesPre');
+        if (pre) {
+            const range = document.createRange();
+            range.selectNodeContents(pre);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+        }
+        showToast('Rules selected — press Ctrl+C / Cmd+C to copy', false);
+    });
+};
+
 async function loadAdminCombos() {
     const list = document.getElementById('adminCombosList');
     list.innerHTML = `<div style="color:var(--text-muted);font-size:0.875rem;padding:0.5rem 0">Loading combos...</div>`;
@@ -2872,7 +2908,17 @@ async function loadAdminCombos() {
         // Also refresh main page combos
         renderDynamicCombos(combos);
     } catch(e) {
-        list.innerHTML = `<p style="color:#ef4444;font-size:0.875rem">Error loading combos: ${e.message}</p>`;
+        const isPermission = e.message && (e.message.includes('permission') || e.message.includes('Missing'));
+        list.innerHTML = `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:0.75rem;padding:1rem;font-size:0.82rem">
+            <p style="color:#dc2626;font-weight:700;margin-bottom:0.5rem">⚠️ Firestore Permission Error</p>
+            <p style="color:#374151;margin-bottom:0.75rem">The <strong>combos</strong> collection needs Firestore rules. Add this to your Firebase Console → Firestore → Rules:</p>
+            <pre style="background:#0f172a;color:#a7f3d0;padding:0.75rem;border-radius:0.5rem;font-size:0.72rem;overflow-x:auto;white-space:pre-wrap">match /combos/{id} {
+  allow read: if true;
+  allow write: if request.auth != null 
+    &amp;&amp; request.auth.token.email == \harikrishnarock444@gmail.com\;
+}</pre>
+            <p style="color:#6b7280;font-size:0.7rem;margin-top:0.5rem">Go to: Firebase Console → naturesheal project → Firestore → Rules tab → paste above → Publish</p>
+        </div>`;
     }
 }
 
@@ -2894,7 +2940,14 @@ window.adminSaveCombo = async function() {
         showToast("✅ Combo saved!");
         ['cb_name','cb_emojis','cb_desc','cb_price','cb_original','cb_keywords'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
         loadAdminCombos();
-    } catch(e) { showToast("Save failed: " + e.message, true); }
+    } catch(e) {
+        const isPermission = e.message && e.message.toLowerCase().includes('permission');
+        if (isPermission) {
+            showToast('Permission denied — update Firestore rules first (see Combos tab)', true);
+        } else {
+            showToast('Save failed: ' + e.message, true);
+        }
+    }
 };
 
 window.adminDeleteCombo = async function(firestoreId) {
@@ -2942,11 +2995,37 @@ async function loadCombosFromFirestore() {
 }
 
 
+// Declared at script scope so they persist across calls
+var _adminClickCount = 0;
+var _adminClickTimer = null;
+var _adminTapFeedback = null;
+
 window.handleAdminTrigger = function() {
-    adminClickCount++;
-    clearTimeout(adminClickTimer);
-    adminClickTimer = setTimeout(() => adminClickCount = 0, 1500);
-    if (adminClickCount >= 5) { adminClickCount = 0; openAdminLogin(); }
+    _adminClickCount++;
+    clearTimeout(_adminClickTimer);
+
+    // Show subtle tap-count feedback (footer text glows greener each tap)
+    const footer = document.querySelector('.footer-copy');
+    if (footer) {
+        footer.style.color = 'rgba(16,185,129,' + (0.18 * _adminClickCount) + ')';
+        footer.style.transition = 'color 0.2s';
+        clearTimeout(_adminTapFeedback);
+        _adminTapFeedback = setTimeout(() => { footer.style.color = ''; }, 1200);
+    }
+
+    if (_adminClickCount >= 5) {
+        _adminClickCount = 0;
+        if (footer) footer.style.color = '';
+        openAdminLogin();
+        return;
+    }
+
+    // Reset after 2 seconds of inactivity
+    _adminClickTimer = setTimeout(() => {
+        _adminClickCount = 0;
+        const f = document.querySelector('.footer-copy');
+        if (f) f.style.color = '';
+    }, 2000);
 };
 
 window.openAdminLogin = function() {
