@@ -678,13 +678,13 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 
 /* ===== DAILY HEALTH TIP STRIP ===== */
 .health-tip-strip {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
+    background: linear-gradient(135deg, #0d9488, #0891b2, #7c3aed);
     border-radius: 1rem; padding: 0.75rem 1rem;
     display: flex; align-items: center; gap: 0.75rem;
     margin-bottom: 1.5rem; cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s; box-shadow: 0 4px 18px rgba(13,148,136,0.28);
 }
-.health-tip-strip:hover { transform: translateY(-1px); }
+.health-tip-strip:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(13,148,136,0.38); }
 .tip-icon { font-size: 1.4rem; flex-shrink: 0; }
 .tip-content { flex: 1; min-width: 0; }
 .tip-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: rgba(255,255,255,0.8); margin-bottom: 0.15rem; }
@@ -718,29 +718,29 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.8} }
 
 /* ===== COMBO PACK CARD ===== */
-.combo-section { margin-bottom: 2rem; }
-.combo-grid { display: grid; grid-template-columns: 1fr; gap: 0.85rem; }
-@media(min-width:640px){ .combo-grid { grid-template-columns: repeat(2,1fr); } }
+.combo-section { margin-bottom: 1.5rem; }
+.combo-grid { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
+@media(min-width:480px){ .combo-grid { grid-template-columns: repeat(2,1fr); } }
 @media(min-width:1024px){ .combo-grid { grid-template-columns: repeat(3,1fr); } }
 .combo-card {
     background: linear-gradient(135deg, #064e3b, #065f46);
-    border-radius: 1.25rem; padding: 1rem 1.25rem;
-    display: flex; align-items: center; gap: 1rem;
+    border-radius: 0.85rem; padding: 0.65rem 0.85rem;
+    display: flex; align-items: center; gap: 0.65rem;
     cursor: pointer; transition: all 0.25s; border: 1px solid rgba(255,255,255,0.12);
-    box-shadow: 0 4px 16px rgba(5,150,105,0.2);
+    box-shadow: 0 2px 10px rgba(5,150,105,0.18);
 }
-.combo-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(5,150,105,0.3); }
-.combo-emojis { font-size: 2rem; flex-shrink: 0; }
+.combo-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(5,150,105,0.28); }
+.combo-emojis { font-size: 1.4rem; flex-shrink: 0; }
 .combo-info { flex: 1; min-width: 0; }
-.combo-name { font-size: 0.88rem; font-weight: 800; color: #6ee7b7; margin-bottom: 0.2rem; }
-.combo-desc { font-size: 0.72rem; color: rgba(255,255,255,0.75); line-height: 1.4; margin-bottom: 0.4rem; }
-.combo-pricing { display: flex; align-items: center; gap: 0.5rem; }
-.combo-price { font-size: 1rem; font-weight: 800; color: #34d399; }
-.combo-original { font-size: 0.75rem; color: rgba(255,255,255,0.45); text-decoration: line-through; }
-.combo-save { font-size: 0.65rem; font-weight: 700; background: #f43f5e; color: white; padding: 0.1rem 0.45rem; border-radius: 9999px; }
+.combo-name { font-size: 0.78rem; font-weight: 800; color: #6ee7b7; margin-bottom: 0.12rem; }
+.combo-desc { font-size: 0.62rem; color: rgba(255,255,255,0.7); line-height: 1.35; margin-bottom: 0.3rem; }
+.combo-pricing { display: flex; align-items: center; gap: 0.4rem; }
+.combo-price { font-size: 0.9rem; font-weight: 800; color: #34d399; }
+.combo-original { font-size: 0.68rem; color: rgba(255,255,255,0.4); text-decoration: line-through; }
+.combo-save { font-size: 0.58rem; font-weight: 700; background: #f43f5e; color: white; padding: 0.08rem 0.38rem; border-radius: 9999px; }
 .combo-add-btn {
-    background: #10b981; color: white; padding: 0.5rem 1rem; border-radius: 0.75rem;
-    font-weight: 700; font-size: 0.78rem; border: none; cursor: pointer; white-space: nowrap;
+    background: #10b981; color: white; padding: 0.38rem 0.7rem; border-radius: 0.6rem;
+    font-weight: 700; font-size: 0.7rem; border: none; cursor: pointer; white-space: nowrap;
     transition: all 0.2s; flex-shrink: 0;
 }
 .combo-add-btn:hover { background: #047857; }
@@ -1195,7 +1195,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 
     <!-- DAILY HEALTH TIP STRIP -->
     <div class="health-tip-strip" id="healthTipStrip" onclick="rotateHealthTip()">
-        <div class="tip-icon">📊</div>
+        <div class="tip-icon">🌿</div>
         <div class="tip-content">
             <div class="tip-label">Daily Health Tip</div>
             <div class="tip-text" id="healthTipText">Loading tip...</div>
@@ -1456,7 +1456,8 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
                 <div id="otpInputView" style="display:none">
                     <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem">OTP sent to <strong id="otpSentTo"></strong></p>
                     <div class="form-group">
-                        <input id="auth_otp" type="tel" class="form-input" placeholder="Enter 6-digit OTP" maxlength="6" inputmode="numeric">
+                        <input id="auth_otp" type="tel" class="form-input" placeholder="Enter 6-digit OTP" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+                        <p style="font-size:0.72rem;color:#059669;font-weight:600;margin-top:-0.4rem;margin-bottom:0.5rem">📲 OTP will auto-fill if allowed by your browser</p>
                         <button onclick="verifyOTP()" class="submit-btn" id="verifyOtpBtn">
                             Verify & Login
                         </button>
@@ -1511,6 +1512,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
         <div class="admin-tabs">
             <button class="admin-tab active" onclick="switchAdminTab('orders')">📦 Orders</button>
             <button class="admin-tab" onclick="switchAdminTab('products')">🌿 Products</button>
+            <button class="admin-tab" onclick="switchAdminTab('combos')">🎁 Combos</button>
             <button class="admin-tab" onclick="switchAdminTab('analytics')">📊 Analytics</button>
             <button class="admin-tab" onclick="switchAdminTab('add')">➕ Add Product</button>
         </div>
@@ -1522,6 +1524,25 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
             <!-- Products Tab -->
             <div id="adminProductsTab" style="display:none">
                 <div id="adminProductsList"></div>
+            </div>
+            <!-- Combos Tab -->
+            <div id="adminCombosTab" style="display:none">
+                <div id="adminCombosList"></div>
+                <div style="margin-top:1.5rem;padding:1rem;background:var(--bg-body);border-radius:1rem;border:1px solid var(--border-color)">
+                    <h4 style="font-size:0.9rem;font-weight:700;color:#059669;margin-bottom:1rem">➕ Add / Edit Combo Pack</h4>
+                    <div class="form-group">
+                        <input id="cb_name" class="form-input" placeholder="Combo Name (e.g. Hair & Glow Combo)">
+                        <input id="cb_emojis" class="form-input" placeholder="Emojis (e.g. 🌿+💆)">
+                        <input id="cb_desc" class="form-input" placeholder="Description">
+                        <input id="cb_price" class="form-input" type="number" placeholder="Combo Price (₹)">
+                        <input id="cb_original" class="form-input" type="number" placeholder="Original Price (₹)">
+                        <input id="cb_keywords" class="form-input" placeholder="Product keywords (comma separated, e.g. amla,curry,neem)">
+                        <p style="font-size:0.72rem;color:var(--text-muted);margin-top:-0.3rem">Keywords match product names to add to cart. Use 2–3 items.</p>
+                        <button onclick="adminSaveCombo()" class="submit-btn" style="background:#059669;margin-top:0.5rem">
+                            <i class="fas fa-save"></i> Save Combo to Firestore
+                        </button>
+                    </div>
+                </div>
             </div>
             <!-- Analytics Tab -->
             <div id="adminAnalyticsTab" style="display:none">
@@ -1728,6 +1749,26 @@ window.sendOTP = async function() {
         showToast("OTP sent to +91" + phone);
         _lastPhone = phone;
         startOTPTimer();
+
+        // Web OTP API — auto-capture OTP from SMS on supported Android browsers
+        if ('OTPCredential' in window) {
+            try {
+                const ac = new AbortController();
+                window._otpAbortController = ac;
+                const credential = await navigator.credentials.get({ otp: { transport: ['sms'] }, signal: ac.signal });
+                if (credential && credential.code) {
+                    const otpInput = document.getElementById('auth_otp');
+                    if (otpInput) {
+                        otpInput.value = credential.code;
+                        showToast("✅ OTP auto-filled!");
+                        // Auto verify
+                        setTimeout(() => window.verifyOTP(), 400);
+                    }
+                }
+            } catch(otpErr) {
+                // Silently ignore if user dismissed or not supported
+            }
+        }
     } catch(e) {
         showToast("OTP send failed: " + (e.message || e.code), true);
         btn.disabled = false; btn.innerHTML = 'Send OTP';
@@ -1758,6 +1799,8 @@ window.verifyOTP = async function() {
 window.switchToPhoneInput = function() {
     document.getElementById('phoneInputView').style.display = 'block';
     document.getElementById('otpInputView').style.display = 'none';
+    // Cancel any pending Web OTP request
+    if (window._otpAbortController) { try { window._otpAbortController.abort(); } catch(e) {} window._otpAbortController = null; }
 };
 
 // Auth state observer
@@ -2133,11 +2176,13 @@ window.autoFillQuantityType = function() {
     else if (type === 'flower') { qt.value = 'bunch'; minQty.value = '1'; step.value = '1'; }
 };
 
-// Random ratings for social proof
+// Random ratings for social proof — works with both numeric and Firestore string IDs
 function getStarRating(id) {
-    const ratings = [4.7, 4.8, 4.9, 5.0, 4.6, 4.8, 4.7, 5.0];
-    const r = ratings[id % ratings.length];
-    const count = 8 + (id * 7) % 92;
+    const ratings = [4.7, 4.8, 4.9, 5.0, 4.6, 4.8, 4.7, 5.0, 4.9, 4.7];
+    // Create a stable numeric hash from the ID
+    const numId = typeof id === 'number' ? id : String(id).split('').reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + 1), 0);
+    const r = ratings[Math.abs(numId) % ratings.length];
+    const count = 8 + (Math.abs(numId) * 7) % 92;
     return { r, count };
 }
 
@@ -2236,9 +2281,9 @@ window.openModalById = function(id) {
         </div>
         <div style="display:flex;align-items:center;gap:0.75rem;margin:0.75rem 0;padding:0.65rem;background:rgba(255,255,255,0.12);border-radius:0.75rem;border:1px solid rgba(255,255,255,0.2)">
             <span style="font-size:0.78rem;color:rgba(255,255,255,0.85);font-weight:600">Qty:</span>
-            <button onclick="modalQtyChange(${item.id}, -1)" style="width:1.8rem;height:1.8rem;border-radius:0.4rem;background:#fee2e2;color:#dc2626;font-weight:700;font-size:1rem;border:none;cursor:pointer">−</button>
+            <button onclick="modalQtyChange('${item.id}', -1)" style="width:1.8rem;height:1.8rem;border-radius:0.4rem;background:#fee2e2;color:#dc2626;font-weight:700;font-size:1rem;border:none;cursor:pointer">−</button>
             <span id="modalQtyVal_${item.id}" style="min-width:3.5rem;text-align:center;font-weight:700;font-size:0.85rem;color:white">${item.minQty || 1} ${item.quantityType || 'unit'}</span>
-            <button onclick="modalQtyChange(${item.id}, 1)" style="width:1.8rem;height:1.8rem;border-radius:0.4rem;background:#d1fae5;color:#065f46;font-weight:700;font-size:1rem;border:none;cursor:pointer">+</button>
+            <button onclick="modalQtyChange('${item.id}', 1)" style="width:1.8rem;height:1.8rem;border-radius:0.4rem;background:#d1fae5;color:#065f46;font-weight:700;font-size:1rem;border:none;cursor:pointer">+</button>
             <span id="modalSubtotal_${item.id}" style="margin-left:auto;font-weight:800;color:#34d399;font-size:0.9rem">₹${((item.price || 0) * (item.minQty || 1)).toFixed(0)}</span>
         </div>
         <div class="item-modal-section">
@@ -2261,7 +2306,7 @@ window.openModalById = function(id) {
                     <i class="fab fa-whatsapp"></i> Pre-Order via WhatsApp
                 </button>
                </div>`
-            : `<button class="item-modal-cta" onclick="addToCartFromModal(${item.id}); closeItemModal(); openCartSidebar();">
+            : `<button class="item-modal-cta" onclick="addToCartFromModal('${item.id}'); closeItemModal(); openCartSidebar();">
                 🛒 Add to Cart
                </button>`
         }
@@ -2317,34 +2362,36 @@ window.closeItemModal = function() {
     resetMeta();
 };
 
-// Modal quantity state
+// Modal quantity state — keyed by string ID to handle Firestore string IDs
 window._modalQty = {};
 window.modalQtyChange = function(id, dir) {
-    const item = window.appState.catalogData.find(i => i.id == id);
+    const sid = String(id);
+    const item = window.appState.catalogData.find(i => String(i.id) === sid);
     if (!item) return;
     const qt = item.quantityType || 'bunch';
-    const step = item.step || 1;
-    const minQty = item.minQty || 1;
-    if (!window._modalQty[id]) window._modalQty[id] = minQty;
-    let newQty = window._modalQty[id] + dir * step;
+    const step = parseFloat(item.step) || 1;
+    const minQty = parseFloat(item.minQty) || 1;
+    if (window._modalQty[sid] === undefined) window._modalQty[sid] = minQty;
+    let newQty = Math.round((window._modalQty[sid] + dir * step) * 1000) / 1000;
     if (newQty < minQty) newQty = minQty;
-    window._modalQty[id] = newQty;
+    window._modalQty[sid] = newQty;
     const label = qt === 'bunch' ? (newQty === 1 ? 'bunch' : 'bunches') : qt;
     const dispQty = Number.isInteger(newQty) ? newQty : newQty.toFixed(1);
-    const el = document.getElementById('modalQtyVal_' + id);
+    const el = document.getElementById('modalQtyVal_' + sid);
     if (el) el.textContent = dispQty + ' ' + label;
-    const sub = document.getElementById('modalSubtotal_' + id);
+    const sub = document.getElementById('modalSubtotal_' + sid);
     if (sub) sub.textContent = '₹' + (item.price * newQty).toFixed(0);
 };
 
 window.addToCartFromModal = function(id) {
-    const item = window.appState.catalogData.find(i => i.id == id);
+    const sid = String(id);
+    const item = window.appState.catalogData.find(i => String(i.id) === sid);
     if (!item) return;
-    const qty = window._modalQty[id] || item.minQty || 1;
-    const existing = window.appState.cart.find(c => c.id == id);
-    if (existing) existing.qty += qty;
-    else window.appState.cart.push({ id, qty });
-    delete window._modalQty[id];
+    const qty = window._modalQty[sid] || parseFloat(item.minQty) || 1;
+    const existing = window.appState.cart.find(c => String(c.id) === sid);
+    if (existing) existing.qty = Math.round((existing.qty + qty) * 1000) / 1000;
+    else window.appState.cart.push({ id: sid, qty });
+    delete window._modalQty[sid];
     persistCart();
     updateCartBadge();
     renderCartItems();
@@ -2498,8 +2545,35 @@ function openShippingModal() {
     if (uid) {
         const n = localStorage.getItem('user_name') || '';
         const e = localStorage.getItem('user_email') || '';
+        // Pre-fill name/email from login
         if (n && document.getElementById('sh_name').value === '') document.getElementById('sh_name').value = n;
         if (e && document.getElementById('sh_email').value === '') document.getElementById('sh_email').value = e;
+
+        // Load previous order details and pre-fill all fields (always refresh)
+        loadShippingDetails(uid).then(async data => {
+            if (data && data.phone) {
+                // Fill from users_shipping collection
+                const fields = { sh_name: data.name, sh_phone: data.phone, sh_email: data.email, sh_address: data.address, sh_pincode: data.pincode };
+                for (const [id, val] of Object.entries(fields)) {
+                    const el = document.getElementById(id);
+                    if (el && val) el.value = val;
+                }
+            } else {
+                // Fallback: pull from last order in Firestore
+                try {
+                    const orders = await loadUserOrders(uid);
+                    if (orders && orders.length > 0) {
+                        const last = orders[0];
+                        const u = last.user || {};
+                        if (u.name) document.getElementById('sh_name').value = u.name;
+                        if (u.phone) document.getElementById('sh_phone').value = u.phone;
+                        if (u.email) document.getElementById('sh_email').value = u.email;
+                        if (u.address) document.getElementById('sh_address').value = u.address;
+                        if (last.pincode) document.getElementById('sh_pincode').value = last.pincode;
+                    }
+                } catch(e) { /* ignore */ }
+            }
+        }).catch(() => {});
     }
     document.getElementById('shippingModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -2532,6 +2606,7 @@ window.submitOrder = async function(event) {
     const phone = document.getElementById('sh_phone').value.trim();
     const email = document.getElementById('sh_email').value.trim();
     const address = document.getElementById('sh_address').value.trim();
+    const pincode = document.getElementById('sh_pincode').value.trim();
 
     if (!name || name.length < 3) return showToast("Enter valid full name (min 3 chars)", true);
     if (!address || address.length < 10) return showToast("Enter full delivery address (min 10 chars)", true);
@@ -2580,10 +2655,13 @@ window.submitOrder = async function(event) {
     const orderData = {
         items, total: grandTotal, subtotal: total, deliveryCharge, isFirstOrder,
         user: { name: safeName, phone, email, address: safeAddress },
+        pincode,
         user_uid: uid,
         user_email: email,
         payment_method: window.appState.selectedPayment
     };
+    // Save shipping for next time
+    if (uid) { saveShippingDetails(uid, { name: safeName, phone, email, address: safeAddress, pincode }).catch(()=>{}); }
 
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
@@ -2608,8 +2686,8 @@ window.submitOrder = async function(event) {
             // Send confirmation email
             sendOrderConfirmationEmail(orderData, orderRef?.id);
 
-            // Generate invoice PDF
-            setTimeout(() => generateInvoicePDF({ ...orderData, id: orderRef?.id || ('COD-' + Date.now()), payment: { method: 'COD' } }), 600);
+            // Open orders view so user can download invoice manually
+            openOrders();
 
             // Send WhatsApp confirmation with product images
             const itemLines = items.map(i => {
@@ -2681,8 +2759,7 @@ function payNow(totalAmount, orderData, btn) {
                     showToast("🎉 Payment Successful! Order placed.");
                     // Send confirmation email
                     sendOrderConfirmationEmail({ ...orderData, payment: { method: 'Online', id: response.razorpay_payment_id } }, response.razorpay_order_id);
-                    // Generate invoice PDF
-                    setTimeout(() => generateInvoicePDF({ ...orderData, id: response.razorpay_order_id || ('RZP-' + Date.now()), payment: { method: 'Online', id: response.razorpay_payment_id } }), 600);
+                    // Open orders so user can download invoice manually
                     openOrders();
                 } catch(e) {
                     showToast("Payment done but order save failed", true);
@@ -2768,8 +2845,103 @@ window.toggleTheme = function() {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
 };
 
-// ===== ADMIN =====
-let adminClickCount = 0, adminClickTimer;
+// ===== ADMIN: COMBOS =====
+window._combosCache = [];
+
+async function loadAdminCombos() {
+    const list = document.getElementById('adminCombosList');
+    list.innerHTML = `<div style="color:var(--text-muted);font-size:0.875rem;padding:0.5rem 0">Loading combos...</div>`;
+    try {
+        const snap = await window.fbGetDocs(window.fbCollection(window.db, "combos"));
+        const combos = snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+        window._combosCache = combos;
+        if (!combos.length) {
+            list.innerHTML = `<p style="color:var(--text-muted);font-size:0.875rem">No combos yet. Add one below.</p>`;
+        } else {
+            list.innerHTML = combos.map(c => `
+            <div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;border:1px solid var(--border-color);border-radius:0.75rem;margin-bottom:0.6rem;background:var(--bg-card)">
+                <span style="font-size:1.5rem">${escapeHTML(c.emojis||'🎁')}</span>
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:700;font-size:0.85rem;color:#059669">${escapeHTML(c.name)}</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted)">${escapeHTML(c.desc||'')} · Keywords: ${escapeHTML((c.keywords||[]).join(', '))}</div>
+                    <div style="font-size:0.75rem;font-weight:700;color:#059669">₹${c.price} <span style="text-decoration:line-through;color:var(--text-muted);font-weight:400">₹${c.original||''}</span></div>
+                </div>
+                <button onclick="adminDeleteCombo('${c.firestoreId}')" style="font-size:0.7rem;padding:0.3rem 0.6rem;border-radius:0.4rem;background:#fee2e2;color:#dc2626;font-weight:700;border:none;cursor:pointer">Delete</button>
+            </div>`).join('');
+        }
+        // Also refresh main page combos
+        renderDynamicCombos(combos);
+    } catch(e) {
+        list.innerHTML = `<p style="color:#ef4444;font-size:0.875rem">Error loading combos: ${e.message}</p>`;
+    }
+}
+
+window.adminSaveCombo = async function() {
+    const name = document.getElementById('cb_name').value.trim();
+    const emojis = document.getElementById('cb_emojis').value.trim();
+    const desc = document.getElementById('cb_desc').value.trim();
+    const price = parseFloat(document.getElementById('cb_price').value);
+    const original = parseFloat(document.getElementById('cb_original').value);
+    const kwStr = document.getElementById('cb_keywords').value.trim();
+    if (!name || !price || !kwStr) return showToast("Fill in name, price and keywords", true);
+    const keywords = kwStr.split(',').map(k => k.trim()).filter(Boolean);
+    const save = Math.round(((original - price) / original) * 100);
+    try {
+        await window.fbAddDoc(window.fbCollection(window.db, "combos"), {
+            name, emojis: emojis||'🎁', desc, price, original: original||price, keywords, save: save>0?save:0,
+            created_at: window.fbServerTimestamp()
+        });
+        showToast("✅ Combo saved!");
+        ['cb_name','cb_emojis','cb_desc','cb_price','cb_original','cb_keywords'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+        loadAdminCombos();
+    } catch(e) { showToast("Save failed: " + e.message, true); }
+};
+
+window.adminDeleteCombo = async function(firestoreId) {
+    if (!confirm("Delete this combo?")) return;
+    try {
+        await window.fbUpdateDoc(window.fbDoc(window.db, "combos", firestoreId), { _deleted: true });
+        showToast("Combo deleted");
+        loadAdminCombos();
+    } catch(e) { showToast("Delete failed", true); }
+};
+
+// Render dynamic combos on main page from Firestore
+function renderDynamicCombos(combos) {
+    const grid = document.querySelector('.combo-grid');
+    if (!grid || !combos || !combos.length) return;
+    const active = combos.filter(c => !c._deleted);
+    if (!active.length) return;
+    grid.innerHTML = active.map(c => {
+        const kwArr = c.keywords || [];
+        const kwJson = JSON.stringify(kwArr).replace(/"/g, '&quot;');
+        const saveLabel = c.save > 0 ? `<span class="combo-save">Save ${c.save}%</span>` : '';
+        return `<div class="combo-card" onclick="addComboToCart(${JSON.stringify(kwArr).replace(/"/g,'&quot;')})">
+            <div class="combo-emojis">${escapeHTML(c.emojis||'🎁')}</div>
+            <div class="combo-info">
+                <div class="combo-name">${escapeHTML(c.name)}</div>
+                <div class="combo-desc">${escapeHTML(c.desc||'')}</div>
+                <div class="combo-pricing">
+                    <span class="combo-price">₹${c.price}</span>
+                    ${c.original && c.original > c.price ? `<span class="combo-original">₹${c.original}</span>` : ''}
+                    ${saveLabel}
+                </div>
+            </div>
+            <button class="combo-add-btn" onclick="event.stopPropagation();addComboToCart(${JSON.stringify(kwArr).replace(/"/g,'&quot;')})">+ Cart</button>
+        </div>`;
+    }).join('');
+}
+
+// Load combos from Firestore on page init
+async function loadCombosFromFirestore() {
+    try {
+        const snap = await window.fbGetDocs(window.fbCollection(window.db, "combos"));
+        const combos = snap.docs.map(d => ({ firestoreId: d.id, ...d.data() })).filter(c => !c._deleted);
+        if (combos.length) renderDynamicCombos(combos);
+    } catch(e) { /* Keep static combos if Firestore fails */ }
+}
+
+
 window.handleAdminTrigger = function() {
     adminClickCount++;
     clearTimeout(adminClickTimer);
@@ -2827,7 +2999,7 @@ window.closeAdminPanel = function() {
 };
 
 function switchAdminTab(tab) {
-    const tabs = ['orders','products','analytics','add'];
+    const tabs = ['orders','products','combos','analytics','add'];
     tabs.forEach(t => {
         const el = document.getElementById('admin' + t.charAt(0).toUpperCase() + t.slice(1) + 'Tab');
         if (el) el.style.display = t === tab ? 'block' : 'none';
@@ -2837,6 +3009,7 @@ function switchAdminTab(tab) {
     });
     if (tab === 'products') loadAdminProducts();
     if (tab === 'analytics') loadAdminAnalytics();
+    if (tab === 'combos') loadAdminCombos();
 }
 window.switchAdminTab = switchAdminTab;
 
@@ -4273,6 +4446,8 @@ window.onload = function() {
     updatePlaceOrderButton();
     // Daily health tip
     initHealthTip();
+    // Load combos from Firestore (overrides static combos if any exist)
+    setTimeout(loadCombosFromFirestore, 1200);
 };
 </script>
 </body>
