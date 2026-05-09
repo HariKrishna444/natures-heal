@@ -1530,6 +1530,17 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
             </div>
             <!-- Combos Tab -->
             <div id="adminCombosTab" style="display:none">
+                <!-- Firestore rules reminder -->
+                <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:0.75rem;padding:0.85rem 1rem;margin-bottom:1rem;font-size:0.78rem">
+                    <p style="font-weight:700;color:#92400e;margin-bottom:0.4rem">⚠️ First-time setup: Add Firestore Rules</p>
+                    <p style="color:#78350f;margin-bottom:0.5rem">In Firebase Console → Firestore → Rules, add these lines inside the <code>match /databases/{database}/documents</code> block:</p>
+                    <pre id="firestoreRulesPre" style="background:#0f172a;color:#a7f3d0;padding:0.65rem;border-radius:0.5rem;font-size:0.68rem;overflow-x:auto;white-space:pre-wrap;cursor:pointer" onclick="copyFirestoreRules()" title="Click to copy">match /combos/{id} {
+  allow read: if true;
+  allow write: if request.auth != null
+    &amp;&amp; request.auth.token.email == "harikrishnarock444@gmail.com";
+}</pre>
+                    <button onclick="copyFirestoreRules()" style="font-size:0.7rem;font-weight:700;background:#059669;color:white;border:none;border-radius:0.4rem;padding:0.3rem 0.75rem;cursor:pointer;margin-top:0.35rem"><i class="fas fa-copy"></i> Copy Rules</button>
+                </div>
                 <div id="adminCombosList"></div>
                 <div style="margin-top:1.5rem;padding:1rem;background:var(--bg-body);border-radius:1rem;border:1px solid var(--border-color)">
                     <h4 style="font-size:0.9rem;font-weight:700;color:#059669;margin-bottom:1rem">➕ Add New Combo Pack</h4>
@@ -2670,9 +2681,49 @@ window.submitOrder = async function(event) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
     if (window.appState.selectedPayment === 'cod') {
-        // COD Flow
+        // COD Flow — prices re-verified server-side via Cloud Function
         try {
-            const orderRef = await saveOrderToFirestore({ ...orderData, payment: { method: 'COD', status: 'pending' } });
+            document.getElementById('paymentLoader').classList.add('active');
+
+            const idToken = window.currentUser ? await window.currentUser.getIdToken() : null;
+
+            // Send only IDs + qty — server re-fetches prices from Firestore
+            const secureItems = window.appState.cart.map(c => ({
+                id: String(c.id),
+                qty: c.qty
+            }));
+
+            const codRes = await fetch(
+                "https://us-central1-naturesheal.cloudfunctions.net/saveCodOrder",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(idToken ? { "Authorization": "Bearer " + idToken } : {})
+                    },
+                    body: JSON.stringify({
+                        items:      secureItems,
+                        user:       orderData.user,
+                        pincode:    orderData.pincode,
+                        user_uid:   orderData.user_uid,
+                        user_email: orderData.user_email
+                    })
+                }
+            );
+
+            document.getElementById('paymentLoader').classList.remove('active');
+
+            if (!codRes.ok) {
+                const errData = await codRes.json().catch(() => ({}));
+                throw new Error(errData.error || "Order save failed");
+            }
+
+            const savedOrder = await codRes.json();
+            // Use server-verified totals for WhatsApp message
+            const verifiedTotal    = savedOrder.total;
+            const verifiedSubtotal = savedOrder.subtotal;
+            const verifiedDelivery = savedOrder.deliveryCharge;
+            const verifiedFirst    = savedOrder.isFirstOrder;
 
             // Clear cart
             window.appState.cart = [];
@@ -2687,18 +2738,18 @@ window.submitOrder = async function(event) {
             showToast("🎉 COD Order placed! We'll confirm on WhatsApp.");
 
             // Send confirmation email
-            sendOrderConfirmationEmail(orderData, orderRef?.id);
+            sendOrderConfirmationEmail(orderData, savedOrder.orderId);
 
             // Open orders view so user can download invoice manually
             openOrders();
 
-            // Send WhatsApp confirmation with product images
+            // Send WhatsApp confirmation (use server-verified items/totals)
             const itemLines = items.map(i => {
                 const imgLine = i.image ? `\nImage: ${i.image}` : '';
                 return `• ${i.name} × ${i.qty} ${i.quantityType || 'unit'} = ₹${(i.price * i.qty).toFixed(0)}${imgLine}`;
             }).join('\n');
-            const deliveryNote = isFirstOrder ? '🎉 FREE (First Order!)' : (deliveryCharge === 0 ? 'FREE (Above ₹499)' : `₹${deliveryCharge}`);
-            const waMsg = `🌿 *New Order — Nature's Heal*\n\nName: ${safeName}\nPhone: ${phone}\nEmail: ${email}\n\n*Items:*\n${itemLines}\n\nSubtotal: ₹${total}\nDelivery: ${deliveryNote}\n*Grand Total: ₹${grandTotal}*\nAddress: ${safeAddress}\n\nPayment: Cash on Delivery\n\n_Order placed via naturesheal.web.app_`;
+            const deliveryNote = verifiedFirst ? '🎉 FREE (First Order!)' : (verifiedDelivery === 0 ? 'FREE (Above ₹499)' : `₹${verifiedDelivery}`);
+            const waMsg = `🌿 *New Order — Nature's Heal*\n\nName: ${safeName}\nPhone: ${phone}\nEmail: ${email}\n\n*Items:*\n${itemLines}\n\nSubtotal: ₹${verifiedSubtotal}\nDelivery: ${deliveryNote}\n*Grand Total: ₹${verifiedTotal}*\nAddress: ${safeAddress}\n\nPayment: Cash on Delivery\n\n_Order placed via naturesheal.web.app_`;
             setTimeout(() => {
                 window.open(`https://wa.me/${918919011159}?text=${encodeURIComponent(waMsg)}`, '_blank');
             }, 800);
@@ -2706,7 +2757,8 @@ window.submitOrder = async function(event) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-lock" style="font-size:0.8rem"></i> Submit Order';
         } catch(e) {
-            showToast("Order save failed. Try again.", true);
+            document.getElementById('paymentLoader').classList.remove('active');
+            showToast(e.message || "Order save failed. Try again.", true);
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-motorcycle" style="font-size:0.8rem"></i> Confirm COD Order';
         }
@@ -2725,12 +2777,13 @@ window.submitOrder = async function(event) {
 function payNow(totalAmount, orderData, btn) {
     document.getElementById('paymentLoader').classList.add('active');
 
+    // Step 1: Create Razorpay order server-side (amount is set by server, not client)
     fetch("https://us-central1-naturesheal.cloudfunctions.net/createOrder", {
         method: "POST",
         body: JSON.stringify({ amount: totalAmount }),
         headers: { "Content-Type": "application/json" }
     })
-    .then(res => { if (!res.ok) throw new Error("Server error"); return res.json(); })
+    .then(res => { if (!res.ok) throw new Error("Payment server error. Try again."); return res.json(); })
     .then(order => {
         document.getElementById('paymentLoader').classList.remove('active');
         if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock" style="font-size:0.8rem"></i> Pay Securely Online'; btn.dataset.loading = "false"; }
@@ -2743,16 +2796,55 @@ function payNow(totalAmount, orderData, btn) {
             description: "Herbal Product Order",
             order_id: order.id,
             handler: async function(response) {
+                // Step 2: Send payment response + ONLY item IDs & quantities to server.
+                // Server verifies Razorpay signature, re-fetches prices from Firestore,
+                // recalculates total, and saves the order — client cannot tamper prices.
                 try {
-                    await saveOrderToFirestore({
-                        ...orderData,
-                        payment: {
-                            id: response.razorpay_payment_id,
-                            order_id: response.razorpay_order_id,
-                            signature: response.razorpay_signature,
-                            method: 'razorpay'
+                    document.getElementById('paymentLoader').classList.add('active');
+
+                    const idToken = window.currentUser
+                        ? await window.currentUser.getIdToken()
+                        : null;
+
+                    // Send only IDs + qty (never prices) — server re-fetches from Firestore
+                    const secureItems = orderData.items.map(i => ({
+                        id: String(i.id),
+                        qty: i.qty
+                    }));
+
+                    const verifyRes = await fetch(
+                        "https://us-central1-naturesheal.cloudfunctions.net/verifyAndSaveOrder",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                ...(idToken ? { "Authorization": "Bearer " + idToken } : {})
+                            },
+                            body: JSON.stringify({
+                                // Razorpay payment proof
+                                razorpay_order_id:   response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature:  response.razorpay_signature,
+                                // Order details (prices re-verified server-side)
+                                items: secureItems,
+                                user: orderData.user,
+                                pincode: orderData.pincode,
+                                user_uid: orderData.user_uid,
+                                user_email: orderData.user_email,
+                                isFirstOrder: orderData.isFirstOrder
+                            })
                         }
-                    });
+                    );
+
+                    document.getElementById('paymentLoader').classList.remove('active');
+
+                    if (!verifyRes.ok) {
+                        const errData = await verifyRes.json().catch(() => ({}));
+                        throw new Error(errData.error || "Payment verification failed");
+                    }
+
+                    const savedOrder = await verifyRes.json();
+
                     window.appState.cart = [];
                     persistCart();
                     renderCartItems();
@@ -2760,17 +2852,33 @@ function payNow(totalAmount, orderData, btn) {
                     closeShippingModal();
                     closeCart();
                     showToast("🎉 Payment Successful! Order placed.");
-                    // Send confirmation email
-                    sendOrderConfirmationEmail({ ...orderData, payment: { method: 'Online', id: response.razorpay_payment_id } }, response.razorpay_order_id);
-                    // Open orders so user can download invoice manually
+                    sendOrderConfirmationEmail(
+                        { ...orderData, payment: { method: 'Online', id: response.razorpay_payment_id } },
+                        savedOrder.orderId || response.razorpay_order_id
+                    );
                     openOrders();
+
                 } catch(e) {
-                    showToast("Payment done but order save failed", true);
+                    document.getElementById('paymentLoader').classList.remove('active');
+                    // Payment went through but verification failed — show specific message
+                    if (e.message && e.message.toLowerCase().includes('verif')) {
+                        showToast("⚠️ Payment received but verification failed. Contact us on WhatsApp with payment ID: " + response.razorpay_payment_id, true);
+                    } else {
+                        showToast("Payment done but order save failed. Contact us with ID: " + response.razorpay_payment_id, true);
+                    }
+                }
+            },
+            modal: {
+                ondismiss: function() {
+                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock" style="font-size:0.8rem"></i> Pay Securely Online'; }
                 }
             },
             theme: { color: "#10b981" }
         });
-        rzp.on("payment.failed", () => showToast("Payment failed. Please retry.", true));
+        rzp.on("payment.failed", (failResp) => {
+            showToast("Payment failed: " + (failResp.error?.description || "Please retry."), true);
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-lock" style="font-size:0.8rem"></i> Pay Securely Online'; }
+        });
         rzp.open();
     })
     .catch(err => {
