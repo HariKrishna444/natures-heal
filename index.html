@@ -60,6 +60,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
 
     <style>
+/*
+ * ============================================================
+ *  Nature's Heal — Styles
+ *  Architecture note: this file started as a single 4700-line
+ *  monolith. The logical sections below map to files you would
+ *  create when splitting into a proper build pipeline:
+ *
+ *  styles/
+ *    variables.css     → CSS VARIABLES
+ *    layout.css        → HEADER, MAIN, FOOTER
+ *    components.css    → CARDS, SKELETON, CART, MODALS
+ *    utilities.css     → HELPERS
+ *    animations.css    → KEYFRAMES
+ *    dark-mode.css     → .dark overrides
+ *
+ *  Scripts are similarly sectioned below with === MODULE ===
+ *  markers so each section can be extracted to its own file.
+ * ============================================================
+ */
 /* ===== CSS VARIABLES ===== */
 :root {
     --bg-body: #f0fdf4; --bg-card: #ffffff; --text-main: #0f172a; --text-muted: #334155;
@@ -1946,7 +1965,22 @@ window.adminSaveProduct = async function(productData) {
 };
 </script>
 
-<!-- App Logic -->
+<!-- App Logic
+     ============================================================
+     JS Architecture — logical module boundaries for future split:
+
+     src/
+       store.js          → AppStore (state manager)
+       utils.js          → escapeHTML, safeURL, sanitize, showToast
+       auth.js           → onLoginSuccess, updateUserUI, logout
+       catalog.js        → loadCatalogFromFirestore, getFilteredData
+       render.js         → buildProductCard, renderItems, showCatalogSkeleton
+       modal.js          → openModalById, closeItemModal, modalQtyChange
+       cart.js           → addToCartSimple, updateCartBadge, renderCart
+       order.js          → placeOrder, saveOrderToFirestore
+       chat.js           → sendChat, localChatReply, addChatMessage
+       admin.js          → adminSaveProduct, loadAdminOrders
+     ============================================================ -->
 <script>
 const RAZORPAY_KEY = "rzp_live_Sn8EI3i6AlL3ti";
 const WHATSAPP_NUMBER = "918919011159";
@@ -1958,18 +1992,54 @@ function isAdmin() {
     return window.currentUser && window.currentUser.email === ADMIN_EMAIL;
 }
 
-window.appState = {
-    catalogData: [],
-    catalogCache: null,   // in-memory cache for performance
-    catalogLastFetch: 0,  // timestamp of last fetch
-    favorites: JSON.parse(localStorage.getItem('favorites')) || [],
-    cart: (JSON.parse(localStorage.getItem('cart')) || []).map(i =>
-        typeof i === "number" ? { id: i, qty: 1 } : i
-    ),
-    selectedPayment: 'razorpay',
-    adminUnlockClicks: 0,
-    isAdmin: false
-};
+// ===== APP STORE — replaces window.* globals =====
+// A minimal reactive state container with typed subscriptions.
+// Usage:  AppStore.set('cart', [...]);
+//         AppStore.subscribe('cart', newCart => { ... });
+//         AppStore.get('cart');
+const AppStore = (() => {
+    const _state = {
+        catalogData: [],
+        catalogCache: null,
+        catalogLastFetch: 0,
+        favorites: (() => {
+            try { return JSON.parse(localStorage.getItem('favorites')) || []; } catch { return []; }
+        })(),
+        cart: (() => {
+            try {
+                return (JSON.parse(localStorage.getItem('cart')) || []).map(i =>
+                    typeof i === 'number' ? { id: i, qty: 1 } : i
+                );
+            } catch { return []; }
+        })(),
+        selectedPayment: 'razorpay',
+        adminUnlockClicks: 0,
+        isAdmin: false,
+    };
+    const _listeners = {};
+
+    return {
+        get(key) { return _state[key]; },
+        set(key, value) {
+            _state[key] = value;
+            (_listeners[key] || []).forEach(fn => { try { fn(value); } catch(e) { console.error('AppStore listener error', key, e); } });
+        },
+        update(key, fn) { this.set(key, fn(_state[key])); },
+        subscribe(key, fn) {
+            if (!_listeners[key]) _listeners[key] = [];
+            _listeners[key].push(fn);
+            return () => { _listeners[key] = _listeners[key].filter(f => f !== fn); };
+        },
+    };
+})();
+
+// Legacy shim — keeps existing code working while we migrate
+// New code should use AppStore directly; old window.appState references
+// are proxied here so nothing breaks during the transition.
+window.appState = new Proxy({}, {
+    get(_, key) { return AppStore.get(key); },
+    set(_, key, value) { AppStore.set(key, value); return true; },
+});
 
 // ===== UTILITY =====
 const escapeHTML = str => String(str || "").replace(/[&<>"']/g, t =>
@@ -2194,78 +2264,169 @@ window.autoFillQuantityType = function() {
     else if (type === 'flower') { qt.value = 'bunch'; minQty.value = '1'; step.value = '1'; }
 };
 
-// Random ratings for social proof — works with both numeric and Firestore string IDs
-function getStarRating(id) {
-    const ratings = [4.7, 4.8, 4.9, 5.0, 4.6, 4.8, 4.7, 5.0, 4.9, 4.7];
-    // Create a stable numeric hash from the ID
-    const numId = typeof id === 'number' ? id : String(id).split('').reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + 1), 0);
-    const r = ratings[Math.abs(numId) % ratings.length];
-    const count = 8 + (Math.abs(numId) * 7) % 92;
-    return { r, count };
+// Returns real rating from product data, or null if none exists.
+// Stars are only shown when a product carries an explicit `rating` field
+// (set by the admin) — we never fabricate ratings as that misleads customers.
+function getStarRating(item) {
+    const r = parseFloat(item?.rating);
+    const count = parseInt(item?.reviewCount, 10);
+    if (!r || r < 1 || r > 5) return null;
+    return { r: Math.round(r * 10) / 10, count: count || 0 };
+}
+
+// ===== DOM CARD TEMPLATE — no innerHTML string concatenation =====
+// Builds a product card using DOM APIs, which are:
+// 1. Safer (no XSS via template literal concatenation)
+// 2. Easier to maintain (each element is explicit)
+// 3. Allows direct event-listener attachment (no inline onclick strings)
+function el(tag, cls, attrs) {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    if (attrs) Object.entries(attrs).forEach(([k, v]) => {
+        if (k === 'text') node.textContent = v;
+        else if (k === 'html') node.innerHTML = v;   // only for icon markup
+        else node.setAttribute(k, v);
+    });
+    return node;
+}
+
+function buildProductCard(item, idx) {
+    const isFav       = AppStore.get('favorites').map(String).includes(String(item.id));
+    const inCart      = AppStore.get('cart').some(c => c.id == item.id);
+    const isOutOfStock = item.stock === '0' || item.stock === 'out';
+    const isBestseller = item.bestseller === '1' || item.bestseller === 'true';
+    const isUrgent    = item.stock && parseInt(item.stock) <= 5 && parseInt(item.stock) > 0;
+    const limitedOffer = item.limited_offer === 'true' || item.limited_offer === '1';
+    const starData    = getStarRating(item);
+
+    // Root card
+    const card = el('div', [
+        'product-card',
+        isOutOfStock ? 'out-of-stock' : '',
+        isBestseller ? 'is-bestseller' : '',
+        isUrgent     ? 'show-urgency'  : '',
+    ].filter(Boolean).join(' '));
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => window.openModalById(item.id));
+
+    // --- Image wrap ---
+    const imgWrap = el('div', 'card-img-wrap');
+    const img = el('img', null, { src: safeURL(item.image), loading: 'lazy', alt: item.name || '' });
+    imgWrap.appendChild(img);
+
+    if (limitedOffer && !isOutOfStock) {
+        imgWrap.appendChild(el('div', 'limited-offer-badge', { html: '🔥 Limited Offer' }));
+    } else {
+        const typeBadge = el('div', 'card-type-badge');
+        typeBadge.textContent = String(item.type || 'botanical').replace('_', ' ');
+        imgWrap.appendChild(typeBadge);
+    }
+    imgWrap.appendChild(el('div', 'card-bestseller', { html: '🏆 Best Seller' }));
+    imgWrap.appendChild(el('div', 'stock-badge', { text: 'Out of Stock' }));
+    imgWrap.appendChild(el('div', 'urgency-tag', { text: 'Only ' + item.stock + ' left!' }));
+
+    const actions = el('div', 'card-actions');
+    const favBtn = el('button', 'card-action-btn', { title: 'Wishlist' });
+    const favIcon = el('i', (isFav ? 'fas' : 'far') + ' fa-heart');
+    favIcon.style.color = isFav ? '#f43f5e' : '#94a3b8';
+    favBtn.appendChild(favIcon);
+    favBtn.addEventListener('click', e => { e.stopPropagation(); window.toggleFav(e, item.id); });
+    actions.appendChild(favBtn);
+
+    if (!isOutOfStock) {
+        const cartBtn = el('button', 'card-action-btn', { title: 'Add to cart' });
+        const cartIcon = el('i', 'fas ' + (inCart ? 'fa-shopping-cart' : 'fa-cart-plus'));
+        cartIcon.style.color = inCart ? '#059669' : '#94a3b8';
+        cartBtn.appendChild(cartIcon);
+        cartBtn.addEventListener('click', e => { e.stopPropagation(); window.addToCartSimple(item.id); });
+        actions.appendChild(cartBtn);
+    }
+    imgWrap.appendChild(actions);
+    card.appendChild(imgWrap);
+
+    // --- Card body ---
+    const body = el('div', 'card-body');
+    body.appendChild(el('div', 'card-name', { text: item.name || '' }));
+    body.appendChild(el('div', 'card-scientific', { text: item.scientific || '' }));
+    body.appendChild(el('div', 'card-desc', { text: item.description || '' }));
+
+    const footer = el('div', 'card-footer');
+    const price = el('span', 'card-price');
+    price.textContent = '₹' + (item.price || 0).toFixed(item.quantityType === 'g' ? 2 : 0);
+    const unit = el('span', null, { text: '/' + (item.quantityType === 'piece' ? 'pc' : (item.quantityType || 'unit')) });
+    unit.style.cssText = 'font-size:0.6rem;font-weight:500;color:var(--text-muted)';
+    price.appendChild(unit);
+    footer.appendChild(price);
+
+    // Only show stars when real rating data exists — never fabricate
+    if (starData) {
+        const starsStr = '★'.repeat(Math.floor(starData.r)) + (starData.r % 1 ? '☆' : '');
+        const starsEl = el('span', 'card-stars');
+        starsEl.textContent = starsStr + ' ';
+        const cnt = el('span', null, { text: '(' + starData.count + ')' });
+        cnt.style.cssText = 'color:var(--text-muted);font-size:0.6rem';
+        starsEl.appendChild(cnt);
+        footer.appendChild(starsEl);
+    }
+    body.appendChild(footer);
+
+    if (isBestseller) {
+        const bsLabel = el('div', null, { text: '⭐ Best Seller' });
+        bsLabel.style.cssText = 'font-size:0.62rem;font-weight:700;color:#d97706;margin-top:0.2rem';
+        body.appendChild(bsLabel);
+    }
+    if (isOutOfStock) {
+        const notifyBtn = el('button', 'card-notify-btn');
+        notifyBtn.innerHTML = '<i class="fas fa-bell"></i> Notify Me When Available';
+        notifyBtn.addEventListener('click', e => { e.stopPropagation(); window.notifyMe(item.name); });
+        body.appendChild(notifyBtn);
+    }
+    card.appendChild(body);
+    return card;
+}
+
+// Show skeleton loading cards while catalog is being fetched
+function showCatalogSkeleton(count = 8) {
+    const container = document.getElementById('gridContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+        const sk = document.createElement('div');
+        sk.className = 'skeleton';
+        sk.setAttribute('aria-hidden', 'true');
+        container.appendChild(sk);
+    }
+    const countDisplay = document.getElementById('itemCount');
+    if (countDisplay) countDisplay.textContent = '—';
 }
 
 function renderItems(items) {
     const container = document.getElementById('gridContainer');
     const countDisplay = document.getElementById('itemCount');
     if (!container) return;
-    if (window.appState.catalogData.length === 0) return;
+
+    // Catalog not yet loaded — skeletons are already in place from page load;
+    // do nothing and let loadCatalogFromFirestore call us again when ready.
+    if (AppStore.get('catalogData').length === 0) return;
 
     container.innerHTML = '';
     if (countDisplay) countDisplay.textContent = items.length;
 
     if (!items.length) {
-        container.innerHTML = `<div class="empty-state"><i class="fas fa-seedling"></i><p>No products found.</p></div>`;
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.style.gridColumn = '1 / -1';
+        empty.innerHTML = '<i class="fas fa-seedling"></i>';
+        const msg = document.createElement('p');
+        msg.textContent = 'No products found.';
+        empty.appendChild(msg);
+        container.appendChild(empty);
         return;
     }
 
+    // --- DOM-based templating (no innerHTML string concatenation) ---
     items.forEach((item, idx) => {
-        const isFav = window.appState.favorites.map(String).includes(String(item.id));
-        const inCart = window.appState.cart.some(c => c.id == item.id);
-        const isOutOfStock = item.stock === '0' || item.stock === 'out';
-        const isBestseller = item.bestseller === '1' || item.bestseller === 'true';
-        const isUrgent = item.stock && parseInt(item.stock) <= 5 && parseInt(item.stock) > 0;
-        const { r, count } = getStarRating(item.id);
-        const stars = '★'.repeat(Math.floor(r)) + (r % 1 ? '☆' : '');
-
-        const cardClasses = [
-            'product-card',
-            isOutOfStock ? 'out-of-stock' : '',
-            isBestseller ? 'is-bestseller' : '',
-            isUrgent ? 'show-urgency' : ''
-        ].join(' ');
-
-        const limitedOffer = item.limited_offer === 'true' || item.limited_offer === '1' || (idx % 5 === 0 && !isOutOfStock);
-        const isBestSellerPricing = isBestseller;
-
-        container.insertAdjacentHTML('beforeend', `
-        <div class="${cardClasses}" onclick="openModalById('${item.id}')" style="cursor:pointer">
-            <div class="card-img-wrap">
-                <img src="${safeURL(item.image)}" loading="lazy" alt="${escapeHTML(item.name)}">
-                ${limitedOffer && !isOutOfStock ? `<div class="limited-offer-badge">🔥 Limited Offer</div>` : `<div class="card-type-badge">${String(item.type || "botanical").replace('_', ' ')}</div>`}
-                <div class="card-bestseller">🏆 Best Seller</div>
-                <div class="stock-badge">Out of Stock</div>
-                <div class="urgency-tag">Only ${item.stock} left!</div>
-                <div class="card-actions">
-                    <button class="card-action-btn" onclick="event.stopPropagation();toggleFav(event,${item.id})" title="Wishlist">
-                        <i class="${isFav ? 'fas text-rose-500' : 'far'} fa-heart" style="color:${isFav ? '#f43f5e' : '#94a3b8'}"></i>
-                    </button>
-                    ${!isOutOfStock ? `<button class="card-action-btn" onclick="event.stopPropagation();addToCartSimple('${item.id}')" title="Add to cart">
-                        <i class="fas ${inCart ? 'fa-shopping-cart' : 'fa-cart-plus'}" style="color:${inCart ? '#059669' : '#94a3b8'}"></i>
-                    </button>` : ''}
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="card-name">${escapeHTML(item.name)}</div>
-                <div class="card-scientific">${escapeHTML(item.scientific || '')}</div>
-                <div class="card-desc">${escapeHTML(item.description || '')}</div>
-                <div class="card-footer">
-                    <span class="card-price">₹${(item.price || 0).toFixed(item.quantityType === 'g' ? 2 : 0)}<span style="font-size:0.6rem;font-weight:500;color:var(--text-muted)">/${item.quantityType === 'piece' ? 'pc' : (item.quantityType || 'unit')}</span></span>
-                    <span class="card-stars">${stars} <span style="color:var(--text-muted);font-size:0.6rem">(${count})</span></span>
-                </div>
-                ${isBestSellerPricing ? `<div style="font-size:0.62rem;font-weight:700;color:#d97706;margin-top:0.2rem">⭐ Best Seller</div>` : ''}
-                ${isOutOfStock ? `<button class="card-notify-btn" onclick="event.stopPropagation();notifyMe('${escapeHTML(item.name)}')"><i class="fas fa-bell"></i> Notify Me When Available</button>` : ''}
-            </div>
-        </div>`);
+        container.appendChild(buildProductCard(item, idx));
     });
 }
 
@@ -2274,8 +2435,8 @@ window.openModalById = function(id) {
     const item = window.appState.catalogData.find(i => String(i.id) === String(id));
     if (!item) return;
     const isOutOfStock = item.stock === '0' || item.stock === 'out';
-    const { r, count } = getStarRating(item.id);
-    const stars = '★'.repeat(Math.floor(r)) + (r % 1 ? '☆' : '');
+    const starData = getStarRating(item);
+    const starsStr = starData ? '★'.repeat(Math.floor(starData.r)) + (starData.r % 1 ? '☆' : '') : '';
 
     document.getElementById('itemModalContent').innerHTML = `
     <div class="item-modal-img">
@@ -2293,10 +2454,10 @@ window.openModalById = function(id) {
                 <div style="font-size:0.65rem;color:var(--text-muted);text-align:right">per ${item.quantityType || 'unit'}</div>
             </div>
         </div>
-        <div class="item-modal-ratings">
-            <span class="rating-stars">${stars}</span>
-            <span class="rating-count">${r} (${count} reviews)</span>
-        </div>
+        ${starData ? `<div class="item-modal-ratings">
+            <span class="rating-stars">${starsStr}</span>
+            <span class="rating-count">${starData.r} (${starData.count} reviews)</span>
+        </div>` : ''}
         <div style="display:flex;align-items:center;gap:0.75rem;margin:0.75rem 0;padding:0.65rem;background:rgba(255,255,255,0.12);border-radius:0.75rem;border:1px solid rgba(255,255,255,0.2)">
             <span style="font-size:0.78rem;color:rgba(255,255,255,0.85);font-weight:600">Qty:</span>
             <button onclick="modalQtyChange('${item.id}', -1)" style="width:1.8rem;height:1.8rem;border-radius:0.4rem;background:#fee2e2;color:#dc2626;font-weight:700;font-size:1rem;border:none;cursor:pointer">−</button>
@@ -4674,7 +4835,8 @@ window.onload = function() {
     }
     // Restore filter
     filterItems(localStorage.getItem('selectedFilter') || 'all');
-    // Load catalog from Firestore
+    // Show skeletons immediately so first-visit feels fast, then load
+    showCatalogSkeleton();
     loadCatalogFromFirestore();
     // Auth state
     updateUserUI(null);
