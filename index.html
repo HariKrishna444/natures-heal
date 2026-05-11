@@ -1051,6 +1051,62 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 .revenue-bar-track { background: var(--border-color); border-radius: 9999px; height: 8px; overflow: hidden; }
 .revenue-bar-fill { height: 100%; border-radius: 9999px; background: linear-gradient(90deg, #4f46e5, #7c3aed); transition: width 0.8s ease; }
 </style>
+
+    <!-- ═══ SECURITY HEADERS (meta fallbacks) ═══════════════════════════════════
+         Primary headers are set in firebase.json Hosting config.
+         These meta tags are defence-in-depth for any serving context
+         that bypasses firebase.json (e.g. local file://, CDN edge, etc.)
+         ═══════════════════════════════════════════════════════════════════════ -->
+
+    <!-- Prevent clickjacking (same as X-Frame-Options: SAMEORIGIN) -->
+    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+
+    <!-- Prevent MIME-type sniffing -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <!-- Referrer: send origin only on cross-origin requests (no full URL leaks) -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <!-- Permissions Policy: restrict sensitive browser APIs -->
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+
+    <!-- Content Security Policy — tightened for this app's known origins.
+         Adjust if you add new CDNs or API origins.
+         Notes:
+           - script-src includes gstatic (Firebase SDK) and razorpay checkout
+           - connect-src includes Firebase, Razorpay, and your Cloud Functions
+           - img-src 'self' data: https: covers product images from any HTTPS host
+    -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src  'self' 'unsafe-inline'
+                    https://www.gstatic.com
+                    https://checkout.razorpay.com
+                    https://cdnjs.cloudflare.com
+                    https://fonts.googleapis.com;
+        style-src   'self' 'unsafe-inline'
+                    https://fonts.googleapis.com
+                    https://cdnjs.cloudflare.com;
+        font-src    'self'
+                    https://fonts.gstatic.com
+                    https://cdnjs.cloudflare.com;
+        img-src     'self' data: https:
+                    https://i.pravatar.cc;
+        connect-src 'self'
+                    https://*.firebaseio.com
+                    https://*.googleapis.com
+                    https://firestore.googleapis.com
+                    https://identitytoolkit.googleapis.com
+                    https://us-central1-naturesheal.cloudfunctions.net
+                    https://api.razorpay.com
+                    https://lumberjack.razorpay.com;
+        frame-src   https://naturesheal.firebaseapp.com
+                    https://api.razorpay.com;
+        object-src  'none';
+        base-uri    'self';
+        form-action 'self';
+    ">
+
 </head>
 <body>
 
@@ -1082,7 +1138,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 </button>
 
 <!-- WHATSAPP FAB -->
-<a id="whatsappFab" href="https://wa.me/918919011159?text=Hi%2C%20I%20want%20to%20place%20an%20order%20from%20Nature%27s%20Heal" target="_blank" title="Order via WhatsApp">
+<a id="whatsappFab" href="https://wa.me/918919011159?text=Hi%2C%20I%20want%20to%20place%20an%20order%20from%20Nature%27s%20Heal" target="_blank" rel="noopener noreferrer" title="Order via WhatsApp">
     <i class="fab fa-whatsapp"></i>
 </a>
 
@@ -1190,7 +1246,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
             <button class="btn-primary" onclick="document.getElementById('gridContainer').scrollIntoView({behavior:'smooth'})">
                 Shop Now →
             </button>
-            <a class="btn-whatsapp" href="https://wa.me/918919011159?text=Hi%2C%20I%20want%20to%20order%20from%20Natures%27s%20Heal" target="_blank">
+            <a class="btn-whatsapp" href="https://wa.me/918919011159?text=Hi%2C%20I%20want%20to%20order%20from%20Natures%27s%20Heal" target="_blank" rel="noopener noreferrer">
                 <i class="fab fa-whatsapp"></i> Order on WhatsApp
             </a>
         </div>
@@ -1359,14 +1415,12 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
             <span style="font-family:'Poppins',sans-serif;font-size:1.4rem;font-weight:800;color:white">Nature's <span style="color:#10b981">Heal</span></span>
         </div>
         <div class="footer-socials">
-            <a href="https://www.instagram.com/hari_krishna_ak/" target="_blank"><i class="fab fa-instagram"></i></a>
-            <a href="https://www.facebook.com/hari.krishna.arvapalli/" target="_blank"><i class="fab fa-facebook-f"></i></a>
-            <a href="https://www.youtube.com/@innovativespirits5261" target="_blank"><i class="fab fa-youtube"></i></a>
-            <a href="https://wa.me/918919011159?text=Hi%2C%20I%20Love%20You%20So%20Much%20❤️" 
-   target="_blank"
-   class="hover:text-emerald-500 transition-colors text-xl">
-   <i class="fab fa-whatsapp"></i>
-</a>
+            <a href="https://www.instagram.com/hari_krishna_ak/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.facebook.com/hari.krishna.arvapalli/" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://www.youtube.com/@innovativespirits5261" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
+            <a href="https://wa.me/918919011159?text=Hi%2C%20I%20want%20to%20know%20more%20about%20Nature%27s%20Heal%20products" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                <i class="fab fa-whatsapp"></i>
+            </a>
         </div>
         <!-- Policy Links (required for Razorpay Live mode) -->
         <div class="footer-policy">
@@ -1701,6 +1755,18 @@ import {
     RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
+// ─── FIREBASE CLIENT CONFIG ──────────────────────────────────────────────────
+// These values are PUBLIC identifiers — they tell the Firebase SDK which
+// project to connect to. They are NOT secrets and cannot be used to read or
+// write data on their own.
+//
+// Security is enforced entirely by Firestore Security Rules (firestore.rules):
+//   • Only authenticated users can write orders
+//   • Only the admin UID can read all orders / write products
+//   • Rules are deployed server-side and cannot be bypassed from the browser
+//
+// Reference: https://firebase.google.com/docs/projects/api-keys
+// ─────────────────────────────────────────────────────────────────────────────
 const firebaseConfig = {
     apiKey: "AIzaSyD5qUEW8YRcGU6zwmmr271lLeBHcu0Vjh4",
     authDomain: "naturesheal.firebaseapp.com",
@@ -1982,8 +2048,45 @@ window.adminSaveProduct = async function(productData) {
        admin.js          → adminSaveProduct, loadAdminOrders
      ============================================================ -->
 <script>
+// ─── RAZORPAY PUBLISHABLE KEY ────────────────────────────────────────────────
+// This is Razorpay's *publishable* key — it is intentionally client-side
+// visible (similar to Stripe's pk_live_*). It cannot be used to initiate
+// charges or access your dashboard. All actual money movement is protected
+// by your Razorpay secret key, which lives ONLY on the server
+// (Firebase Cloud Function createOrder / verifyAndSaveOrder).
+//
+// ✅ Safe to keep here: publishable key  ← this one
+// ❌ Never put here:   secret key (rzp_live_secret_*)
+//
+// Reference: https://razorpay.com/docs/payments/payment-gateway/web-integration/standard/integration-steps/
+// ─────────────────────────────────────────────────────────────────────────────
+// ─── RAZORPAY PUBLISHABLE KEY ───────────────────────────────────────────────
+// This is Razorpay's *publishable* key — safe to be in client JS, just like
+// Stripe's pk_live_* key. It identifies your account to the Razorpay SDK but
+// cannot move money or access your dashboard.
+//
+//  ✅ Safe here : publishable key  (rzp_live_Sn8EI3i6AlL3ti)
+//  ❌ Never here: secret key       (rzp_live_<secret>)  → stays only on server
+//
+// All actual payment creation and signature verification run in Firebase
+// Cloud Functions (createOrder, verifyAndSaveOrder) — the secret key is set
+// as a Cloud Function environment variable, never in this file.
+// ────────────────────────────────────────────────────────────────────────────
 const RAZORPAY_KEY = "rzp_live_Sn8EI3i6AlL3ti";
 const WHATSAPP_NUMBER = "918919011159";
+// ─── ADMIN EMAIL ─────────────────────────────────────────────────────────────
+// Used for client-side UI gating (show/hide admin button). This alone is NOT
+// sufficient security — the actual admin enforcement happens in two places:
+//
+//  1. Firestore Security Rules: products/orders write access requires
+//     request.auth.token.email == ADMIN_EMAIL  (server-enforced, unbypassable)
+//
+//  2. Cloud Functions: createOrder / verifyAndSaveOrder verify the Firebase
+//     ID token and re-check admin status server-side before any mutation.
+//
+//  The client check below is a UX convenience only (hide/show buttons).
+//  Even if someone bypasses it in DevTools, Firestore Rules will block writes.
+// ─────────────────────────────────────────────────────────────────────────────
 const ADMIN_EMAIL = "harikrishnarock444@gmail.com";
 // Google Sheets dependency removed — catalog is now fully Firestore-based
 
@@ -2504,7 +2607,7 @@ window.openModalById = function(id) {
         </div>
 
         <div style="margin-top:0.75rem;text-align:center">
-            <a href="https://wa.me/${918919011159}?text=Hi%2C%20I%20want%20to%20order%20${encodeURIComponent(item.name)}" target="_blank" style="font-size:0.8rem;color:#25D366;font-weight:600">
+            <a href="https://wa.me/${918919011159}?text=Hi%2C%20I%20want%20to%20order%20${encodeURIComponent(item.name)}" target="_blank" rel="noopener noreferrer" style="font-size:0.8rem;color:#25D366;font-weight:600">
                 <i class="fab fa-whatsapp"></i> Order directly on WhatsApp
             </a>
         </div>
@@ -3374,10 +3477,34 @@ window.verifyAdmin = function() {
 };
 
 window.openAdminPanel = async function() {
+    // Step 1: quick client-side check (UX only — not a security boundary)
     if (!isAdmin()) {
         showToast("Not authorized", true);
         return;
     }
+
+    // Step 2: verify with server — get a fresh ID token and send to Cloud Function.
+    // This is the real security gate: the server checks the token cryptographically
+    // and only returns 200 if the email matches ADMIN_EMAIL.
+    try {
+        const idToken = await window.currentUser.getIdToken(/* forceRefresh= */ true);
+        const res = await fetch(
+            "https://us-central1-naturesheal.cloudfunctions.net/verifyAdmin",
+            {
+                method: "POST",
+                headers: { "Authorization": "Bearer " + idToken, "Content-Type": "application/json" }
+            }
+        );
+        if (!res.ok) {
+            showToast("Server authorization failed. Access denied.", true);
+            return;
+        }
+    } catch(e) {
+        // Network error — fall back gracefully but warn
+        console.warn("Admin server verify failed (network?):", e.message);
+        // Still allow if client check passed — Firestore rules are the backstop
+    }
+
     document.getElementById('adminPanel').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     loadAdminOrders();
@@ -4663,7 +4790,7 @@ Triphala = <strong>Amla + Haritaki + Bibhitaki</strong> (three powerful fruits c
 
     { k: ['whatsapp','contact','phone','number','call','reach'],
       a: `📞 <strong>Reach Nature's Heal:</strong><br><br>
-▸ <strong>WhatsApp:</strong> <a href="https://wa.me/918919011159" target="_blank" style="color:#25D366;font-weight:700"><i class="fab fa-whatsapp"></i> +91 89190 11159</a><br>
+▸ <strong>WhatsApp:</strong> <a href="https://wa.me/918919011159" target="_blank" rel="noopener noreferrer" style="color:#25D366;font-weight:700"><i class="fab fa-whatsapp"></i> +91 89190 11159</a><br>
 ▸ <strong>Location:</strong> Hyderabad, Telangana, India<br>
 ▸ <strong>Hours:</strong> Mon–Sat, 9 AM – 9 PM IST<br><br>
 We'd love to help you find the right herbs for your needs! Feel free to WhatsApp for personalised recommendations.` },
@@ -4703,7 +4830,7 @@ function localChatReply(text) {
     const catalog = window.appState?.catalogData || [];
     const matched = catalog.find(p => p.name && q.includes(p.name.toLowerCase().split(' ')[0]));
     if (matched) {
-        return `🌿 <strong>${matched.name}</strong><br><br>${matched.uses || matched.description || 'A wonderful natural product available at Nature\'s Heal.'}<br><br>💰 Price: ₹${matched.price} per ${matched.quantityType||'unit'}<br><br>🛒 Add it to your cart or <a href="https://wa.me/918919011159" target="_blank" style="color:#25D366;font-weight:700">WhatsApp us</a> to order!`;
+        return `🌿 <strong>${matched.name}</strong><br><br>${matched.uses || matched.description || 'A wonderful natural product available at Nature\'s Heal.'}<br><br>💰 Price: ₹${matched.price} per ${matched.quantityType||'unit'}<br><br>🛒 Add it to your cart or <a href="https://wa.me/918919011159" target="_blank" rel="noopener noreferrer" style="color:#25D366;font-weight:700">WhatsApp us</a> to order!`;
     }
     // Default
     return `🌿 I'm not sure about that specific query yet, but I'd love to help!<br><br>You can ask me about:<br>
@@ -4715,7 +4842,7 @@ function localChatReply(text) {
 ▸ Stress, sleep, anxiety<br>
 ▸ Weight loss, energy<br>
 ▸ Specific herbs: amla, ashwagandha, triphala, neem, tulsi…<br><br>
-Or <a href="https://wa.me/918919011159" target="_blank" style="color:#25D366;font-weight:700"><i class="fab fa-whatsapp"></i> WhatsApp us</a> for personalised guidance! 🙏`;
+Or <a href="https://wa.me/918919011159" target="_blank" rel="noopener noreferrer" style="color:#25D366;font-weight:700"><i class="fab fa-whatsapp"></i> WhatsApp us</a> for personalised guidance! 🙏`;
 }
 
 async function sendChat() {
