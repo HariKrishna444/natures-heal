@@ -149,13 +149,19 @@ header {
 .logout-btn { color: rgba(255,255,255,0.7); font-size: 0.7rem; font-weight: 700; margin-left: 0.25rem; }
 .logout-btn:hover { color: white; }
 
-.mobile-filter select {
-    width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 0.75rem; padding: 0.6rem 1rem; color: white; font-weight: 600;
-    outline: none; font-size: 0.875rem;
+.mobile-filter {
+    width: 100%; display: flex; gap: 0.4rem; overflow-x: auto; padding: 0.25rem 0 0.1rem;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
 }
-.mobile-filter select option { background: #064e3b; }
-.mobile-filter { width: 100%; }
+.mobile-filter::-webkit-scrollbar { display: none; }
+.mf-chip {
+    flex-shrink: 0; padding: 0.3rem 0.75rem; border-radius: 9999px;
+    background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.85); font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.mf-chip.active { background: white; color: #065f46; border-color: white; }
+.mf-chip:hover { background: rgba(255,255,255,0.25); }
 @media(min-width:768px){ .mobile-filter { display: none; } }
 
 /* ===== TRUST BAR ===== */
@@ -1035,7 +1041,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
     <span class="sep">|</span>
     <span>🚚 Free Delivery on 1st Order & Above ₹499</span>
     <span class="sep">|</span>
-    <span>💰 Cash on Delivery Available</span>
+    <span>💰 COD Available Above ₹499 · Min Order ₹150</span>
     <span class="sep">|</span>
     <span>⭐ 500+ Happy Customers</span>
 </div>
@@ -1138,19 +1144,17 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
             </button>
         </div>
 
-        <div class="mobile-filter">
-            <select id="mobileFilter" onchange="handleMobileFilter(this.value)">
-                <option value="all">🌿 All Catalog</option>
-                <option value="leaf">🍃 Leaves</option>
-                <option value="fruit">🍎 Fruits</option>
-                <option value="wild_fruit">🫐 Wild Fruits</option>
-                <option value="seed">🌰 Seeds</option>
-                <option value="vegetable">🥦 Vegetables</option>
-                <option value="dry_fruit">🥜 Dry Fruits</option>
-                <option value="flower">🌸 Flowers</option>
-                <option value="favorites">⭐ Collection</option>
-                <option value="orders">📦 My Orders</option>
-            </select>
+        <div class="mobile-filter" id="mobileFilterChips">
+            <button class="mf-chip active" data-filter="all" onclick="handleMobileFilterChip('all',this)">🌿 All</button>
+            <button class="mf-chip" data-filter="leaf" onclick="handleMobileFilterChip('leaf',this)">🍃 Leaves</button>
+            <button class="mf-chip" data-filter="fruit" onclick="handleMobileFilterChip('fruit',this)">🍎 Fruits</button>
+            <button class="mf-chip" data-filter="wild_fruit" onclick="handleMobileFilterChip('wild_fruit',this)">🫐 Wild</button>
+            <button class="mf-chip" data-filter="seed" onclick="handleMobileFilterChip('seed',this)">🌱 Seeds</button>
+            <button class="mf-chip" data-filter="vegetable" onclick="handleMobileFilterChip('vegetable',this)">🥦 Veg</button>
+            <button class="mf-chip" data-filter="dry_fruit" onclick="handleMobileFilterChip('dry_fruit',this)">🥜 Dry</button>
+            <button class="mf-chip" data-filter="flower" onclick="handleMobileFilterChip('flower',this)">🌸 Flowers</button>
+            <button class="mf-chip" data-filter="favorites" onclick="handleMobileFilterChip('favorites',this)">⭐ Saved</button>
+            <button class="mf-chip" data-filter="orders" onclick="handleMobileFilterChip('orders',this)">📦 Orders</button>
         </div>
     </div>
 </header>
@@ -1400,7 +1404,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
                     </div>
                     <div class="cod-note" id="codNote">
                         <i class="fas fa-info-circle"></i>
-                        Pay when your order arrives. We'll confirm your order via WhatsApp within 2 hours.
+                        Pay when your order arrives. We'll confirm your order via WhatsApp within 2 hours. COD available on orders above ₹499.
                     </div>
                 </div>
             </div>
@@ -1944,7 +1948,7 @@ window.adminSaveProduct = async function(productData) {
 
 <!-- App Logic -->
 <script>
-const RAZORPAY_KEY = "rzp_live_SmUAnlBSzeX4fw";
+const RAZORPAY_KEY = "rzp_live_Sn8EI3i6AlL3ti";
 const WHATSAPP_NUMBER = "918919011159";
 const ADMIN_EMAIL = "harikrishnarock444@gmail.com";
 // Google Sheets dependency removed — catalog is now fully Firestore-based
@@ -2591,6 +2595,33 @@ function openShippingModal() {
     }
     document.getElementById('shippingModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+
+    // Dynamically disable COD if cart total < ₹499
+    const cartItems = window.appState.cart.map(c => {
+        const p = window.appState.catalogData.find(i => i.id == c.id);
+        return p ? p.price * c.qty : 0;
+    });
+    const cartTotal = cartItems.reduce((s, v) => s + v, 0);
+    const codOpt = document.getElementById('payOptCOD');
+    if (codOpt) {
+        if (cartTotal < 499) {
+            codOpt.style.opacity = '0.45';
+            codOpt.style.cursor = 'not-allowed';
+            codOpt.title = 'COD available only on orders above ₹499';
+            // If COD was previously selected, reset to razorpay
+            if (window.appState.selectedPayment === 'cod') {
+                window.appState.selectedPayment = 'razorpay';
+                document.getElementById('payOptRazorpay').classList.add('selected');
+                codOpt.classList.remove('selected');
+                document.getElementById('codNote').style.display = 'none';
+                document.getElementById('submitOrderBtn').innerHTML = '<i class="fas fa-lock" style="font-size:0.8rem"></i> Pay Securely Online';
+            }
+        } else {
+            codOpt.style.opacity = '';
+            codOpt.style.cursor = '';
+            codOpt.title = '';
+        }
+    }
 }
 function closeShippingModal() {
     document.getElementById('shippingModal').classList.add('hidden');
@@ -2600,6 +2631,18 @@ window.closeShippingModal = closeShippingModal;
 
 // Payment selection
 window.selectPayment = function(type) {
+    // Check cart total for COD eligibility
+    const items = window.appState.cart.map(c => {
+        const p = window.appState.catalogData.find(i => i.id == c.id);
+        return p ? p.price * c.qty : 0;
+    });
+    const total = items.reduce((s, v) => s + v, 0);
+
+    if (type === 'cod' && total < 499) {
+        showToast("COD is only available for orders above ₹499. Please choose Online Pay.", true);
+        return;
+    }
+
     window.appState.selectedPayment = type;
     document.getElementById('payOptRazorpay').classList.toggle('selected', type === 'razorpay');
     document.getElementById('payOptCOD').classList.toggle('selected', type === 'cod');
@@ -2650,6 +2693,13 @@ window.submitOrder = async function(event) {
     // Minimum order check: ₹150
     if (total < 150) {
         return showToast("Minimum order value is ₹150. Please add more items.", true);
+    }
+
+    // COD not available below ₹499
+    if (window.appState.selectedPayment === 'cod' && total < 499) {
+        showToast("COD is only available for orders above ₹499. Please choose Online Pay.", true);
+        window.selectPayment('razorpay');
+        return;
     }
 
     // Count user's previous orders for first-order-free delivery logic
@@ -2925,12 +2975,14 @@ window.filterItems = function(type) {
     document.querySelectorAll('.nav-links button[data-filter]').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.filter === type);
     });
-    const mf = document.getElementById('mobileFilter');
-    if (mf) mf.value = type;
+    // Sync mobile chips
+    document.querySelectorAll('.mf-chip[data-filter]').forEach(chip => {
+        chip.classList.toggle('active', chip.dataset.filter === type);
+    });
     renderItems(getFilteredData());
 };
 
-window.handleMobileFilter = function(val) {
+window.handleMobileFilterChip = function(val, el) {
     if (val === 'orders') { openOrders(); return; }
     filterItems(val);
 };
@@ -3618,12 +3670,17 @@ window.resendOTP = async function() {
     }
 };
 window.cancelOrder = async function(orderId, btn) {
-    if (!confirm("Cancel this order? This action cannot be undone.")) return;
+    const order = window._orderCache && window._orderCache[orderId];
+    const isOnline = order && order.payment?.method !== 'COD';
+    const refundMsg = isOnline
+        ? '\n\nYour refund (if eligible) will be credited to your original payment account within 5–7 business days.'
+        : '\n\nFor COD orders, no payment was taken — no refund needed.';
+    if (!confirm("Cancel this order? This action cannot be undone." + refundMsg)) return;
     btn.disabled = true;
     btn.textContent = 'Cancelling...';
     try {
-        await window.fbUpdateDoc(window.fbDoc(window.db, "orders", orderId), { status: 'cancelled' });
-        showToast("Order cancelled.");
+        await window.fbUpdateDoc(window.fbDoc(window.db, "orders", orderId), { status: 'cancelled', cancelled_at: window.fbServerTimestamp() });
+        showToast("Order cancelled. " + (isOnline ? "Refund to original account in 5–7 days." : "No charge was made."));
         // Refresh orders list
         const uid = localStorage.getItem('user_uid');
         if (uid) {
@@ -3838,7 +3895,12 @@ const POLICIES = {
 <li>Perishable products like fresh leaves after 24 hours of delivery.</li>
 </ul>
 <h3>Refund Process</h3>
-<p>Approved refunds for online payments will be credited back to the original payment method within <strong>5–7 business days</strong>. COD refunds will be processed via bank transfer or UPI within 7 business days.</p>
+<p>Approved refunds are always credited back to the <strong>original payment account</strong> used at the time of purchase:</p>
+<ul>
+<li><strong>Online payments (UPI / Card / NetBanking):</strong> Refunded to the original account within <strong>5–7 business days</strong>.</li>
+<li><strong>COD orders:</strong> Refunded to your bank account or UPI ID (you'll need to share details via WhatsApp) within <strong>7 business days</strong>.</li>
+</ul>
+<p>Refunds are never issued as store credit or coupons unless you specifically request it.</p>
 <h3>How to Raise a Refund Request</h3>
 <p>WhatsApp us at <strong>+91 89190 11159</strong> with your order ID, photos of the issue, and your reason for the refund request within 48 hours of delivery.</p>`
     },
@@ -3854,9 +3916,9 @@ const POLICIES = {
 <li><strong>Andhra Pradesh:</strong> 3–5 business days</li>
 </ul>
 <h3>Shipping Charges</h3>
-<p><strong>Free delivery</strong> on all orders above ₹499. A flat shipping fee of ₹49 applies to orders below ₹499.</p>
+<p><strong>Free delivery</strong> on your first order (regardless of value). <strong>Free delivery</strong> on subsequent orders above ₹499. A flat shipping fee of ₹49 applies to orders below ₹499. Minimum order value is ₹150.</p>
 <h3>Cash on Delivery (COD)</h3>
-<p>COD is available for all orders. After placing a COD order, our team will confirm the order via WhatsApp within 2 hours before dispatch.</p>
+<p>COD is available for orders <strong>above ₹499</strong>. After placing a COD order, our team will confirm the order via WhatsApp within 2 hours before dispatch. For orders below ₹499, please use Online Payment (UPI / Card).</p>
 <h3>Order Tracking</h3>
 <p>Once your order is dispatched, you will receive a WhatsApp message with delivery updates. For real-time tracking, contact us at <strong>+91 89190 11159</strong>.</p>
 <h3>Delays</h3>
@@ -4614,7 +4676,6 @@ window.onload = function() {
     filterItems(localStorage.getItem('selectedFilter') || 'all');
     // Load catalog from Firestore
     loadCatalogFromFirestore();
-    setInterval(() => loadCatalogFromFirestore(true), 30000);
     // Auth state
     updateUserUI(null);
     // Cart
@@ -4624,6 +4685,18 @@ window.onload = function() {
     initHealthTip();
     // Load combos from Firestore (overrides static combos if any exist)
     setTimeout(loadCombosFromFirestore, 1200);
+
+    // Auto-refresh catalog every 60s but ONLY when not scrolling (reduces lag)
+    let _scrollTimeout;
+    let _isScrolling = false;
+    window.addEventListener('scroll', () => {
+        _isScrolling = true;
+        clearTimeout(_scrollTimeout);
+        _scrollTimeout = setTimeout(() => { _isScrolling = false; }, 1500);
+    }, { passive: true });
+    setInterval(() => {
+        if (!_isScrolling) loadCatalogFromFirestore(true);
+    }, 60000);
 };
 </script>
 </body>
