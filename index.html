@@ -1122,7 +1122,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 </div>
 
 <!-- TOAST -->
-<div id="toast">✅ Done</div>
+<div id="toast" role="status" aria-live="polite" aria-atomic="true">✅ Done</div>
 
 <!-- PAYMENT LOADER -->
 <div id="paymentLoader">
@@ -1138,13 +1138,13 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 </button>
 
 <!-- WHATSAPP FAB -->
-<a id="whatsappFab" href="https://wa.me/918919011159?text=Hi%2C%20I%20want%20to%20place%20an%20order%20from%20Nature%27s%20Heal" target="_blank" rel="noopener noreferrer" title="Order via WhatsApp">
-    <i class="fab fa-whatsapp"></i>
+<a id="whatsappFab" href="https://wa.me/918919011159?text=Hi%2C%20I%20want%20to%20place%20an%20order%20from%20Nature%27s%20Heal" target="_blank" rel="noopener noreferrer" title="Order via WhatsApp" aria-label="Order via WhatsApp">
+    <i class="fab fa-whatsapp" aria-hidden="true"></i>
 </a>
 
 <!-- THEME TOGGLE -->
-<button id="themeToggle" onclick="toggleTheme()">
-    <i class="fas fa-moon" id="themeIcon"></i>
+<button id="themeToggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
+    <i class="fas fa-moon" id="themeIcon" aria-hidden="true"></i>
 </button>
 
 <!-- INSTALL BTN -->
@@ -1154,10 +1154,10 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 <div id="cartOverlay" onclick="closeCart()"></div>
 
 <!-- CART SIDEBAR -->
-<div id="cartSidebar">
+<div id="cartSidebar" role="dialog" aria-modal="true" aria-label="Shopping cart">
     <div class="cart-header">
         <span class="cart-title">🛒 Shopping Cart</span>
-        <button class="cart-close" onclick="closeCart()"><i class="fas fa-times"></i></button>
+        <button class="cart-close" onclick="closeCart()" aria-label="Close cart"><i class="fas fa-times" aria-hidden="true"></i></button>
     </div>
     <div class="cart-items" id="cartItemsList"></div>
     <div class="cart-footer">
@@ -1195,12 +1195,12 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
         <div class="header-right">
             <div class="search-wrap" style="position:relative">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" placeholder="Search plants, benefits..." autocomplete="off">
+                <input type="text" id="searchInput" placeholder="Search plants, benefits..." autocomplete="off" aria-label="Search products">
                 <div id="searchSuggestions" class="search-suggestions"></div>
             </div>
 
-            <button class="cart-btn" onclick="toggleCartSidebar()">
-                <i class="fas fa-shopping-cart"></i>
+            <button class="cart-btn" onclick="toggleCartSidebar()" aria-label="Open shopping cart">
+                <i class="fas fa-shopping-cart" aria-hidden="true"></i>
                 <span class="cart-badge" id="cartBadge">0</span>
             </button>
 
@@ -1438,16 +1438,16 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 </footer>
 
 <!-- ========== ITEM DETAIL MODAL ========== -->
-<div id="itemModal" class="modal-overlay hidden">
+<div id="itemModal" role="dialog" aria-modal="true" aria-label="Product details" class="modal-overlay hidden">
     <div class="item-modal-box" id="itemModalContent"></div>
 </div>
 
 <!-- ========== SHIPPING + ORDER MODAL ========== -->
-<div id="shippingModal" class="modal-overlay hidden">
+<div id="shippingModal" role="dialog" aria-modal="true" aria-label="Shipping details" class="modal-overlay hidden">
     <div class="modal-box">
         <div class="modal-header">
             <span class="modal-title">📦 Shipping Details</span>
-            <button class="modal-close-btn" onclick="closeShippingModal()"><i class="fas fa-times"></i></button>
+            <button class="modal-close-btn" onclick="closeShippingModal()" aria-label="Close shipping form"><i class="fas fa-times" aria-hidden="true"></i></button>
         </div>
         <div class="modal-body">
             <div class="form-group">
@@ -1497,7 +1497,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
     <div class="modal-box" style="max-width:560px">
         <div class="modal-header">
             <span class="modal-title">📦 My Orders</span>
-            <button class="modal-close-btn" onclick="closeOrders()"><i class="fas fa-times"></i></button>
+            <button class="modal-close-btn" onclick="closeOrders()" aria-label="Close orders"><i class="fas fa-times" aria-hidden="true"></i></button>
         </div>
         <div class="modal-body">
             <div id="ordersList"></div>
@@ -1569,7 +1569,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
     <div class="modal-box" style="max-width:360px">
         <div class="modal-header">
             <span class="modal-title">🔐 Admin Access</span>
-            <button class="modal-close-btn" onclick="closeAdminLogin()"><i class="fas fa-times"></i></button>
+            <button class="modal-close-btn" onclick="closeAdminLogin()" aria-label="Close admin login"><i class="fas fa-times" aria-hidden="true"></i></button>
         </div>
         <div class="modal-body">
             <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.5">Sign in with your <strong>admin Google account</strong> to access the dashboard.</p>
@@ -1701,7 +1701,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
             <div class="chat-header-name">Herbal AI Assistant</div>
             <div class="chat-header-status"><span class="chat-online-dot"></span> Powered by Hari Krishna</div>
         </div>
-        <button class="chat-close-btn" onclick="toggleChat()"><i class="fas fa-times"></i></button>
+        <button class="chat-close-btn" onclick="toggleChat()" aria-label="Close chat"><i class="fas fa-times" aria-hidden="true"></i></button>
     </div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-suggestions" id="chatSuggestions">
@@ -1727,7 +1727,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
     <div class="policy-box">
         <div class="policy-header">
             <span class="policy-title" id="policyModalTitle">📄 Legal Policies</span>
-            <button class="modal-close-btn" onclick="closePolicyModal()" style="background:rgba(255,255,255,0.15);color:white"><i class="fas fa-times"></i></button>
+            <button class="modal-close-btn" onclick="closePolicyModal()" aria-label="Close policy" style="background:rgba(255,255,255,0.15);color:white"><i class="fas fa-times" aria-hidden="true"></i></button>
         </div>
         <div class="policy-tabs">
             <button class="policy-tab active" id="ptab_terms" onclick="switchPolicy('terms')">Terms</button>
@@ -1944,11 +1944,31 @@ window.logout = async function() {
 
 // ===== SAVE ORDER TO FIRESTORE =====
 window.saveOrderToFirestore = async function(orderData) {
-    return await addDoc(collection(db, "orders"), {
-        ...orderData,
-        created_at: serverTimestamp(),
-        status: 'pending'
-    });
+    // Wrap in try/catch so a network blip never silently drops a paid order.
+    // The caller receives either the saved DocumentReference or a thrown Error
+    // with a user-friendly message it can show via showToast().
+    let retries = 2;
+    while (retries >= 0) {
+        try {
+            const ref = await addDoc(collection(db, "orders"), {
+                ...orderData,
+                created_at: serverTimestamp(),
+                status: 'pending'
+            });
+            return ref;
+        } catch (err) {
+            if (retries === 0) {
+                console.error("saveOrderToFirestore: all retries exhausted", err);
+                throw new Error(
+                    "Your payment was received but we couldn’t save the order record. " +
+                    "Please screenshot this and contact us on WhatsApp immediately."
+                );
+            }
+            retries--;
+            // Brief back-off before retry
+            await new Promise(r => setTimeout(r, 1000));
+        }
+    }
 };
 
 // ===== LOAD USER ORDERS =====
@@ -2429,7 +2449,7 @@ function buildProductCard(item, idx) {
     imgWrap.appendChild(el('div', 'urgency-tag', { text: 'Only ' + item.stock + ' left!' }));
 
     const actions = el('div', 'card-actions');
-    const favBtn = el('button', 'card-action-btn', { title: 'Wishlist' });
+    const favBtn = el('button', 'card-action-btn', { title: 'Wishlist', 'aria-label': isFav ? 'Remove from wishlist' : 'Add to wishlist' });
     const favIcon = el('i', (isFav ? 'fas' : 'far') + ' fa-heart');
     favIcon.style.color = isFav ? '#f43f5e' : '#94a3b8';
     favBtn.appendChild(favIcon);
@@ -2437,7 +2457,7 @@ function buildProductCard(item, idx) {
     actions.appendChild(favBtn);
 
     if (!isOutOfStock) {
-        const cartBtn = el('button', 'card-action-btn', { title: 'Add to cart' });
+        const cartBtn = el('button', 'card-action-btn', { title: 'Add to cart', 'aria-label': inCart ? 'Already in cart' : 'Add to cart' });
         const cartIcon = el('i', 'fas ' + (inCart ? 'fa-shopping-cart' : 'fa-cart-plus'));
         cartIcon.style.color = inCart ? '#059669' : '#94a3b8';
         cartBtn.appendChild(cartIcon);
@@ -2544,7 +2564,7 @@ window.openModalById = function(id) {
     document.getElementById('itemModalContent').innerHTML = `
     <div class="item-modal-img">
         <img src="${safeURL(item.image)}" alt="${escapeHTML(item.name)}">
-        <button class="item-modal-close" onclick="closeItemModal()"><i class="fas fa-times"></i></button>
+        <button class="item-modal-close" onclick="closeItemModal()" aria-label="Close product details"><i class="fas fa-times" aria-hidden="true"></i></button>
     </div>
     <div class="item-modal-body">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">
@@ -2888,6 +2908,7 @@ function openShippingModal() {
     }
 }
 function closeShippingModal() {
+    _orderInFlight = false;  // reset debounce guard whenever modal closes
     document.getElementById('shippingModal').classList.add('hidden');
     document.body.style.overflow = '';
 }
@@ -2916,9 +2937,15 @@ window.selectPayment = function(type) {
         : '<i class="fas fa-lock" style="font-size:0.8rem"></i> Pay Securely Online';
 };
 
+// Module-level in-flight guard — prevents double-submission from
+// rapid tapping, network retries, or Razorpay callback races.
+// Reset on success, failure, or modal close (closeShippingModal).
+let _orderInFlight = false;
+
 window.submitOrder = async function(event) {
     const btn = event.target.closest ? event.target : document.getElementById('submitOrderBtn');
-    if (btn.disabled) return;
+    if (btn.disabled || _orderInFlight) return;
+    _orderInFlight = true;
 
     const uid = localStorage.getItem('user_uid');
     if (!uid) return showToast("Session expired. Please login.", true);
