@@ -1710,18 +1710,28 @@ window.signInWithGoogle = async function() {
         // If admin email — open panel immediately
         if (user.email === ADMIN_EMAIL) {
             showToast("✅ Admin login successful!");
-            setTimeout(() => {
-                document.getElementById('adminPanel').classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-                loadAdminOrders();
-            }, 300);
+            setTimeout(() => showAdminPanel(), 300);
         } else {
             showToast("✅ Logged in as " + user.displayName);
         }
     } catch(e) {
-        if (e.code !== 'auth/popup-closed-by-user') {
-            showToast("Google login failed: " + e.message, true);
+        const code = e.code || '';
+        if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+            return; // user dismissed — not an error
         }
+        // Map Firebase error codes to human-readable messages
+        const msgs = {
+            'auth/internal-error':            'Login failed — make sure this domain is added to Firebase Auth → Authorised Domains.',
+            'auth/unauthorized-domain':       'This domain is not authorised in Firebase. Go to Firebase Console → Authentication → Settings → Authorised Domains and add naturesheal.web.app',
+            'auth/popup-blocked':             'Popup was blocked by your browser. Allow popups for this site and try again.',
+            'auth/network-request-failed':    'Network error. Check your internet connection.',
+            'auth/too-many-requests':         'Too many login attempts. Please wait a few minutes.',
+            'auth/user-disabled':             'This account has been disabled.',
+            'auth/operation-not-allowed':     'Google login is not enabled. Enable it in Firebase Console → Authentication → Sign-in methods.',
+        };
+        const msg = msgs[code] || ('Google login failed: ' + (e.message || code));
+        showToast(msg, true);
+        console.error('signInWithGoogle error:', code, e.message);
     }
 };
 
@@ -1866,12 +1876,7 @@ onAuthStateChanged(auth, (user) => {
             window._pendingAdminOpen = false;
             setTimeout(() => {
                 document.getElementById('adminLoginModal')?.classList.add('hidden');
-                // Inject admin HTML if not yet done
-                const _ap = document.getElementById('adminPanel');
-                if (!_ap.dataset.injected) { _ap.innerHTML = buildAdminHTML(); _ap.dataset.injected = '1'; }
-                _ap.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-                loadAdminOrders();
+                showAdminPanel();
             }, 300);
         }
     }
@@ -3450,9 +3455,7 @@ window.openAdminLogin = function() {
     // If already logged in with Firebase Auth, check admin directly
     if (window.currentUser) {
         if (window.currentUser.email === ADMIN_EMAIL) {
-            document.getElementById('adminPanel').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-            loadAdminOrders();
+            showAdminPanel();
         } else {
             showToast("Not authorized. Login with admin Google account.", true);
             // Show the admin login modal so they can switch accounts
@@ -3481,6 +3484,23 @@ window.verifyAdmin = function() {
     }
 };
 
+
+
+// ── showAdminPanel() — single source of truth for opening the admin panel.
+// Always call this instead of touching adminPanel.classList directly.
+// It injects the HTML if not yet done (security: markup never in static HTML),
+// then reveals the panel and loads data.
+function showAdminPanel() {
+    const panel = document.getElementById('adminPanel');
+    if (!panel) return;
+    if (!panel.dataset.injected) {
+        panel.innerHTML = buildAdminHTML();
+        panel.dataset.injected = '1';
+    }
+    panel.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    loadAdminOrders();
+}
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ADMIN PANEL — HTML injected only after server auth verify passes.
@@ -3606,16 +3626,8 @@ window.openAdminPanel = async function() {
         // Still allow if client check passed — Firestore rules are the backstop
     }
 
-    // Inject admin HTML only now — after auth is verified.
-    // Public visitors never receive this markup in the initial page load.
-    const panel = document.getElementById('adminPanel');
-    if (!panel.dataset.injected) {
-        panel.innerHTML = buildAdminHTML();
-        panel.dataset.injected = '1';
-    }
-    panel.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    loadAdminOrders();
+    // Delegate to showAdminPanel() which handles inject + reveal atomically.
+    showAdminPanel();
 };
 window.closeAdminPanel = function() {
     document.getElementById('adminPanel').classList.add('hidden');
