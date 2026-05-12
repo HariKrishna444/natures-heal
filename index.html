@@ -1583,110 +1583,8 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 </div>
 
 <!-- ========== ADMIN PANEL ========== -->
-<div id="adminPanel" class="modal-overlay hidden">
-    <div class="admin-box">
-        <div class="admin-header">
-            <span class="admin-title"><i class="fas fa-shield-alt"></i> Admin Dashboard</span>
-            <button onclick="closeAdminPanel()" style="color:rgba(255,255,255,0.7);font-size:0.85rem;padding:0.4rem 0.85rem;border-radius:0.5rem;background:rgba(255,255,255,0.1)">Close</button>
-        </div>
-        <div class="admin-tabs">
-            <button class="admin-tab active" onclick="switchAdminTab('orders')">📦 Orders</button>
-            <button class="admin-tab" onclick="switchAdminTab('products')">🌿 Products</button>
-            <button class="admin-tab" onclick="switchAdminTab('combos')">🎁 Combos</button>
-            <button class="admin-tab" onclick="switchAdminTab('analytics')">📊 Analytics</button>
-            <button class="admin-tab" onclick="switchAdminTab('add')">➕ Add Product</button>
-        </div>
-        <div class="admin-content">
-            <!-- Orders Tab -->
-            <div id="adminOrdersTab">
-                <div id="adminOrdersList"><p style="color:var(--text-muted);font-size:0.875rem">Loading orders...</p></div>
-            </div>
-            <!-- Products Tab -->
-            <div id="adminProductsTab" style="display:none">
-                <div id="adminProductsList"></div>
-            </div>
-            <!-- Combos Tab -->
-            <div id="adminCombosTab" style="display:none">
-                <!-- Firestore rules reminder -->
-                <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:0.75rem;padding:0.85rem 1rem;margin-bottom:1rem;font-size:0.78rem">
-                    <p style="font-weight:700;color:#92400e;margin-bottom:0.4rem">⚠️ First-time setup: Add Firestore Rules</p>
-                    <p style="color:#78350f;margin-bottom:0.5rem">In Firebase Console → Firestore → Rules, add these lines inside the <code>match /databases/{database}/documents</code> block:</p>
-                    <pre id="firestoreRulesPre" style="background:#0f172a;color:#a7f3d0;padding:0.65rem;border-radius:0.5rem;font-size:0.68rem;overflow-x:auto;white-space:pre-wrap;cursor:pointer" onclick="copyFirestoreRules()" title="Click to copy">match /combos/{id} {
-  allow read: if true;
-  allow write: if request.auth != null
-    &amp;&amp; request.auth.token.email == "harikrishnarock444@gmail.com";
-}</pre>
-                    <button onclick="copyFirestoreRules()" style="font-size:0.7rem;font-weight:700;background:#059669;color:white;border:none;border-radius:0.4rem;padding:0.3rem 0.75rem;cursor:pointer;margin-top:0.35rem"><i class="fas fa-copy"></i> Copy Rules</button>
-                </div>
-                <div id="adminCombosList"></div>
-                <div style="margin-top:1.5rem;padding:1rem;background:var(--bg-body);border-radius:1rem;border:1px solid var(--border-color)">
-                    <h4 style="font-size:0.9rem;font-weight:700;color:#059669;margin-bottom:1rem">➕ Add New Combo Pack</h4>
-                    <div class="form-group">
-                        <input id="cb_name" class="form-input" placeholder="Combo Name (e.g. Hair & Glow Combo)">
-                        <input id="cb_emojis" class="form-input" placeholder="Emojis (e.g. 🌿+💆)">
-                        <input id="cb_desc" class="form-input" placeholder="Description">
-                        <input id="cb_price" class="form-input" type="number" placeholder="Combo Price (₹)">
-                        <input id="cb_original" class="form-input" type="number" placeholder="Original Price (₹)">
-                        <input id="cb_keywords" class="form-input" placeholder="Product keywords (comma separated, e.g. amla,curry,neem)">
-                        <p style="font-size:0.72rem;color:var(--text-muted);margin-top:-0.3rem">Keywords match product names to add to cart. Use 2–3 items.</p>
-                        <button onclick="adminSaveCombo()" class="submit-btn" style="background:#059669;margin-top:0.5rem">
-                            <i class="fas fa-save"></i> Save Combo to Firestore
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <!-- Analytics Tab -->
-            <div id="adminAnalyticsTab" style="display:none">
-                <div id="adminAnalyticsContent"><p style="color:var(--text-muted);font-size:0.875rem">Loading analytics...</p></div>
-            </div>
-            <!-- Add Product Tab -->
-            <div id="adminAddTab" style="display:none">
-                <div class="add-product-form">
-                    <h4>➕ Add New Product</h4>
-                    <div class="form-group">
-                        <input id="ap_name" class="form-input" placeholder="Product Name (e.g. Curry Leaves)">
-                        <input id="ap_scientific" class="form-input" placeholder="Scientific Name">
-                        <select id="ap_type" class="form-input" onchange="autoFillQuantityType()">
-                            <option value="leaf">🍃 Leaf / Powder</option>
-                            <option value="fruit">🍎 Fruit</option>
-                            <option value="wild_fruit">🫐 Wild Fruit</option>
-                            <option value="seed">🌱 Seed</option>
-                            <option value="vegetable">🥦 Vegetable</option>
-                            <option value="dry_fruit">🥜 Dry Fruit</option>
-                            <option value="flower">🌸 Flower</option>
-                        </select>
-                        <input id="ap_price" class="form-input" type="number" placeholder="Price (₹)" min="0.01" step="0.01">
-                        <div style="display:flex;gap:0.5rem">
-                            <div style="flex:1">
-                                <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;display:block;margin-bottom:0.25rem">Quantity Type</label>
-                                <select id="ap_quantityType" class="form-input">
-                                    <option value="bunch">bunch (Leaves)</option>
-                                    <option value="kg">kg (Fruits)</option>
-                                    <option value="g">g (Seeds)</option>
-                                </select>
-                            </div>
-                            <div style="flex:1">
-                                <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;display:block;margin-bottom:0.25rem">Min Qty</label>
-                                <input id="ap_minQty" class="form-input" type="number" placeholder="e.g. 1 or 0.5" min="0.01" step="0.01">
-                            </div>
-                            <div style="flex:1">
-                                <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;display:block;margin-bottom:0.25rem">Step</label>
-                                <input id="ap_step" class="form-input" type="number" placeholder="e.g. 1 or 50" min="0.01" step="0.01">
-                            </div>
-                        </div>
-                        <input id="ap_image" class="form-input" placeholder="Image URL (https://...)">
-                        <textarea id="ap_description" class="form-input form-textarea" placeholder="Description"></textarea>
-                        <textarea id="ap_uses" class="form-input" placeholder="Benefits / Uses (comma separated)" style="min-height:3.5rem"></textarea>
-                        <button id="adminAddProductBtn" onclick="adminAddProduct()" class="submit-btn" style="background:#4f46e5">
-                            <i class="fas fa-plus"></i> Add Product to Firestore
-                        </button>
-                        <p style="font-size:0.72rem;color:var(--text-muted);text-align:center">Product saved directly to Firestore. No Google Sheets required.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Admin panel shell — content injected by JS only after server auth verify -->
+<div id="adminPanel" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Admin dashboard"></div>
 
 <!-- ========== AI CHATBOT ========== -->
 <button id="chatFab" onclick="toggleChat()" title="Ask Herbal AI">
@@ -1828,11 +1726,38 @@ window.signInWithGoogle = async function() {
 };
 
 // ===== PHONE OTP =====
+
+// ── OTP rate-limiting (client-side guard — Firebase also throttles server-side)
+// These counters reset on page reload; the real throttle is Firebase Auth.
+const _otp = {
+    sendCount: {},      // { phone: count } — how many times OTP sent per number
+    sendTime:  {},      // { phone: timestamp } — last send time per number
+    verifyFails: 0,     // wrong-OTP attempts for the current session
+    MAX_SENDS:   3,     // max OTP sends per phone per session
+    COOLDOWN_MS: 60000, // 60s between sends for the same number
+    MAX_VERIFY:  5,     // lock after this many wrong attempts
+};
+
 window.sendOTP = async function() {
     const phone = document.getElementById('auth_phone').value.trim();
     if (!/^[6-9]\d{9}$/.test(phone)) {
         return showToast("Enter valid 10-digit mobile number", true);
     }
+
+    // Rate-limit check: cooldown
+    const now = Date.now();
+    const lastSend = _otp.sendTime[phone] || 0;
+    const elapsed = now - lastSend;
+    if (elapsed < _otp.COOLDOWN_MS) {
+        const wait = Math.ceil((_otp.COOLDOWN_MS - elapsed) / 1000);
+        return showToast(`Please wait ${wait}s before requesting another OTP.`, true);
+    }
+    // Rate-limit check: max sends per phone
+    const sends = (_otp.sendCount[phone] || 0);
+    if (sends >= _otp.MAX_SENDS) {
+        return showToast("Too many OTP requests for this number. Please try again later.", true);
+    }
+
     const btn = document.getElementById('sendOtpBtn');
     btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
@@ -1845,6 +1770,11 @@ window.sendOTP = async function() {
         }
         const confirmationResult = await signInWithPhoneNumber(auth, '+91' + phone, window.recaptchaVerifier);
         window.otpConfirmationResult = confirmationResult;
+
+        // Record successful send for rate limiting
+        _otp.sendCount[phone] = (_otp.sendCount[phone] || 0) + 1;
+        _otp.sendTime[phone] = Date.now();
+        _otp.verifyFails = 0; // reset verify counter for fresh OTP
 
         document.getElementById('phoneInputView').style.display = 'none';
         document.getElementById('otpInputView').style.display = 'block';
@@ -1894,8 +1824,24 @@ window.verifyOTP = async function() {
         closeAuthModal();
         showToast("✅ Login successful!");
     } catch(e) {
-        showToast("Wrong OTP. Try again.", true);
-        btn.disabled = false; btn.innerHTML = 'Verify & Login';
+        _otp.verifyFails++;
+        if (_otp.verifyFails >= _otp.MAX_VERIFY) {
+            btn.disabled = true;
+            btn.innerHTML = 'Too many attempts';
+            showToast("Too many wrong attempts. Please request a new OTP.", true);
+            // Reset so user can request a new OTP after cooldown
+            window.otpConfirmationResult = null;
+            setTimeout(() => {
+                window.switchToPhoneInput();
+                btn.disabled = false;
+                btn.innerHTML = 'Verify & Login';
+                _otp.verifyFails = 0;
+            }, 3000);
+        } else {
+            const left = _otp.MAX_VERIFY - _otp.verifyFails;
+            showToast(`Wrong OTP. ${left} attempt${left === 1 ? '' : 's'} remaining.`, true);
+            btn.disabled = false; btn.innerHTML = 'Verify & Login';
+        }
     }
 };
 
@@ -1920,7 +1866,10 @@ onAuthStateChanged(auth, (user) => {
             window._pendingAdminOpen = false;
             setTimeout(() => {
                 document.getElementById('adminLoginModal')?.classList.add('hidden');
-                document.getElementById('adminPanel').classList.remove('hidden');
+                // Inject admin HTML if not yet done
+                const _ap = document.getElementById('adminPanel');
+                if (!_ap.dataset.injected) { _ap.innerHTML = buildAdminHTML(); _ap.dataset.injected = '1'; }
+                _ap.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
                 loadAdminOrders();
             }, 300);
@@ -2273,8 +2222,21 @@ async function loadCatalogFromFirestore(forceRefresh = false) {
         return;
     }
 
+    // 5-second timeout — if Firestore hasn't responded, show a clear error
+    // instead of leaving the skeleton / empty grid indefinitely.
+    const timeoutId = setTimeout(() => {
+        if (AppStore.get('catalogData').length === 0) {
+            showCatalogError(
+                'Taking too long to load. Check your internet connection.',
+                true /* showRetry */
+            );
+        }
+    }, 5000);
+
     try {
         const snap = await window.fbGetDocs(window.fbCollection(window.db, "products"));
+        clearTimeout(timeoutId);
+
         const parsed = snap.docs.map(d => {
             const data = d.data();
             return {
@@ -2289,7 +2251,10 @@ async function loadCatalogFromFirestore(forceRefresh = false) {
         }).filter(p => p.name);
 
         if (!parsed.length) {
-            showCatalogError('No products found in Firestore. Add products via Admin → Add Product.');
+            showCatalogError(
+                'No products in the catalog yet. Add your first product via the Admin panel.',
+                true /* showRetry */
+            );
             return;
         }
         window.appState.catalogData = parsed;
@@ -2297,8 +2262,12 @@ async function loadCatalogFromFirestore(forceRefresh = false) {
         window.appState.catalogLastFetch = Date.now();
         renderItems(getFilteredData());
     } catch(e) {
+        clearTimeout(timeoutId);
         console.error("loadCatalogFromFirestore error:", e);
-        showCatalogError('Could not load catalog: ' + (e.message || 'Check Firestore rules.'));
+        showCatalogError(
+            'Could not load catalog — ' + (e.message || 'Check internet connection and Firestore rules.'),
+            true /* showRetry */
+        );
     }
 }
 window.loadProductsFromFirestore = loadCatalogFromFirestore;
@@ -2329,13 +2298,22 @@ function formatPriceUnit(price, quantityType) {
     return `₹${price}/${quantityType}`;
 }
 
-function showCatalogError(msg) {
+function showCatalogError(msg, showRetry = false) {
     const c = document.getElementById('gridContainer');
-    if (c) c.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+    if (!c) return;
+    const retryBtn = showRetry
+        ? `<button onclick="showCatalogSkeleton();loadCatalogFromFirestore(true)"
+               style="margin-top:1rem;background:#059669;color:#fff;padding:0.5rem 1.5rem;border-radius:9999px;font-weight:700;border:none;cursor:pointer">
+               <i class="fas fa-redo"></i> Try Again
+           </button>`
+        : '';
+    c.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
         <i class="fas fa-exclamation-circle"></i>
-        <p style="font-weight:700;margin-bottom:0.5rem">${msg}</p>
-        <button onclick="fetchSheetData()" style="margin-top:1rem;background:#059669;color:#fff;padding:0.5rem 1.5rem;border-radius:9999px;font-weight:700;border:none;cursor:pointer">Try Again</button>
+        <p style="font-weight:700;margin-bottom:0.5rem">${escapeHTML(msg)}</p>
+        ${retryBtn}
     </div>`;
+    const countEl = document.getElementById('itemCount');
+    if (countEl) countEl.textContent = '0';
 }
 
 function getFilteredData() {
@@ -3503,6 +3481,102 @@ window.verifyAdmin = function() {
     }
 };
 
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ADMIN PANEL — HTML injected only after server auth verify passes.
+// Public visitors downloading index.html see only the empty sentinel div.
+// The full markup never ships in the initial HTML response.
+// ══════════════════════════════════════════════════════════════════════════════
+function buildAdminHTML() {
+    return `
+    <div class="admin-box">
+        <div class="admin-header">
+            <span class="admin-title"><i class="fas fa-shield-alt"></i> Admin Dashboard</span>
+            <button onclick="closeAdminPanel()" aria-label="Close admin panel" style="color:rgba(255,255,255,0.7);font-size:0.85rem;padding:0.4rem 0.85rem;border-radius:0.5rem;background:rgba(255,255,255,0.1)">Close</button>
+        </div>
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="switchAdminTab('orders')">📦 Orders</button>
+            <button class="admin-tab" onclick="switchAdminTab('products')">🌿 Products</button>
+            <button class="admin-tab" onclick="switchAdminTab('combos')">🎁 Combos</button>
+            <button class="admin-tab" onclick="switchAdminTab('analytics')">📊 Analytics</button>
+            <button class="admin-tab" onclick="switchAdminTab('add')">➕ Add Product</button>
+        </div>
+        <div class="admin-content">
+            <div id="adminOrdersTab">
+                <div id="adminOrdersList"><p style="color:var(--text-muted);font-size:0.875rem">Loading orders...</p></div>
+            </div>
+            <div id="adminProductsTab" style="display:none">
+                <div id="adminProductsList"></div>
+            </div>
+            <div id="adminCombosTab" style="display:none">
+                <div id="adminCombosList"></div>
+                <div style="margin-top:1.5rem;padding:1rem;background:var(--bg-body);border-radius:1rem;border:1px solid var(--border-color)">
+                    <h4 style="font-size:0.9rem;font-weight:700;color:#059669;margin-bottom:1rem">➕ Add New Combo Pack</h4>
+                    <div class="form-group">
+                        <input id="cb_name" class="form-input" placeholder="Combo Name (e.g. Hair &amp; Glow Combo)">
+                        <input id="cb_emojis" class="form-input" placeholder="Emojis (e.g. 🌿+💆)">
+                        <input id="cb_desc" class="form-input" placeholder="Description">
+                        <input id="cb_price" class="form-input" type="number" placeholder="Combo Price (₹)">
+                        <input id="cb_original" class="form-input" type="number" placeholder="Original Price (₹)">
+                        <input id="cb_keywords" class="form-input" placeholder="Product keywords (comma separated)">
+                        <p style="font-size:0.72rem;color:var(--text-muted);margin-top:-0.3rem">Keywords match product names to add to cart. Use 2–3 items.</p>
+                        <button onclick="adminSaveCombo()" class="submit-btn" style="background:#059669;margin-top:0.5rem">
+                            <i class="fas fa-save"></i> Save Combo to Firestore
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div id="adminAnalyticsTab" style="display:none">
+                <div id="adminAnalyticsContent"><p style="color:var(--text-muted);font-size:0.875rem">Loading analytics...</p></div>
+            </div>
+            <div id="adminAddTab" style="display:none">
+                <div class="add-product-form">
+                    <h4>➕ Add New Product</h4>
+                    <div class="form-group">
+                        <input id="ap_name" class="form-input" placeholder="Product Name (e.g. Curry Leaves)">
+                        <input id="ap_scientific" class="form-input" placeholder="Scientific Name">
+                        <select id="ap_type" class="form-input" onchange="autoFillQuantityType()">
+                            <option value="leaf">🍃 Leaf / Powder</option>
+                            <option value="fruit">🍎 Fruit</option>
+                            <option value="wild_fruit">🫐 Wild Fruit</option>
+                            <option value="seed">🌱 Seed</option>
+                            <option value="vegetable">🥦 Vegetable</option>
+                            <option value="dry_fruit">🥜 Dry Fruit</option>
+                            <option value="flower">🌸 Flower</option>
+                        </select>
+                        <input id="ap_price" class="form-input" type="number" placeholder="Price (₹)" min="0.01" step="0.01">
+                        <div style="display:flex;gap:0.5rem">
+                            <div style="flex:1">
+                                <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;display:block;margin-bottom:0.25rem">Quantity Type</label>
+                                <select id="ap_quantityType" class="form-input">
+                                    <option value="bunch">bunch (Leaves)</option>
+                                    <option value="kg">kg (Fruits)</option>
+                                    <option value="g">g (Seeds)</option>
+                                </select>
+                            </div>
+                            <div style="flex:1">
+                                <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;display:block;margin-bottom:0.25rem">Min Qty</label>
+                                <input id="ap_minQty" class="form-input" type="number" placeholder="e.g. 1 or 0.5" min="0.01" step="0.01">
+                            </div>
+                            <div style="flex:1">
+                                <label style="font-size:0.72rem;color:var(--text-muted);font-weight:600;display:block;margin-bottom:0.25rem">Step</label>
+                                <input id="ap_step" class="form-input" type="number" placeholder="e.g. 1 or 50" min="0.01" step="0.01">
+                            </div>
+                        </div>
+                        <input id="ap_image" class="form-input" placeholder="Image URL (https://...)">
+                        <textarea id="ap_description" class="form-input form-textarea" placeholder="Description"></textarea>
+                        <textarea id="ap_uses" class="form-input" placeholder="Benefits / Uses (comma separated)" style="min-height:3.5rem"></textarea>
+                        <button id="adminAddProductBtn" onclick="adminAddProduct()" class="submit-btn" style="background:#4f46e5">
+                            <i class="fas fa-plus"></i> Add Product to Firestore
+                        </button>
+                        <p style="font-size:0.72rem;color:var(--text-muted);text-align:center">Product saved directly to Firestore.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
+
 window.openAdminPanel = async function() {
     // Step 1: quick client-side check (UX only — not a security boundary)
     if (!isAdmin()) {
@@ -3532,7 +3606,14 @@ window.openAdminPanel = async function() {
         // Still allow if client check passed — Firestore rules are the backstop
     }
 
-    document.getElementById('adminPanel').classList.remove('hidden');
+    // Inject admin HTML only now — after auth is verified.
+    // Public visitors never receive this markup in the initial page load.
+    const panel = document.getElementById('adminPanel');
+    if (!panel.dataset.injected) {
+        panel.innerHTML = buildAdminHTML();
+        panel.dataset.injected = '1';
+    }
+    panel.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     loadAdminOrders();
 };
