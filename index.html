@@ -40,7 +40,10 @@
     <meta property="og:title" id="ogTitle" content="Nature's Heal — Pure Herbal Products">
     <meta property="og:description" id="ogDesc" content="100% natural herbal powders, seeds & botanical products. Free delivery above ₹499.">
     <meta property="og:url" id="ogUrl" content="https://naturesheal.web.app/">
-    <meta property="og:image" id="ogImage" content="https://naturesheal.web.app/icon_192.png">
+    <meta property="og:image" id="ogImage" content="https://naturesheal.web.app/og_cover.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Nature's Heal — Pure Herbal Products">
     <meta property="og:locale" content="en_IN">
 
     <!-- Twitter Card -->
@@ -731,6 +734,32 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 }
 .card-notify-btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
+/* ===== NOTIFY ME MODAL ===== */
+#notifyModal { z-index: 160; }
+.notify-modal-box {
+    background: var(--bg-card); border-radius: 1.5rem; width: 100%; max-width: 380px;
+    animation: modalIn 0.3s ease-out; box-shadow: 0 25px 60px rgba(0,0,0,0.35); overflow: hidden;
+}
+.notify-modal-top {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    padding: 1.5rem; text-align: center;
+}
+.notify-modal-top .notify-icon { font-size: 2rem; margin-bottom: 0.4rem; }
+.notify-modal-top h3 { font-family: 'Poppins',sans-serif; font-size: 1.1rem; font-weight: 800; color: white; }
+.notify-modal-top p { font-size: 0.78rem; color: rgba(255,255,255,0.8); margin-top: 0.25rem; }
+.notify-modal-body { padding: 1.25rem 1.5rem 1.5rem; }
+.notify-modal-label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.4rem; display: block; }
+.notify-modal-input-wrap { display: flex; align-items: center; border: 1.5px solid var(--border-color); border-radius: 0.75rem; overflow: hidden; background: var(--input-bg); transition: border-color 0.2s; }
+.notify-modal-input-wrap:focus-within { border-color: #4f46e5; }
+.notify-modal-prefix { padding: 0 0.6rem; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); border-right: 1.5px solid var(--border-color); background: var(--bg-body); align-self: stretch; display: flex; align-items: center; }
+.notify-modal-input { flex: 1; border: none; outline: none; padding: 0.65rem 0.75rem; font-size: 0.9rem; font-weight: 600; background: transparent; color: var(--text-main); font-family: inherit; }
+.notify-modal-error { font-size: 0.72rem; color: #ef4444; margin-top: 0.35rem; min-height: 1em; }
+.notify-modal-actions { display: flex; gap: 0.6rem; margin-top: 1rem; }
+.notify-modal-cancel { flex: 1; padding: 0.65rem; border-radius: 0.75rem; border: 1.5px solid var(--border-color); font-size: 0.85rem; font-weight: 700; color: var(--text-muted); background: var(--bg-body); cursor: pointer; transition: all 0.2s; }
+.notify-modal-cancel:hover { border-color: #94a3b8; }
+.notify-modal-submit { flex: 2; padding: 0.65rem; border-radius: 0.75rem; border: none; font-size: 0.85rem; font-weight: 700; color: white; background: linear-gradient(135deg, #4f46e5, #7c3aed); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+.notify-modal-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+
 /* ===== LIMITED OFFER BADGE ===== */
 .limited-offer-badge {
     display: inline-flex; align-items: center; gap: 0.3rem;
@@ -1135,6 +1164,31 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
     </div>
 </div>
 
+<!-- NOTIFY ME MODAL -->
+<div id="notifyModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:160;display:none;align-items:center;justify-content:center;padding:1rem" role="dialog" aria-modal="true" aria-labelledby="notifyModalTitle">
+    <div class="notify-modal-box">
+        <div class="notify-modal-top">
+            <div class="notify-icon">🔔</div>
+            <h3 id="notifyModalTitle">Notify Me</h3>
+            <p id="notifyModalProductName">We'll WhatsApp you when it's back in stock.</p>
+        </div>
+        <div class="notify-modal-body">
+            <label class="notify-modal-label" for="notifyPhoneInput">Your WhatsApp Number</label>
+            <div class="notify-modal-input-wrap">
+                <span class="notify-modal-prefix">+91</span>
+                <input id="notifyPhoneInput" class="notify-modal-input" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel-national">
+            </div>
+            <div class="notify-modal-error" id="notifyModalError" aria-live="polite"></div>
+            <div class="notify-modal-actions">
+                <button class="notify-modal-cancel" onclick="closeNotifyModal()">Cancel</button>
+                <button class="notify-modal-submit" id="notifyModalSubmitBtn" onclick="submitNotifyMe()">
+                    <i class="fab fa-whatsapp" aria-hidden="true"></i> Notify Me
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- STICKY CART BUTTON -->
 <button id="stickyCartBtn" onclick="toggleCartSidebar()">
     🛒 Cart <span id="stickyCartCount">0</span>
@@ -1223,16 +1277,16 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
         </div>
 
         <div class="mobile-filter" id="mobileFilterChips">
-            <button class="mf-chip active" data-filter="all" onclick="handleMobileFilterChip('all',this)">🌿 All</button>
-            <button class="mf-chip" data-filter="leaf" onclick="handleMobileFilterChip('leaf',this)">🍃 Leaves</button>
-            <button class="mf-chip" data-filter="fruit" onclick="handleMobileFilterChip('fruit',this)">🍎 Fruits</button>
-            <button class="mf-chip" data-filter="wild_fruit" onclick="handleMobileFilterChip('wild_fruit',this)">🫐 Wild</button>
-            <button class="mf-chip" data-filter="seed" onclick="handleMobileFilterChip('seed',this)">🌱 Seeds</button>
-            <button class="mf-chip" data-filter="vegetable" onclick="handleMobileFilterChip('vegetable',this)">🥦 Veg</button>
-            <button class="mf-chip" data-filter="dry_fruit" onclick="handleMobileFilterChip('dry_fruit',this)">🥜 Dry</button>
-            <button class="mf-chip" data-filter="flower" onclick="handleMobileFilterChip('flower',this)">🌸 Flowers</button>
-            <button class="mf-chip" data-filter="favorites" onclick="handleMobileFilterChip('favorites',this)">⭐ Saved</button>
-            <button class="mf-chip" data-filter="orders" onclick="handleMobileFilterChip('orders',this)">📦 Orders</button>
+            <button class="mf-chip active" data-filter="all" aria-pressed="true" onclick="handleMobileFilterChip('all',this)">🌿 All</button>
+            <button class="mf-chip" data-filter="leaf" aria-pressed="false" onclick="handleMobileFilterChip('leaf',this)">🍃 Leaves</button>
+            <button class="mf-chip" data-filter="fruit" aria-pressed="false" onclick="handleMobileFilterChip('fruit',this)">🍎 Fruits</button>
+            <button class="mf-chip" data-filter="wild_fruit" aria-pressed="false" onclick="handleMobileFilterChip('wild_fruit',this)">🫐 Wild</button>
+            <button class="mf-chip" data-filter="seed" aria-pressed="false" onclick="handleMobileFilterChip('seed',this)">🌱 Seeds</button>
+            <button class="mf-chip" data-filter="vegetable" aria-pressed="false" onclick="handleMobileFilterChip('vegetable',this)">🥦 Veg</button>
+            <button class="mf-chip" data-filter="dry_fruit" aria-pressed="false" onclick="handleMobileFilterChip('dry_fruit',this)">🥜 Dry</button>
+            <button class="mf-chip" data-filter="flower" aria-pressed="false" onclick="handleMobileFilterChip('flower',this)">🌸 Flowers</button>
+            <button class="mf-chip" data-filter="favorites" aria-pressed="false" onclick="handleMobileFilterChip('favorites',this)">⭐ Saved</button>
+            <button class="mf-chip" data-filter="orders" aria-pressed="false" onclick="handleMobileFilterChip('orders',this)">📦 Orders</button>
         </div>
     </div>
 </header>
@@ -3261,6 +3315,10 @@ window.filterItems = function(type) {
 
 window.handleMobileFilterChip = function(val, el) {
     if (val === 'orders') { openOrders(); return; }
+    // Update aria-pressed on all chips
+    document.querySelectorAll('#mobileFilterChips .mf-chip').forEach(btn => {
+        btn.setAttribute('aria-pressed', btn === el ? 'true' : 'false');
+    });
     filterItems(val);
 };
 
@@ -5027,16 +5085,44 @@ window.rotateHealthTip = function() {
 };
 
 // ===== NOTIFY ME =====
-window.notifyMe = async function(productName) {
-    const phone = prompt(`We'll notify you on WhatsApp when "${productName}" is back in stock!\n\nEnter your WhatsApp number (10 digits):`);
-    if (!phone) return;
-    const trimmed = phone.trim();
-    if (!/^[6-9]\d{9}$/.test(trimmed)) { showToast("Enter valid 10-digit number", true); return; }
+let _notifyProductName = '';
+
+window.notifyMe = function(productName) {
+    _notifyProductName = productName;
+    const modal = document.getElementById('notifyModal');
+    const nameEl = document.getElementById('notifyModalProductName');
+    const input  = document.getElementById('notifyPhoneInput');
+    const errEl  = document.getElementById('notifyModalError');
+    if (nameEl) nameEl.textContent = `Notify me when "${productName}" is back in stock.`;
+    if (input)  input.value = '';
+    if (errEl)  errEl.textContent = '';
+    if (modal)  { modal.style.display = 'flex'; modal.classList.remove('hidden'); }
+    setTimeout(() => { if (input) input.focus(); }, 100);
+};
+
+window.closeNotifyModal = function() {
+    const modal = document.getElementById('notifyModal');
+    if (modal) { modal.style.display = 'none'; modal.classList.add('hidden'); }
+};
+
+window.submitNotifyMe = async function() {
+    const input  = document.getElementById('notifyPhoneInput');
+    const errEl  = document.getElementById('notifyModalError');
+    const btn    = document.getElementById('notifyModalSubmitBtn');
+    const trimmed = (input?.value || '').trim();
+
+    if (!/^[6-9]\d{9}$/.test(trimmed)) {
+        if (errEl) errEl.textContent = 'Please enter a valid 10-digit Indian mobile number.';
+        input?.focus();
+        return;
+    }
+    if (errEl) errEl.textContent = '';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
 
     // Save notification request to Firestore
     try {
         await window.fbAddDoc(window.fbCollection(window.db, "stock_notifications"), {
-            product_name: productName,
+            product_name: _notifyProductName,
             whatsapp: '+91' + trimmed,
             user_uid: localStorage.getItem('user_uid') || null,
             created_at: window.fbServerTimestamp(),
@@ -5044,10 +5130,12 @@ window.notifyMe = async function(productName) {
         });
     } catch(e) { console.warn("Notify save failed:", e.message); }
 
-    // Send notification request via WhatsApp to store owner
-    const msg = `Hi! Please notify me when *${productName}* is back in stock at Nature's Heal. My WhatsApp: +91${trimmed}`;
+    window.closeNotifyModal();
+    // Open WhatsApp to confirm with store owner
+    const msg = `Hi! Please notify me when *${_notifyProductName}* is back in stock at Nature's Heal. My WhatsApp: +91${trimmed}`;
     window.open(`https://wa.me/918919011159?text=${encodeURIComponent(msg)}`, '_blank');
     showToast("✅ We'll WhatsApp you when it's back!");
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fab fa-whatsapp"></i> Notify Me'; }
 };
 
 // ===== PRE-ORDER =====
@@ -5107,7 +5195,7 @@ window.onload = function() {
         _scrollTimeout = setTimeout(() => { _isScrolling = false; }, 1500);
     }, { passive: true });
     setInterval(() => {
-        if (!_isScrolling) loadCatalogFromFirestore(true);
+        if (!_isScrolling && !document.hidden) loadCatalogFromFirestore(true);
     }, 60000);
 };
 </script>
