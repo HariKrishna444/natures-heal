@@ -1087,9 +1087,6 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
          that bypasses firebase.json (e.g. local file://, CDN edge, etc.)
          ═══════════════════════════════════════════════════════════════════════ -->
 
-    <!-- Prevent clickjacking (same as X-Frame-Options: SAMEORIGIN) -->
-    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
-
     <!-- Prevent MIME-type sniffing -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
 
@@ -4902,20 +4899,32 @@ window.switchPolicy = function(tab) {
     if (activeTab) activeTab.classList.add('active');
 };
 let deferredPrompt;
-window.addEventListener("beforeinstallprompt", e => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('installBtn').style.display = 'block';
-});
+// Only intercept the install prompt if not already running as a standalone PWA
+if (!window.matchMedia('(display-mode: standalone)').matches) {
+    window.addEventListener("beforeinstallprompt", e => {
+        e.preventDefault(); // suppress browser mini-infobar; we show our own button
+        deferredPrompt = e;
+        const btn = document.getElementById('installBtn');
+        if (btn) btn.style.display = 'block';
+    });
+}
 window.installApp = function() {
-    if (!deferredPrompt) { showToast("Install not available", true); return; }
+    if (!deferredPrompt) { showToast("Already installed or not available", true); return; }
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
 };
+// Hide install button if already running as installed PWA
 if (window.matchMedia('(display-mode: standalone)').matches) {
-    document.getElementById('installBtn').style.display = 'none';
+    const btn = document.getElementById('installBtn');
+    if (btn) btn.style.display = 'none';
 }
-setTimeout(() => { if (!deferredPrompt) document.getElementById('installBtn').style.display = 'none'; }, 5000);
+// Hide install button after 6s if prompt never fired (browser decided not eligible)
+setTimeout(() => {
+    if (!deferredPrompt) {
+        const btn = document.getElementById('installBtn');
+        if (btn) btn.style.display = 'none';
+    }
+}, 6000);
 
 // ===== SERVICE WORKER =====
 if ("serviceWorker" in navigator) {
