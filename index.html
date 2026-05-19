@@ -642,10 +642,16 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
 @media(min-width:640px){ .footer-top { grid-template-columns: repeat(2,1fr); } }
 @media(min-width:1024px){ .footer-top { grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; } }
 
-.footer-brand { display: flex; flex-direction: column; gap: 1rem; }
-.footer-logo { display: flex; align-items: center; gap: 0.5rem; }
-.footer-tagline { font-size: 0.8rem; color: rgba(255,255,255,0.45); line-height: 1.65; max-width: 240px; }
-.footer-socials { display: flex; gap: 0.75rem; margin-top: 0.25rem; }
+.footer-brand { display: flex; flex-direction: column; gap: 1rem; align-items: center; text-align: center; }
+.footer-logo { display: flex; align-items: center; gap: 0.5rem; justify-content: center; }
+.footer-tagline { font-size: 0.8rem; color: rgba(255,255,255,0.45); line-height: 1.65; max-width: 240px; text-align: center; }
+.footer-socials { display: flex; gap: 0.75rem; margin-top: 0.25rem; justify-content: center; }
+@media(min-width:1024px){
+  .footer-brand { align-items: flex-start; text-align: left; }
+  .footer-logo { justify-content: flex-start; }
+  .footer-tagline { text-align: left; }
+  .footer-socials { justify-content: flex-start; }
+}
 .footer-socials a { width: 2.25rem; height: 2.25rem; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.55); font-size: 0.9rem; transition: all 0.2s; }
 .footer-socials a:hover { background: #059669; color: white; transform: translateY(-2px); }
 
@@ -4427,6 +4433,121 @@ const POLICIES = {
 <p>Refunds are never issued as store credit or coupons unless you specifically request it.</p>
 <h3>How to Raise a Refund Request</h3>
 <p>WhatsApp us at <strong>+91 89190 11159</strong> with your order ID, photos of the issue, and your reason for the refund request within 48 hours of delivery.</p>`
+    },
+    about: {
+        title: '🌿 About Us',
+        content: `
+<h3>Who We Are</h3>
+<p><strong>Nature's Heal</strong> is a Hyderabad-based herbal wellness brand founded with a simple belief: the best medicine grows from the earth. We source, clean, and pack 100% pure herbal powders, seeds, and botanical products — no additives, no fillers, no shortcuts.</p>
+<h3>What We Offer</h3>
+<p>From Moringa and Ashwagandha to rare seed blends used in traditional Indian medicine, every product on our platform is hand-selected, lab-tested, and delivered fresh to your doorstep across Hyderabad and beyond.</p>
+<h3>Our Promise</h3>
+<p>We believe in radical transparency. Every product page tells you exactly what's inside, where it comes from, and how to use it. No hidden ingredients, no false claims.</p>
+<h3>Contact Us</h3>
+<p>📞 <strong>+91 89190 11159</strong> (WhatsApp) &nbsp;|&nbsp; ✉️ harikrishnarock444@gmail.com</p>`
+    },
+    story: {
+        title: '📖 Our Story',
+        content: `
+<h3>How It All Started</h3>
+<p>Nature's Heal was born out of a personal journey. After experiencing first-hand how traditional herbal remedies helped restore health naturally, our founder Hari Krishna set out to make these time-tested botanicals accessible to every household — without the guesswork or impurity risks of the open market.</p>
+<h3>From Kitchen to Community</h3>
+<p>What started as sharing small batches of hand-ground herbal powders with neighbours in Hyderabad quickly grew into a trusted local brand. Today we serve hundreds of families across Telangana and Andhra Pradesh, with orders placed through our website and fulfilled fresh every day.</p>
+<h3>The Road Ahead</h3>
+<p>We are expanding our product range, building deeper ties with organic farmers across South India, and working towards certifications that reflect the purity you already trust us for.</p>`
+    },
+    mission: {
+        title: '🎯 Mission & Vision',
+        content: `
+<h3>Our Mission</h3>
+<p>To make pure, authentic, and affordable herbal wellness products available to every Indian household — delivered with honesty, transparency, and care.</p>
+<h3>Our Vision</h3>
+<p>A world where families confidently turn to nature first — supported by science, rooted in tradition, and free from synthetic additives.</p>
+<h3>Our Values</h3>
+<ul>
+<li>🌱 <strong>Purity</strong> — No additives, no fillers, no compromises.</li>
+<li>🤝 <strong>Trust</strong> — Clear labelling and honest communication always.</li>
+<li>🌍 <strong>Sustainability</strong> — Sourced responsibly, packed minimally.</li>
+<li>❤️ <strong>Community</strong> — Supporting local farmers and traditional knowledge keepers.</li>
+</ul>`
+    },
+    why: {
+        title: '✅ Why Choose Us',
+        content: `
+<h3>100% Pure & Natural</h3>
+<p>Every product is free from artificial colours, preservatives, and fillers. What's on the label is exactly what's in the pack.</p>
+<h3>Freshly Packed</h3>
+<p>We pack in small batches to ensure maximum potency and freshness — not sitting in a warehouse for months.</p>
+<h3>Transparent Sourcing</h3>
+<p>We work directly with farmers and reliable botanical suppliers, so you know exactly where your herbs come from.</p>
+<h3>Fast Local Delivery</h3>
+<p>Based in Hyderabad, we deliver across Telangana and Andhra Pradesh within 1–5 business days, often faster.</p>
+<h3>Genuine Customer Support</h3>
+<p>Reach us instantly on WhatsApp at <strong>+91 89190 11159</strong>. Real humans, real answers — no bots.</p>
+<h3>Affordable Pricing</h3>
+<p>We keep our margins lean so more families can afford quality herbal nutrition without compromise.</p>`
+    },
+    careers: {
+        title: '💼 Careers',
+        content: `
+<h3>Join the Nature's Heal Family</h3>
+<p>We're a small, passionate team building something meaningful. If you care about natural wellness, honest commerce, and community impact — we'd love to hear from you.</p>
+<h3>Current Openings</h3>
+<ul>
+<li>🚚 <strong>Delivery Partner</strong> — Hyderabad (Freelance / Part-time)</li>
+<li>📱 <strong>Social Media & Content Creator</strong> — Remote</li>
+<li>🌿 <strong>Product Sourcing Coordinator</strong> — Hyderabad</li>
+</ul>
+<h3>How to Apply</h3>
+<p>Send your name, the role you're interested in, and a brief note about yourself to <strong>harikrishnarock444@gmail.com</strong> or WhatsApp us at <strong>+91 89190 11159</strong>. No formal CV required — tell us your story.</p>`
+    },
+    help: {
+        title: '🆘 Help Center',
+        content: `
+<h3>Placing an Order</h3>
+<p>Browse products, add to cart, and checkout using UPI, Card, NetBanking, or Cash on Delivery (COD available on orders above ₹499). You'll receive a confirmation on WhatsApp within minutes.</p>
+<h3>Tracking Your Order</h3>
+<p>Go to <strong>My Orders</strong> (tap the profile icon → Orders) to view live order status. You'll also receive WhatsApp updates at each stage.</p>
+<h3>Cancelling an Order</h3>
+<p>You can cancel within <strong>2 hours</strong> of placing your order via My Orders, or by WhatsApp-ing us at <strong>+91 89190 11159</strong>.</p>
+<h3>Damaged or Wrong Item</h3>
+<p>Take a clear photo of the item and WhatsApp us within <strong>48 hours of delivery</strong>. We'll arrange a replacement or refund promptly.</p>
+<h3>Still Need Help?</h3>
+<p>📞 WhatsApp: <strong>+91 89190 11159</strong><br>✉️ Email: <strong>harikrishnarock444@gmail.com</strong><br>⏰ Available: Mon–Sat, 9 AM – 7 PM IST</p>`
+    },
+    faq: {
+        title: '❓ FAQs',
+        content: `
+<h3>Are your products 100% natural?</h3>
+<p>Yes. Every product is free from artificial colours, flavours, preservatives, and fillers. We source directly from farmers and trusted botanical suppliers.</p>
+<h3>Do you ship outside Hyderabad?</h3>
+<p>Yes — we deliver across Telangana (2–4 days) and Andhra Pradesh (3–5 days). We're expanding to more states soon.</p>
+<h3>Is Cash on Delivery available?</h3>
+<p>COD is available on orders above ₹499. For orders below ₹499, please use online payment (UPI / Card).</p>
+<h3>How do I know if a product suits me?</h3>
+<p>Each product page lists ingredients, benefits, and usage instructions. For personalised advice, WhatsApp us — we're happy to help.</p>
+<h3>Can I return a product?</h3>
+<p>Returns are accepted for wrong, damaged, or significantly misrepresented items within 48 hours of delivery. Used or consumed products are non-refundable.</p>
+<h3>How long does delivery take?</h3>
+<p>1–2 days within Hyderabad city, 2–4 days in Telangana, 3–5 days in Andhra Pradesh.</p>
+<h3>How do I contact support?</h3>
+<p>WhatsApp us at <strong>+91 89190 11159</strong> or email harikrishnarock444@gmail.com. We respond within a few hours on business days.</p>`
+    },
+    disclaimer: {
+        title: '⚠️ Disclaimer',
+        content: `
+<h3>Health & Medical Disclaimer</h3>
+<p>All products sold by Nature's Heal are <strong>food-grade herbal products</strong> intended for general wellness and nutritional supplementation only. They are <strong>not medicines</strong> and are not intended to diagnose, treat, cure, or prevent any disease or medical condition.</p>
+<h3>Consult a Professional</h3>
+<p>If you have a medical condition, are pregnant, breastfeeding, or are on medication, please consult a qualified healthcare professional before using any herbal supplement.</p>
+<h3>Individual Results</h3>
+<p>Results may vary from person to person. Testimonials and product descriptions reflect general wellness benefits and are not guarantees of specific outcomes.</p>
+<h3>Accuracy of Information</h3>
+<p>While we strive to ensure all product information on our platform is accurate and up to date, we do not warrant that descriptions or other content are error-free. Prices and availability are subject to change without notice.</p>
+<h3>External Links</h3>
+<p>Our platform may contain links to third-party sites (e.g., Razorpay, WhatsApp). We are not responsible for their content or privacy practices.</p>
+<h3>Governing Jurisdiction</h3>
+<p>This disclaimer is governed by Indian law. Any disputes are subject to the jurisdiction of courts in <strong>Hyderabad, Telangana</strong>.</p>`
     },
     shipping: {
         title: '🚚 Shipping Policy',
