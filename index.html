@@ -54,9 +54,15 @@
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://www.gstatic.com">
-    <link rel="preconnect" href="https://firestore.googleapis.com">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
     <link rel="dns-prefetch" href="https://checkout.razorpay.com">
+    <!-- modulepreload declares Firebase ESM imports as JS modules upfront,
+         eliminating the "preloaded but not used within a few seconds" warning
+         that fires when the browser speculatively fetches them without an `as` hint. -->
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js">
 
     <link rel="apple-touch-icon" href="icon_192.png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -4478,7 +4484,12 @@ let deferredPrompt;
 window.installApp = function() {
     if (!deferredPrompt) { showToast("Open in browser to install the app", true); return; }
     deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+    deferredPrompt.userChoice.then(choice => {
+        deferredPrompt = null;
+        const btn = document.getElementById("installBtn");
+        if (btn) btn.style.display = "none";
+        if (choice.outcome === "accepted") showToast("✅ App installed successfully!");
+    });
 };
 
 // ===== SERVICE WORKER =====
