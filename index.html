@@ -2675,12 +2675,12 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:#f0fdf4;color:#0f172a
     <i class="fab fa-whatsapp"></i> Order directly on WhatsApp
   </a>
 </div>
-<script>
+\x3Cscript>
 let _qty = ${item.minQty || 1};
 const _price = ${item.price || 0};
 const _step = ${item.step || 1};
 const _minQty = ${item.minQty || 1};
-const _qt = '${item.quantityType || 'unit'}';
+const _qt = '${(item.quantityType || 'unit').replace(/'/g, "\\'")}';
 function changeQty(dir) {
   let newQty = Math.round((_qty + dir * _step) * 1000) / 1000;
   if (newQty < _minQty) newQty = _minQty;
@@ -2688,10 +2688,10 @@ function changeQty(dir) {
   const label = _qt === 'bunch' ? (_qty === 1 ? 'bunch' : 'bunches') : _qt;
   const disp = Number.isInteger(_qty) ? _qty : _qty.toFixed(1);
   document.getElementById('qtyDisplay').textContent = disp + ' ' + label;
-  document.getElementById('subtotalDisplay').textContent = '₹' + (_price * _qty).toFixed(0);
+  document.getElementById('subtotalDisplay').textContent = '\\u20B9' + (_price * _qty).toFixed(0);
 }
 window._selectedQty = function() { return _qty; }
-</script>
+\x3C/script>
 </body>
 </html>`;
 
