@@ -625,13 +625,44 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 .loader-box p { font-weight: 700; color: #059669; }
 
 /* ===== FOOTER ===== */
-footer { background: var(--footer-bg); padding: 3rem 1rem; }
-.footer-inner { max-width: 1280px; margin: 0 auto; text-align: center; }
-.footer-logo { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 1.25rem; }
-.footer-socials { display: flex; justify-content: center; gap: 1.25rem; margin-bottom: 2rem; }
-.footer-socials a { width: 2.4rem; height: 2.4rem; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.6); font-size: 0.95rem; transition: all 0.2s; }
+footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
+.footer-inner { max-width: 1280px; margin: 0 auto; }
+.footer-top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    margin-bottom: 2.5rem;
+}
+@media(min-width:640px){ .footer-top { grid-template-columns: repeat(2,1fr); } }
+@media(min-width:1024px){ .footer-top { grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; } }
+
+.footer-brand { display: flex; flex-direction: column; gap: 1rem; }
+.footer-logo { display: flex; align-items: center; gap: 0.5rem; }
+.footer-tagline { font-size: 0.8rem; color: rgba(255,255,255,0.45); line-height: 1.65; max-width: 240px; }
+.footer-socials { display: flex; gap: 0.75rem; margin-top: 0.25rem; }
+.footer-socials a { width: 2.25rem; height: 2.25rem; border-radius: 50%; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.55); font-size: 0.9rem; transition: all 0.2s; }
 .footer-socials a:hover { background: #059669; color: white; transform: translateY(-2px); }
-.footer-copy { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); cursor: pointer; padding: 0.75rem 1rem; display: inline-block; user-select: none; -webkit-user-select: none; border-radius: 0.5rem; transition: color 0.2s; }
+
+.footer-col h4 {
+    font-family: 'Poppins', sans-serif; font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: #10b981;
+    margin-bottom: 1rem;
+}
+.footer-col ul { display: flex; flex-direction: column; gap: 0.55rem; }
+.footer-col ul li button, .footer-col ul li a {
+    font-size: 0.8rem; color: rgba(255,255,255,0.5); background: none; border: none;
+    cursor: pointer; padding: 0; text-align: left; transition: color 0.2s; display: block;
+    text-decoration: none;
+}
+.footer-col ul li button:hover, .footer-col ul li a:hover { color: white; }
+
+.footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 1.25rem;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem;
+    text-align: center;
+}
+.footer-copy { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); cursor: pointer; padding: 0.3rem 0.5rem; display: inline-block; user-select: none; -webkit-user-select: none; border-radius: 0.5rem; transition: color 0.2s; }
 
 /* ===== ADMIN TRIGGER ===== */
 .admin-trigger { display: none; }
@@ -668,19 +699,6 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 .policy-body p, .policy-body li { font-size: 0.83rem; line-height: 1.7; color: var(--text-muted); }
 .policy-body ul { list-style: disc; padding-left: 1.25rem; margin: 0.4rem 0; }
 .policy-body strong { color: var(--text-main); font-weight: 700; }
-
-/* ===== FOOTER POLICY LINKS ===== */
-.footer-policy {
-    display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 1rem;
-    margin: 1rem 0 0.5rem; padding-top: 1rem;
-    border-top: 1px solid rgba(255,255,255,0.08);
-}
-.footer-policy button {
-    font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.45);
-    background: none; border: none; cursor: pointer; padding: 0.15rem 0;
-    transition: color 0.2s; text-decoration: underline; text-underline-offset: 2px;
-}
-.footer-policy button:hover { color: rgba(255,255,255,0.8); }
 
 /* ===== STICKY CART BUTTON ===== */
 #stickyCartBtn {
@@ -1433,30 +1451,66 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
 <!-- FOOTER -->
 <footer>
     <div class="footer-inner">
-        <div class="footer-logo">
-            <div style="background:#059669;padding:0.4rem;border-radius:0.5rem"><i class="fas fa-leaf" style="color:white;font-size:1rem"></i></div>
-            <span style="font-family:'Poppins',sans-serif;font-size:1.4rem;font-weight:800;color:white">Nature's <span style="color:#10b981">Heal</span></span>
+        <div class="footer-top">
+            <!-- Brand column -->
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <div style="background:#059669;padding:0.4rem;border-radius:0.5rem"><i class="fas fa-leaf" style="color:white;font-size:1rem"></i></div>
+                    <span style="font-family:'Poppins',sans-serif;font-size:1.4rem;font-weight:800;color:white">Nature's <span style="color:#10b981">Heal</span></span>
+                </div>
+                <p class="footer-tagline">100% pure herbal powders, seeds &amp; botanical products — delivered fresh to your door across India.</p>
+                <div class="footer-socials">
+                    <a href="https://www.instagram.com/hari_krishna_ak/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.facebook.com/hari.krishna.arvapalli/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="https://www.youtube.com/@innovativespirits5261" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="https://wa.me/918919011159?text=Hi%2C%20I%20want%20to%20know%20more%20about%20Nature%27s%20Heal%20products" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+
+            <!-- Company column -->
+            <div class="footer-col">
+                <h4>Company</h4>
+                <ul>
+                    <li><button onclick="openPolicy('about')">About Us</button></li>
+                    <li><button onclick="openPolicy('story')">Our Story</button></li>
+                    <li><button onclick="openPolicy('mission')">Mission &amp; Vision</button></li>
+                    <li><button onclick="openPolicy('why')">Why Choose Us</button></li>
+                    <li><button onclick="openPolicy('careers')">Careers</button></li>
+                </ul>
+            </div>
+
+            <!-- Customer Support column -->
+            <div class="footer-col">
+                <h4>Customer Support</h4>
+                <ul>
+                    <li><a href="https://wa.me/918919011159" target="_blank" rel="noopener noreferrer">Contact Us</a></li>
+                    <li><button onclick="openPolicy('help')">Help Center</button></li>
+                    <li><button onclick="openPolicy('faq')">FAQs</button></li>
+                    <li><button onclick="showSection('orders')">Track Order</button></li>
+                    <li><button onclick="openPolicy('refund')">Return &amp; Refund Policy</button></li>
+                    <li><button onclick="openPolicy('shipping')">Shipping Policy</button></li>
+                </ul>
+            </div>
+
+            <!-- Legal column -->
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <ul>
+                    <li><button onclick="openPolicy('privacy')">Privacy Policy</button></li>
+                    <li><button onclick="openPolicy('terms')">Terms &amp; Conditions</button></li>
+                    <li><button onclick="openPolicy('disclaimer')">Disclaimer</button></li>
+                    <li><button onclick="openPolicy('refund')">Cancellation Policy</button></li>
+                </ul>
+            </div>
         </div>
-        <div class="footer-socials">
-            <a href="https://www.instagram.com/hari_krishna_ak/" target="_blank" rel="noopener noreferrer"><i class="fab fa-instagram"></i></a>
-            <a href="https://www.facebook.com/hari.krishna.arvapalli/" target="_blank" rel="noopener noreferrer"><i class="fab fa-facebook-f"></i></a>
-            <a href="https://www.youtube.com/@innovativespirits5261" target="_blank" rel="noopener noreferrer"><i class="fab fa-youtube"></i></a>
-            <a href="https://wa.me/918919011159?text=Hi%2C%20I%20want%20to%20know%20more%20about%20Nature%27s%20Heal%20products" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
-                <i class="fab fa-whatsapp"></i>
-            </a>
+
+        <!-- Bottom bar -->
+        <div class="footer-bottom">
+            <div class="footer-copy" id="adminFooterTrigger"
+                onclick="handleAdminTrigger()"
+                ontouchend="event.preventDefault(); handleAdminTrigger();"
+                title="Tap 5× to open admin">© 2026 Nature's Heal · All rights reserved</div>
         </div>
-        <!-- Policy Links (required for Razorpay Live mode) -->
-        <div class="footer-policy">
-            <button onclick="openPolicy('terms')">Terms &amp; Conditions</button>
-            <button onclick="openPolicy('privacy')">Privacy Policy</button>
-            <button onclick="openPolicy('refund')">Refund &amp; Cancellation</button>
-            <button onclick="openPolicy('shipping')">Shipping Policy</button>
-        </div>
-        <!-- Admin access: 5x click logo -->
-        <div class="footer-copy" id="adminFooterTrigger"
-            onclick="handleAdminTrigger()"
-            ontouchend="event.preventDefault(); handleAdminTrigger();"
-            title="Tap 5× to open admin">© 2026 Nature's Heal · All rights reserved</div>
     </div>
 </footer>
 
