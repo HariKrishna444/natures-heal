@@ -1087,9 +1087,6 @@ footer { background: var(--footer-bg); padding: 3rem 1rem; }
          that bypasses firebase.json (e.g. local file://, CDN edge, etc.)
          ═══════════════════════════════════════════════════════════════════════ -->
 
-    <!-- Prevent clickjacking (same as X-Frame-Options: SAMEORIGIN) -->
-    <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
-
     <!-- Prevent MIME-type sniffing -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
 
@@ -2242,6 +2239,26 @@ window.switchAuthTab = function(tab) {
     document.getElementById('googleTabBtn').classList.toggle('active', tab === 'google');
 };
 
+// ===== FIREBASE READY GUARD =====
+// The Firebase SDK loads as type="module" (deferred/async). window.onload in a
+// classic <script> can fire before the module assigns window.fb* globals.
+// This polls until window.fbCollection is ready, then resolves.
+function waitForFirebase(timeoutMs = 8000) {
+    return new Promise((resolve, reject) => {
+        if (typeof window.fbCollection === 'function') { resolve(); return; }
+        const start = Date.now();
+        const interval = setInterval(() => {
+            if (typeof window.fbCollection === 'function') {
+                clearInterval(interval);
+                resolve();
+            } else if (Date.now() - start > timeoutMs) {
+                clearInterval(interval);
+                reject(new Error('Firebase SDK did not initialise in time. Check your internet connection.'));
+            }
+        }, 50);
+    });
+}
+
 // ===== CATALOG (Firestore-only) =====
 async function loadCatalogFromFirestore(forceRefresh = false) {
     const now = Date.now();
@@ -2250,6 +2267,15 @@ async function loadCatalogFromFirestore(forceRefresh = false) {
     if (!forceRefresh && window.appState.catalogCache && (now - window.appState.catalogLastFetch < CACHE_TTL)) {
         window.appState.catalogData = window.appState.catalogCache;
         renderItems(getFilteredData());
+        return;
+    }
+
+    // Wait for Firebase module to finish assigning window.fb* globals before
+    // calling Firestore — fixes "window.fbCollection is not a function" race.
+    try {
+        await waitForFirebase();
+    } catch (e) {
+        showCatalogError(e.message, true);
         return;
     }
 
@@ -4383,25 +4409,30 @@ window.switchPolicy = function(tab) {
     if (activeTab) activeTab.classList.add('active');
 };
 let deferredPrompt;
-window.addEventListener("beforeinstallprompt", e => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('installBtn').style.display = 'block';
-});
+// Hide install button by default; only reveal once browser confirms installable
+(function() {
+    const btn = document.getElementById('installBtn');
+    if (btn) btn.style.display = 'none';
+    // Already installed as PWA — keep hidden
+    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    window.addEventListener("beforeinstallprompt", e => {
+        e.preventDefault(); // prevent mini-infobar; we show our own button
+        deferredPrompt = e;
+        if (btn) btn.style.display = 'block';
+    });
+})();
 window.installApp = function() {
-    if (!deferredPrompt) { showToast("Install not available", true); return; }
+    if (!deferredPrompt) { showToast("Open in browser to install the app", true); return; }
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
 };
-if (window.matchMedia('(display-mode: standalone)').matches) {
-    document.getElementById('installBtn').style.display = 'none';
-}
-setTimeout(() => { if (!deferredPrompt) document.getElementById('installBtn').style.display = 'none'; }, 5000);
 
 // ===== SERVICE WORKER =====
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/natures-heal/sw.js", { scope: "/natures-heal/" }).catch(() => {});
+        // Register at root — matches Firebase Hosting deployment at /
+        navigator.serviceWorker.register("/sw.js", { scope: "/" })
+            .catch(err => console.warn("SW registration failed:", err));
     });
 }
 
