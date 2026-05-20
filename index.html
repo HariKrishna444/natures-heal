@@ -2990,7 +2990,7 @@ window.openModalById = function(id) {
         <div class="pdp-fbt-title">🛒 Customers Also Buy</div>
         <div class="pdp-fbt-row">
             ${fbt.map(p => `
-            <div class="pdp-fbt-card" onclick="openModalById(${JSON.stringify(String(p.id))})" role="button" tabindex="0" aria-label="View ${escapeHTML(p.name)}">
+            <div class="pdp-fbt-card" onclick="openModalById(${JSON.stringify(String(p.id))});document.getElementById('itemModal').scrollTop=0;" role="button" tabindex="0" aria-label="View ${escapeHTML(p.name)}">
                 <div class="pdp-fbt-card-img">
                     <img src="${safeURL(p.image)}" alt="${escapeHTML(p.name)}" loading="lazy"
                         onerror="this.parentElement.style.background='#d1fae5'">
@@ -3080,9 +3080,6 @@ window.openModalById = function(id) {
         </button>
         <span class="pdp-back-title">${escapeHTML(item.name)}</span>
     </div>
-
-    <!-- Category filter strip -->
-    <div class="pdp-cat-strip" id="pdpCatStrip">${catChipsHTML}</div>
 
     <!-- Image gallery -->
     <div class="pdp-img-wrap" id="pdpGallery_${item.id}">
