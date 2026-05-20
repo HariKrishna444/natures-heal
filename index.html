@@ -518,6 +518,281 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 .rating-stars { color: #fbbf24; font-size: 0.8rem; }
 .rating-count { font-size: 0.75rem; color: rgba(255,255,255,0.6); }
 
+/* ===== FULL-PAGE PRODUCT DETAIL VIEW ===== */
+.product-page {
+    position: fixed; inset: 0; z-index: 120;
+    background: var(--bg-body); overflow-y: auto;
+    animation: pageFadeIn 0.25s ease-out;
+}
+@keyframes pageFadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.product-page-inner { max-width: 900px; margin: 0 auto; padding-bottom: 5rem; }
+
+/* Back bar */
+.pdp-back-bar {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--header-bg); padding: 0.65rem 1rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+}
+.pdp-back-btn {
+    display: flex; align-items: center; gap: 0.5rem;
+    color: white; font-weight: 700; font-size: 0.875rem;
+    background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 9999px; padding: 0.4rem 1rem;
+    transition: background 0.2s; cursor: pointer;
+}
+.pdp-back-btn:hover { background: rgba(255,255,255,0.3); }
+.pdp-back-title {
+    color: white; font-size: 0.9rem; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Hero image gallery */
+.pdp-img-wrap {
+    position: relative; width: 100%; background: #064e3b;
+    overflow: hidden; user-select: none;
+}
+
+/* Slider track */
+.pdp-img-track {
+    display: flex; transition: transform 0.38s cubic-bezier(0.4,0,0.2,1);
+    height: 442px;
+}
+@media(min-width:640px){ .pdp-img-track { height: 494px; } }
+@media(min-width:900px){ .pdp-img-track { height: 546px; } }
+
+.pdp-img-slide {
+    flex: 0 0 100%; min-width: 100%; position: relative;
+}
+.pdp-img-slide img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    pointer-events: none;
+}
+
+/* Prev / Next arrows */
+.pdp-img-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    z-index: 5; width: 2.5rem; height: 2.5rem; border-radius: 50%;
+    background: rgba(0,0,0,0.52); backdrop-filter: blur(4px);
+    color: white; border: none; cursor: pointer; font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s, opacity 0.2s; opacity: 0.85;
+}
+.pdp-img-arrow:hover { background: rgba(0,0,0,0.75); opacity: 1; }
+.pdp-img-arrow.prev { left: 0.65rem; }
+.pdp-img-arrow.next { right: 0.65rem; }
+.pdp-img-arrow.hidden-arrow { opacity: 0; pointer-events: none; }
+
+/* Dots */
+.pdp-img-dots {
+    position: absolute; bottom: 0.75rem; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 0.4rem; z-index: 5;
+}
+.pdp-img-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,0.45); border: none; cursor: pointer; padding: 0;
+    transition: background 0.2s, transform 0.2s;
+}
+.pdp-img-dot.active { background: white; transform: scale(1.35); }
+
+/* Thumbnail strip */
+.pdp-img-thumbs {
+    display: flex; gap: 0.5rem; padding: 0.65rem 1rem;
+    background: var(--bg-card); overflow-x: auto; scrollbar-width: none;
+    border-bottom: 1px solid var(--border-color);
+}
+.pdp-img-thumbs::-webkit-scrollbar { display: none; }
+.pdp-img-thumb {
+    flex-shrink: 0; width: 4rem; height: 4rem; border-radius: 0.6rem;
+    object-fit: cover; cursor: pointer; border: 2.5px solid transparent;
+    transition: border-color 0.2s, transform 0.2s; opacity: 0.7;
+}
+@media(min-width:640px){ .pdp-img-thumb { width: 5rem; height: 5rem; } }
+.pdp-img-thumb.active { border-color: #059669; opacity: 1; transform: scale(1.06); }
+
+.pdp-img-badges {
+    position: absolute; top: 0.75rem; left: 0.75rem;
+    display: flex; flex-direction: column; gap: 0.35rem;
+}
+.pdp-img-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(4px);
+    padding: 0.2rem 0.65rem; border-radius: 9999px;
+    font-size: 0.65rem; font-weight: 700; color: #065f46; letter-spacing: 0.04em;
+}
+.pdp-img-badge.bestseller { background: linear-gradient(135deg,#f59e0b,#d97706); color: white; }
+.pdp-img-badge.limited { background: linear-gradient(135deg,#f43f5e,#e11d48); color: white; animation: pulse 2s infinite; }
+.pdp-img-badge.oos { background: rgba(239,68,68,0.9); color: white; }
+.pdp-fav-btn {
+    position: absolute; top: 0.75rem; right: 0.75rem;
+    width: 2.5rem; height: 2.5rem; border-radius: 50%;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; border: none; cursor: pointer; transition: all 0.2s;
+}
+.pdp-fav-btn:hover { transform: scale(1.12); background: white; }
+
+/* Content area */
+.pdp-body { padding: 1.5rem 1rem 1rem; }
+@media(min-width:640px){ .pdp-body { padding: 2rem 1.5rem 1.5rem; } }
+@media(min-width:900px){ .pdp-body { display: grid; grid-template-columns: 1fr 340px; gap: 2.5rem; align-items: start; } }
+
+.pdp-main { min-width: 0; }
+.pdp-sidebar { }
+
+.pdp-name {
+    font-family: 'Poppins', sans-serif; font-size: clamp(1.4rem,4vw,2rem);
+    font-weight: 800; color: #059669; line-height: 1.2; margin-bottom: 0.25rem;
+}
+.pdp-scientific {
+    font-size: 0.85rem; font-style: italic; color: var(--text-muted); margin-bottom: 0.75rem;
+}
+.pdp-rating { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+.pdp-rating .stars { color: #f59e0b; font-size: 0.9rem; }
+.pdp-rating .count { font-size: 0.78rem; color: var(--text-muted); }
+
+.pdp-price-row {
+    display: flex; align-items: flex-end; gap: 0.75rem; margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-color);
+}
+.pdp-price { font-size: 2rem; font-weight: 800; color: #065f46; }
+.pdp-unit { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; padding-bottom: 0.3rem; }
+
+/* Qty selector */
+.pdp-qty-row {
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: 1rem; padding: 0.75rem 1rem;
+}
+.pdp-qty-label { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); }
+.pdp-qty-btn {
+    width: 2.25rem; height: 2.25rem; border-radius: 0.6rem; border: none;
+    font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+}
+.pdp-qty-minus { background: #fee2e2; color: #dc2626; }
+.pdp-qty-minus:hover { background: #ef4444; color: white; }
+.pdp-qty-plus { background: #d1fae5; color: #065f46; }
+.pdp-qty-plus:hover { background: #059669; color: white; }
+.pdp-qty-val { min-width: 5rem; text-align: center; font-weight: 800; font-size: 0.9rem; color: var(--text-main); }
+.pdp-qty-subtotal { margin-left: auto; font-weight: 800; font-size: 1rem; color: #059669; }
+
+/* CTA buttons */
+.pdp-cta-group {
+    display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;
+}
+.pdp-cta-add {
+    width: 100%; padding: 1rem 1.5rem; border-radius: 1rem; border: none;
+    background: #059669; color: white; font-weight: 800; font-size: 1rem;
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+    cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 18px rgba(5,150,105,0.35);
+}
+.pdp-cta-add:hover { background: #047857; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(5,150,105,0.45); }
+.pdp-cta-wa {
+    width: 100%; padding: 1rem 1.5rem; border-radius: 1rem; border: none;
+    background: #25D366; color: white; font-weight: 800; font-size: 0.95rem;
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+    cursor: pointer; transition: all 0.2s; text-decoration: none;
+    box-shadow: 0 4px 18px rgba(37,211,102,0.35);
+}
+.pdp-cta-wa:hover { background: #20ba5a; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(37,211,102,0.45); }
+.pdp-notify-btn {
+    width: 100%; padding: 0.9rem; border-radius: 1rem; border: none;
+    background: linear-gradient(135deg, #6366f1, #4f46e5); color: white;
+    font-weight: 800; font-size: 0.95rem;
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+    cursor: pointer; transition: all 0.2s;
+}
+.pdp-notify-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.pdp-preorder-btn {
+    width: 100%; padding: 0.9rem; border-radius: 1rem; border: none;
+    background: linear-gradient(135deg,#f59e0b,#d97706); color: white;
+    font-weight: 800; font-size: 0.95rem;
+    display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+    cursor: pointer; transition: all 0.2s;
+}
+.pdp-preorder-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* Info sections */
+.pdp-section {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: 1rem; padding: 1.1rem 1.25rem; margin-bottom: 1rem;
+}
+.pdp-section-title {
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: #059669; margin-bottom: 0.65rem;
+    display: flex; align-items: center; gap: 0.4rem;
+}
+.pdp-section p, .pdp-section li { font-size: 0.875rem; line-height: 1.7; color: var(--text-muted); }
+.pdp-uses-list { display: flex; flex-direction: column; gap: 0.3rem; }
+.pdp-uses-list li {
+    display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted);
+}
+.pdp-uses-list li::before { content: '✓'; color: #059669; font-weight: 800; flex-shrink: 0; margin-top: 0.05rem; }
+
+/* EDD */
+.pdp-edd {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1rem;
+    display: flex; align-items: flex-start; gap: 0.65rem;
+}
+.pdp-edd-icon { color: #059669; font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
+.pdp-edd-content { flex: 1; }
+.pdp-edd-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #059669; margin-bottom: 0.4rem; }
+.pdp-edd-inputs { display: flex; gap: 0.4rem; }
+.pdp-edd-pin {
+    flex: 1; padding: 0.45rem 0.75rem; border-radius: 0.65rem;
+    border: 1.5px solid var(--border-color); background: var(--input-bg);
+    color: var(--text-main); font-size: 0.82rem; outline: none; font-family: inherit;
+    transition: border-color 0.2s;
+}
+.pdp-edd-pin:focus { border-color: #059669; }
+.pdp-edd-check {
+    padding: 0.45rem 0.85rem; border-radius: 0.65rem;
+    background: #059669; color: white; font-size: 0.75rem; font-weight: 700;
+    border: none; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+}
+.pdp-edd-check:hover { background: #047857; }
+.pdp-edd-result { font-size: 0.8rem; margin-top: 0.4rem; color: var(--text-muted); }
+
+/* FBT section (full row, proper product cards) */
+.pdp-fbt {
+    margin-top: 2rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    grid-column: 1 / -1;
+}
+.pdp-fbt-title {
+    font-family: 'Poppins', sans-serif; font-size: 1.1rem; font-weight: 800;
+    color: #059669; margin-bottom: 1rem;
+}
+.pdp-fbt-row {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;
+}
+@media(min-width:480px){ .pdp-fbt-row { grid-template-columns: repeat(3, 1fr); } }
+@media(min-width:768px){ .pdp-fbt-row { grid-template-columns: repeat(4, 1fr); } }
+.pdp-fbt-card {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: 1rem; overflow: hidden; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: var(--shadow);
+}
+.pdp-fbt-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(5,150,105,0.18); }
+.pdp-fbt-card-img { position: relative; height: 7.5rem; overflow: hidden; }
+@media(min-width:640px){ .pdp-fbt-card-img { height: 10rem; } }
+.pdp-fbt-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+.pdp-fbt-card:hover .pdp-fbt-card-img img { transform: scale(1.07); }
+.pdp-fbt-card-body { padding: 0.65rem; }
+.pdp-fbt-card-name { font-size: 0.8rem; font-weight: 700; color: #059669; line-height: 1.3; margin-bottom: 0.2rem; }
+.pdp-fbt-card-price { font-size: 0.85rem; font-weight: 800; color: #065f46; }
+.pdp-fbt-card-unit { font-size: 0.6rem; font-weight: 500; color: var(--text-muted); }
+.pdp-fbt-add-btn {
+    width: 100%; margin-top: 0.4rem; padding: 0.45rem; border-radius: 0.65rem;
+    background: #d1fae5; color: #065f46; font-weight: 700; font-size: 0.72rem;
+    border: none; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+}
+.pdp-fbt-add-btn:hover { background: #059669; color: white; }
+
 /* ===== AUTH MODAL ===== */
 #authModal { z-index: 130; }
 .auth-box {
@@ -1527,8 +1802,8 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
 </footer>
 
 <!-- ========== ITEM DETAIL MODAL ========== -->
-<div id="itemModal" role="dialog" aria-modal="true" aria-label="Product details" class="modal-overlay hidden">
-    <div class="item-modal-box" id="itemModalContent"></div>
+<div id="itemModal" role="dialog" aria-modal="true" aria-label="Product details" class="product-page hidden">
+    <div class="product-page-inner" id="itemModalContent"></div>
 </div>
 
 <!-- ========== SHIPPING + ORDER MODAL ========== -->
@@ -2654,110 +2929,273 @@ function renderItems(items) {
     });
 }
 
-// ===== ITEM DETAIL MODAL =====
+// ===== ITEM DETAIL — FULL-PAGE VIEW =====
 window.openModalById = function(id) {
     const item = window.appState.catalogData.find(i => String(i.id) === String(id));
     if (!item) return;
     const isOutOfStock = item.stock === '0' || item.stock === 'out';
+    const isBestseller = item.bestseller === '1' || item.bestseller === 'true';
+    const limitedOffer = item.limited_offer === 'true' || item.limited_offer === '1';
     const starData = getStarRating(item);
     const starsStr = starData ? '★'.repeat(Math.floor(starData.r)) + (starData.r % 1 ? '☆' : '') : '';
+    const isFav = AppStore.get('favorites').map(String).includes(String(item.id));
+    const waMsg = `Hi! I want to order *${item.name}* from Nature's Heal. Please share the details!`;
+    const fbt = getFrequentlyBoughtTogether(item.id, window.appState.catalogData, 4);
+
+    // --- Build gallery images ---
+    // Primary image from Firestore; extras from item.images array or item.image2/3/4 fields
+    const mainImg = safeURL(item.image);
+    const extraImgs = [];
+    if (Array.isArray(item.images)) {
+        item.images.forEach(u => { const s = safeURL(u); if (s && s !== mainImg) extraImgs.push(s); });
+    }
+    ['image2','image3','image4'].forEach(k => {
+        if (item[k]) { const s = safeURL(item[k]); if (s && s !== mainImg && !extraImgs.includes(s)) extraImgs.push(s); }
+    });
+    const galleryImgs = [mainImg, ...extraImgs].filter(Boolean);
+
+    const badgesHTML = [
+        isBestseller ? `<span class="pdp-img-badge bestseller">🏆 Best Seller</span>` : '',
+        limitedOffer && !isOutOfStock ? `<span class="pdp-img-badge limited">🔥 Limited Offer</span>` : '',
+        isOutOfStock ? `<span class="pdp-img-badge oos">Out of Stock</span>` : '',
+        !isBestseller && !limitedOffer && !isOutOfStock ? `<span class="pdp-img-badge">${String(item.type||'botanical').replace('_',' ')}</span>` : '',
+    ].filter(Boolean).join('');
+
+    const usesItems = (item.uses || '').split(',').filter(u => u.trim())
+        .map(u => `<li>${escapeHTML(u.trim())}</li>`).join('');
+
+    const fbtHTML = fbt.length ? `
+    <div class="pdp-fbt">
+        <div class="pdp-fbt-title">🛒 Customers Also Buy</div>
+        <div class="pdp-fbt-row">
+            ${fbt.map(p => `
+            <div class="pdp-fbt-card" onclick="openModalById(${JSON.stringify(String(p.id))})">
+                <div class="pdp-fbt-card-img">
+                    <img src="${safeURL(p.image)}" alt="${escapeHTML(p.name)}" loading="lazy"
+                        onerror="this.parentElement.style.background='#d1fae5'">
+                </div>
+                <div class="pdp-fbt-card-body">
+                    <div class="pdp-fbt-card-name">${escapeHTML(p.name)}</div>
+                    <div class="pdp-fbt-card-price">₹${(p.price||0).toFixed(p.quantityType==='g'?2:0)}<span class="pdp-fbt-card-unit"> /${p.quantityType||'unit'}</span></div>
+                    <button class="pdp-fbt-add-btn" onclick="event.stopPropagation();addToCartSimple(${JSON.stringify(String(p.id))});showToast('✅ Added to cart')">
+                        <i class="fas fa-cart-plus"></i> Add to Cart
+                    </button>
+                </div>
+            </div>`).join('')}
+        </div>
+    </div>` : '';
+
+    const ctaHTML = isOutOfStock
+        ? `<button class="pdp-notify-btn" onclick="notifyMe('${escapeHTML(item.name).replace(/'/g,"\\'")}')">
+                <i class="fas fa-bell"></i> Notify Me When Available
+           </button>
+           <button class="pdp-preorder-btn" onclick="preOrderWhatsApp('${escapeHTML(item.name).replace(/'/g,"\\'")}')">
+                <i class="fab fa-whatsapp"></i> Pre-Order via WhatsApp
+           </button>`
+        : `<button class="pdp-cta-add" onclick="addToCartFromModal('${item.id}');openCartSidebar();">
+                <i class="fas fa-shopping-cart"></i> Add to Cart
+           </button>
+           <a class="pdp-cta-wa" href="https://wa.me/918919011159?text=${encodeURIComponent(waMsg)}" target="_blank" rel="noopener noreferrer">
+                <i class="fab fa-whatsapp"></i> Order on WhatsApp
+           </a>`;
+
+    // Gallery HTML
+    const slidesHTML = galleryImgs.map((src, i) => `
+        <div class="pdp-img-slide">
+            <img src="${src}" alt="${escapeHTML(item.name)} — image ${i+1}" loading="${i===0?'eager':'lazy'}">
+        </div>`).join('');
+
+    const dotsHTML = galleryImgs.length > 1
+        ? `<div class="pdp-img-dots" id="pdpDots_${item.id}">
+            ${galleryImgs.map((_,i) => `<button class="pdp-img-dot${i===0?' active':''}" onclick="pdpGoTo(${i},'${item.id}')" aria-label="Image ${i+1}"></button>`).join('')}
+           </div>` : '';
+
+    const arrowsHTML = galleryImgs.length > 1
+        ? `<button class="pdp-img-arrow prev hidden-arrow" id="pdpPrev_${item.id}" onclick="pdpNav(-1,'${item.id}')" aria-label="Previous image">
+                <i class="fas fa-chevron-left"></i>
+           </button>
+           <button class="pdp-img-arrow next" id="pdpNext_${item.id}" onclick="pdpNav(1,'${item.id}')" aria-label="Next image">
+                <i class="fas fa-chevron-right"></i>
+           </button>` : '';
+
+    const thumbsHTML = galleryImgs.length > 1
+        ? `<div class="pdp-img-thumbs" id="pdpThumbs_${item.id}">
+            ${galleryImgs.map((src, i) => `
+            <img class="pdp-img-thumb${i===0?' active':''}" src="${src}" alt="Thumbnail ${i+1}"
+                 onclick="pdpGoTo(${i},'${item.id}')" loading="lazy"
+                 onerror="this.style.display='none'">`).join('')}
+           </div>` : '';
 
     document.getElementById('itemModalContent').innerHTML = `
-    <div class="item-modal-img">
-        <img src="${safeURL(item.image)}" alt="${escapeHTML(item.name)}">
-        <button class="item-modal-close" onclick="closeItemModal()" aria-label="Close product details"><i class="fas fa-times" aria-hidden="true"></i></button>
+    <!-- Back bar -->
+    <div class="pdp-back-bar">
+        <button class="pdp-back-btn" onclick="closeItemModal()" aria-label="Back to catalog">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
+        <span class="pdp-back-title">${escapeHTML(item.name)}</span>
     </div>
-    <div class="item-modal-body">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">
-            <div>
-                <div class="item-modal-name">${escapeHTML(item.name)}</div>
-                <div class="item-modal-scientific">${escapeHTML(item.scientific || '')}</div>
-            </div>
-            <div>
-                <div class="item-modal-price">₹${(item.price || 0).toFixed(item.quantityType === 'g' ? 2 : 0)}</div>
-                <div style="font-size:0.65rem;color:var(--text-muted);text-align:right">per ${item.quantityType || 'unit'}</div>
-            </div>
-        </div>
-        ${starData ? `<div class="item-modal-ratings">
-            <span class="rating-stars">${starsStr}</span>
-            <span class="rating-count">${starData.r} (${starData.count} reviews)</span>
-        </div>` : ''}
-        <div style="display:flex;align-items:center;gap:0.75rem;margin:0.75rem 0;padding:0.65rem;background:rgba(255,255,255,0.12);border-radius:0.75rem;border:1px solid rgba(255,255,255,0.2)">
-            <span style="font-size:0.78rem;color:rgba(255,255,255,0.85);font-weight:600">Qty:</span>
-            <button onclick="modalQtyChange('${item.id}', -1)" style="width:1.8rem;height:1.8rem;border-radius:0.4rem;background:#fee2e2;color:#dc2626;font-weight:700;font-size:1rem;border:none;cursor:pointer">−</button>
-            <span id="modalQtyVal_${item.id}" style="min-width:3.5rem;text-align:center;font-weight:700;font-size:0.85rem;color:white">${item.minQty || 1} ${item.quantityType || 'unit'}</span>
-            <button onclick="modalQtyChange('${item.id}', 1)" style="width:1.8rem;height:1.8rem;border-radius:0.4rem;background:#d1fae5;color:#065f46;font-weight:700;font-size:1rem;border:none;cursor:pointer">+</button>
-            <span id="modalSubtotal_${item.id}" style="margin-left:auto;font-weight:800;color:#34d399;font-size:0.9rem">₹${((item.price || 0) * (item.minQty || 1)).toFixed(0)}</span>
-        </div>
-        <div class="item-modal-section">
-            <div class="item-modal-section-title">Description</div>
-            <p>${escapeHTML(item.description || 'No description available.')}</p>
-        </div>
-        <div class="item-modal-section">
-            <div class="item-modal-section-title">Key Benefits</div>
-            <ul class="item-modal-uses">
-                ${(item.uses || "").split(',').filter(u => u.trim()).map(u =>
-                    `<li>${escapeHTML(u.trim())}</li>`).join('')}
-            </ul>
-        </div>
-        ${isOutOfStock
-            ? `<div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:1.25rem">
-                <button class="notify-me-btn" onclick="notifyMe('${escapeHTML(item.name).replace(/'/g,"\\'")}')">
-                    <i class="fas fa-bell"></i> Notify Me When Available
-                </button>
-                <button class="item-modal-cta" style="background:linear-gradient(135deg,#f59e0b,#d97706)" onclick="preOrderWhatsApp('${escapeHTML(item.name).replace(/'/g,"\\'")}')">
-                    <i class="fab fa-whatsapp"></i> Pre-Order via WhatsApp
-                </button>
-               </div>`
-            : `<button class="item-modal-cta" onclick="addToCartFromModal('${item.id}'); closeItemModal(); openCartSidebar();">
-                🛒 Add to Cart
-               </button>`
-        }
 
-        <!-- EDD widget -->
-        <div class="edd-wrap" style="margin-top:0.9rem">
-            <span class="edd-icon"><i class="fas fa-shipping-fast"></i></span>
-            <div style="flex:1">
-                <div class="edd-text" style="margin-bottom:0.4rem">Check delivery date for your pincode:</div>
-                <div class="edd-input-wrap">
-                    <input class="edd-pincode-input" id="eddPinInput_${item.id}" type="tel" maxlength="6" inputmode="numeric" placeholder="Enter 6-digit pincode" oninput="if(this.value.length===6)checkEDD(this.value,'eddResult_${item.id}')">
-                    <button class="edd-check-btn" onclick="checkEDD(document.getElementById('eddPinInput_${item.id}').value,'eddResult_${item.id}')">Check</button>
+    <!-- Image gallery -->
+    <div class="pdp-img-wrap" id="pdpGallery_${item.id}">
+        <div class="pdp-img-track" id="pdpTrack_${item.id}">${slidesHTML}</div>
+        ${arrowsHTML}
+        ${dotsHTML}
+        <div class="pdp-img-badges">${badgesHTML}</div>
+        <button class="pdp-fav-btn" id="pdpFavBtn_${item.id}" onclick="toggleFav(event,'${item.id}')" aria-label="${isFav?'Remove from wishlist':'Add to wishlist'}">
+            <i class="${isFav?'fas':'far'} fa-heart" style="color:${isFav?'#f43f5e':'#94a3b8'}"></i>
+        </button>
+    </div>
+    ${thumbsHTML}
+
+    <!-- Body -->
+    <div class="pdp-body">
+        <!-- Main column -->
+        <div class="pdp-main">
+            <h1 class="pdp-name">${escapeHTML(item.name)}</h1>
+            ${item.scientific ? `<p class="pdp-scientific">${escapeHTML(item.scientific)}</p>` : ''}
+            ${starData ? `<div class="pdp-rating">
+                <span class="stars">${starsStr}</span>
+                <span class="count">${starData.r} · ${starData.count} reviews</span>
+            </div>` : ''}
+
+            <div class="pdp-price-row">
+                <span class="pdp-price">₹${(item.price||0).toFixed(item.quantityType==='g'?2:0)}</span>
+                <span class="pdp-unit">per ${item.quantityType||'unit'}</span>
+                ${isOutOfStock ? '<span style="font-size:0.8rem;font-weight:700;color:#ef4444;padding:0.25rem 0.75rem;background:#fee2e2;border-radius:9999px;">Out of Stock</span>' : ''}
+            </div>
+
+            <!-- Qty picker (only if in stock) -->
+            ${!isOutOfStock ? `
+            <div class="pdp-qty-row">
+                <span class="pdp-qty-label">Qty:</span>
+                <button class="pdp-qty-btn pdp-qty-minus" onclick="modalQtyChange('${item.id}',-1)">−</button>
+                <span class="pdp-qty-val" id="modalQtyVal_${item.id}">${item.minQty||1} ${item.quantityType||'unit'}</span>
+                <button class="pdp-qty-btn pdp-qty-plus" onclick="modalQtyChange('${item.id}',1)">+</button>
+                <span class="pdp-qty-subtotal" id="modalSubtotal_${item.id}">₹${((item.price||0)*(item.minQty||1)).toFixed(0)}</span>
+            </div>` : ''}
+
+            <!-- CTAs -->
+            <div class="pdp-cta-group">${ctaHTML}</div>
+
+            <!-- Description -->
+            <div class="pdp-section">
+                <div class="pdp-section-title"><i class="fas fa-leaf"></i> Description</div>
+                <p>${escapeHTML(item.description || 'Pure natural product. No additives or preservatives.')}</p>
+            </div>
+
+            <!-- Benefits -->
+            ${usesItems ? `<div class="pdp-section">
+                <div class="pdp-section-title"><i class="fas fa-heart"></i> Key Benefits</div>
+                <ul class="pdp-uses-list">${usesItems}</ul>
+            </div>` : ''}
+        </div>
+
+        <!-- Sidebar (sticky on desktop) -->
+        <div class="pdp-sidebar">
+            <!-- EDD -->
+            <div class="pdp-edd">
+                <div class="pdp-edd-icon"><i class="fas fa-shipping-fast"></i></div>
+                <div class="pdp-edd-content">
+                    <div class="pdp-edd-label">Check Delivery Date</div>
+                    <div class="pdp-edd-inputs">
+                        <input class="pdp-edd-pin" id="eddPinInput_${item.id}" type="tel" maxlength="6" inputmode="numeric"
+                            placeholder="6-digit pincode"
+                            oninput="if(this.value.length===6)checkEDD(this.value,'pdpEddResult_${item.id}')">
+                        <button class="pdp-edd-check" onclick="checkEDD(document.getElementById('eddPinInput_${item.id}').value,'pdpEddResult_${item.id}')">Check</button>
+                    </div>
+                    <div id="pdpEddResult_${item.id}" class="pdp-edd-result"></div>
                 </div>
-                <div id="eddResult_${item.id}" style="margin-top:0.4rem;font-size:0.75rem"></div>
+            </div>
+
+            <!-- Trust pills -->
+            <div class="pdp-section">
+                <div class="pdp-section-title"><i class="fas fa-shield-alt"></i> Why Nature's Heal</div>
+                <div style="display:flex;flex-direction:column;gap:0.55rem">
+                    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> 100% Pure — No additives or fillers</div>
+                    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> Free delivery on first order & above ₹499</div>
+                    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> Cash on Delivery available (orders ₹499+)</div>
+                    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> Same-day dispatch (orders before 2 PM)</div>
+                </div>
             </div>
         </div>
 
-        <div style="margin-top:0.75rem;text-align:center">
-            <a href="https://wa.me/${918919011159}?text=Hi%2C%20I%20want%20to%20order%20${encodeURIComponent(item.name)}" target="_blank" rel="noopener noreferrer" style="font-size:0.8rem;color:#25D366;font-weight:600">
-                <i class="fab fa-whatsapp"></i> Order directly on WhatsApp
-            </a>
-        </div>
-
-        <!-- Frequently Bought Together -->
-        ${(function(){
-            const fbt = getFrequentlyBoughtTogether(item.id, window.appState.catalogData, 4);
-            if (!fbt.length) return '';
-            return `<div class="fbt-section">
-                <div class="fbt-title">🛒 Frequently Bought Together</div>
-                <div class="fbt-items">
-                    ${fbt.map(p => `
-                    <div class="fbt-item" onclick="closeItemModal();setTimeout(()=>openModalById(${p.id}),200)">
-                        <img class="fbt-img" src="${safeURL(p.image)}" alt="${escapeHTML(p.name)}" onerror="this.style.display='none'">
-                        <div class="fbt-info">
-                            <div class="fbt-name">${escapeHTML(p.name)}</div>
-                            <div class="fbt-price">₹${p.price}/${p.quantityType||'unit'}</div>
-                        </div>
-                    </div>`).join('')}
-                </div>
-            </div>`;
-        })()}
+        <!-- FBT row — spans full width on desktop -->
+        ${fbtHTML}
     </div>`;
 
     document.getElementById('itemModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
-    // SEO: update meta tags and URL for this product
+    document.getElementById('itemModal').scrollTop = 0;
     updateMetaForProduct(item);
+
+    // Init gallery state & touch/swipe
+    window._pdpGallery = { idx: 0, total: galleryImgs.length, itemId: String(item.id) };
+    _initPdpSwipe(item.id, galleryImgs.length);
 };
+
+// ===== GALLERY HELPERS =====
+window.pdpGoTo = function(idx, itemId) {
+    const g = window._pdpGallery;
+    if (!g || g.itemId !== String(itemId)) return;
+    g.idx = Math.max(0, Math.min(idx, g.total - 1));
+    _pdpUpdateGallery(itemId);
+};
+
+window.pdpNav = function(dir, itemId) {
+    const g = window._pdpGallery;
+    if (!g || g.itemId !== String(itemId)) return;
+    g.idx = Math.max(0, Math.min(g.idx + dir, g.total - 1));
+    _pdpUpdateGallery(itemId);
+};
+
+function _pdpUpdateGallery(itemId) {
+    const g = window._pdpGallery;
+    if (!g) return;
+    const track = document.getElementById('pdpTrack_' + itemId);
+    const dots = document.querySelectorAll('#pdpDots_' + itemId + ' .pdp-img-dot');
+    const thumbs = document.querySelectorAll('#pdpThumbs_' + itemId + ' .pdp-img-thumb');
+    const prevBtn = document.getElementById('pdpPrev_' + itemId);
+    const nextBtn = document.getElementById('pdpNext_' + itemId);
+    if (track) track.style.transform = `translateX(-${g.idx * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === g.idx));
+    thumbs.forEach((t, i) => {
+        t.classList.toggle('active', i === g.idx);
+        if (i === g.idx) t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    });
+    if (prevBtn) prevBtn.classList.toggle('hidden-arrow', g.idx === 0);
+    if (nextBtn) nextBtn.classList.toggle('hidden-arrow', g.idx === g.total - 1);
+}
+
+function _initPdpSwipe(itemId, total) {
+    if (total <= 1) return;
+    const wrap = document.getElementById('pdpGallery_' + itemId);
+    if (!wrap) return;
+    let startX = 0, startY = 0, isDragging = false;
+    wrap.addEventListener('touchstart', e => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        isDragging = true;
+    }, { passive: true });
+    wrap.addEventListener('touchend', e => {
+        if (!isDragging) return;
+        isDragging = false;
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+            pdpNav(dx < 0 ? 1 : -1, itemId);
+        }
+    }, { passive: true });
+    // Mouse drag support for desktop
+    let mouseStartX = 0, mouseDown = false;
+    wrap.addEventListener('mousedown', e => { mouseStartX = e.clientX; mouseDown = true; });
+    wrap.addEventListener('mouseup', e => {
+        if (!mouseDown) return;
+        mouseDown = false;
+        const dx = e.clientX - mouseStartX;
+        if (Math.abs(dx) > 40) pdpNav(dx < 0 ? 1 : -1, itemId);
+    });
+    wrap.addEventListener('mouseleave', () => { mouseDown = false; });
+}
 
 window.closeItemModal = function() {
     document.getElementById('itemModal').classList.add('hidden');
@@ -3705,7 +4143,10 @@ function buildAdminHTML() {
                                 <input id="ap_step" class="form-input" type="number" placeholder="e.g. 1 or 50" min="0.01" step="0.01">
                             </div>
                         </div>
-                        <input id="ap_image" class="form-input" placeholder="Image URL (https://...)">
+                        <input id="ap_image" class="form-input" placeholder="Main Image URL (https://...)">
+                        <input id="ap_image2" class="form-input" placeholder="Extra Image 2 URL (optional)">
+                        <input id="ap_image3" class="form-input" placeholder="Extra Image 3 URL (optional)">
+                        <input id="ap_image4" class="form-input" placeholder="Extra Image 4 URL (optional)">
                         <textarea id="ap_description" class="form-input form-textarea" placeholder="Description"></textarea>
                         <textarea id="ap_uses" class="form-input" placeholder="Benefits / Uses (comma separated)" style="min-height:3.5rem"></textarea>
                         <button id="adminAddProductBtn" onclick="adminAddProduct()" class="submit-btn" style="background:#4f46e5">
@@ -3948,21 +4389,28 @@ window.adminAddProduct = async function() {
     const minQty = parseFloat(document.getElementById('ap_minQty').value) || 1;
     const step = parseFloat(document.getElementById('ap_step').value) || 1;
     const image = document.getElementById('ap_image').value.trim();
+    const image2 = document.getElementById('ap_image2')?.value.trim() || '';
+    const image3 = document.getElementById('ap_image3')?.value.trim() || '';
+    const image4 = document.getElementById('ap_image4')?.value.trim() || '';
     const description = document.getElementById('ap_description').value.trim();
     const uses = document.getElementById('ap_uses').value.trim();
 
     if (!name || name.length < 3) return showToast("Product name must be at least 3 characters", true);
     if (!price || price <= 0) return showToast("Invalid price. Must be greater than ₹0", true);
     if (image && !image.startsWith('https://')) return showToast("Image URL must start with https://", true);
+    [image2,image3,image4].filter(Boolean).forEach(u => {
+        if (!u.startsWith('https://')) return showToast("Extra image URLs must start with https://", true);
+    });
 
     const btn = document.getElementById('adminAddProductBtn');
     if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
 
     try {
         if (typeof window.adminSaveProduct !== 'function') throw new Error("Firebase not ready");
-        await window.adminSaveProduct({ name, scientific, type, price, quantityType, minQty, step, image, description, uses });
+        const extraImages = [image2, image3, image4].filter(Boolean);
+        await window.adminSaveProduct({ name, scientific, type, price, quantityType, minQty, step, image, image2, image3, image4, images: extraImages, description, uses });
         showToast("✅ Product added to Firestore!");
-        ['ap_name','ap_scientific','ap_price','ap_image','ap_description','ap_uses','ap_minQty','ap_step'].forEach(id => {
+        ['ap_name','ap_scientific','ap_price','ap_image','ap_image2','ap_image3','ap_image4','ap_description','ap_uses','ap_minQty','ap_step'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.value = '';
         });
@@ -4353,9 +4801,9 @@ function resetMeta() {
 
 // Handle browser back button for product pages
 window.addEventListener('popstate', (e) => {
-    if (!e.state?.productId) {
-        document.getElementById('itemModal')?.classList.add('hidden');
-        document.body.style.overflow = '';
+    const modal = document.getElementById('itemModal');
+    if (modal && !modal.classList.contains('hidden')) {
+        closeItemModal();
     }
 });
 
