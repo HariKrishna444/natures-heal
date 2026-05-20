@@ -786,12 +786,27 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 .pdp-fbt-card-price { font-size: 0.85rem; font-weight: 800; color: #065f46; }
 .pdp-fbt-card-unit { font-size: 0.6rem; font-weight: 500; color: var(--text-muted); }
 .pdp-fbt-add-btn {
-    width: 100%; margin-top: 0.4rem; padding: 0.45rem; border-radius: 0.65rem;
-    background: #d1fae5; color: #065f46; font-weight: 700; font-size: 0.72rem;
+    flex: 1; padding: 0.45rem 0.35rem; border-radius: 0.65rem;
+    background: #d1fae5; color: #065f46; font-weight: 700; font-size: 0.7rem;
     border: none; cursor: pointer; transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+    display: flex; align-items: center; justify-content: center; gap: 0.25rem;
 }
 .pdp-fbt-add-btn:hover { background: #059669; color: white; }
+.pdp-fbt-card-desc {
+    font-size: 0.68rem; color: var(--text-muted); line-height: 1.45;
+    margin: 0.3rem 0 0.4rem;
+    overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+}
+.pdp-fbt-card-actions {
+    display: flex; gap: 0.35rem; margin-top: 0.4rem;
+}
+.pdp-fbt-view-btn {
+    flex: 1; padding: 0.45rem 0.35rem; border-radius: 0.65rem;
+    background: #ede9fe; color: #6d28d9; font-weight: 700; font-size: 0.7rem;
+    border: none; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 0.25rem;
+}
+.pdp-fbt-view-btn:hover { background: #7c3aed; color: white; }
 
 /* ===== AUTH MODAL ===== */
 #authModal { z-index: 130; }
@@ -2969,17 +2984,23 @@ window.openModalById = function(id) {
         <div class="pdp-fbt-title">🛒 Customers Also Buy</div>
         <div class="pdp-fbt-row">
             ${fbt.map(p => `
-            <div class="pdp-fbt-card" onclick="openModalById(${JSON.stringify(String(p.id))})">
-                <div class="pdp-fbt-card-img">
+            <div class="pdp-fbt-card">
+                <div class="pdp-fbt-card-img" onclick="openModalById(${JSON.stringify(String(p.id))})">
                     <img src="${safeURL(p.image)}" alt="${escapeHTML(p.name)}" loading="lazy"
                         onerror="this.parentElement.style.background='#d1fae5'">
                 </div>
                 <div class="pdp-fbt-card-body">
                     <div class="pdp-fbt-card-name">${escapeHTML(p.name)}</div>
                     <div class="pdp-fbt-card-price">₹${(p.price||0).toFixed(p.quantityType==='g'?2:0)}<span class="pdp-fbt-card-unit"> /${p.quantityType||'unit'}</span></div>
-                    <button class="pdp-fbt-add-btn" onclick="event.stopPropagation();addToCartSimple(${JSON.stringify(String(p.id))});showToast('✅ Added to cart')">
-                        <i class="fas fa-cart-plus"></i> Add to Cart
-                    </button>
+                    ${p.description ? `<div class="pdp-fbt-card-desc">${escapeHTML(p.description)}</div>` : ''}
+                    <div class="pdp-fbt-card-actions">
+                        <button class="pdp-fbt-add-btn" onclick="event.stopPropagation();addToCartSimple(${JSON.stringify(String(p.id))});showToast('✅ Added to cart')">
+                            <i class="fas fa-cart-plus"></i> Add
+                        </button>
+                        <button class="pdp-fbt-view-btn" onclick="openModalById(${JSON.stringify(String(p.id))})">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </div>
                 </div>
             </div>`).join('')}
         </div>
@@ -3064,6 +3085,18 @@ window.openModalById = function(id) {
                 ${isOutOfStock ? '<span style="font-size:0.8rem;font-weight:700;color:#ef4444;padding:0.25rem 0.75rem;background:#fee2e2;border-radius:9999px;">Out of Stock</span>' : ''}
             </div>
 
+            <!-- Description -->
+            <div class="pdp-section">
+                <div class="pdp-section-title"><i class="fas fa-leaf"></i> Description</div>
+                <p>${escapeHTML(item.description || 'Pure natural product. No additives or preservatives.')}</p>
+            </div>
+
+            <!-- Benefits -->
+            ${usesItems ? `<div class="pdp-section">
+                <div class="pdp-section-title"><i class="fas fa-heart"></i> Key Benefits</div>
+                <ul class="pdp-uses-list">${usesItems}</ul>
+            </div>` : ''}
+
             <!-- Qty picker (only if in stock) -->
             ${!isOutOfStock ? `
             <div class="pdp-qty-row">
@@ -3076,18 +3109,6 @@ window.openModalById = function(id) {
 
             <!-- CTAs -->
             <div class="pdp-cta-group">${ctaHTML}</div>
-
-            <!-- Description -->
-            <div class="pdp-section">
-                <div class="pdp-section-title"><i class="fas fa-leaf"></i> Description</div>
-                <p>${escapeHTML(item.description || 'Pure natural product. No additives or preservatives.')}</p>
-            </div>
-
-            <!-- Benefits -->
-            ${usesItems ? `<div class="pdp-section">
-                <div class="pdp-section-title"><i class="fas fa-heart"></i> Key Benefits</div>
-                <ul class="pdp-uses-list">${usesItems}</ul>
-            </div>` : ''}
         </div>
 
         <!-- Sidebar (sticky on desktop) -->
