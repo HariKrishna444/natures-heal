@@ -274,7 +274,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     box-shadow: var(--shadow);
 }
 .product-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(5,150,105,0.18); }
-.card-img-wrap { position: relative; height: 7.5rem; overflow: hidden; }
+.card-img-wrap { position: relative; height: 6.375rem; overflow: hidden; }
 @media(min-width:640px){ .card-img-wrap { height: 9.5rem; } }
 @media(min-width:768px){ .card-img-wrap { height: 13rem; } }
 .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
@@ -754,22 +754,6 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 }
 .pdp-edd-check:hover { background: #047857; }
 .pdp-edd-result { font-size: 0.8rem; margin-top: 0.4rem; color: var(--text-muted); }
-
-/* ===== PDP CATEGORY STRIP ===== */
-.pdp-cat-strip {
-    display: flex; gap: 0.4rem; overflow-x: auto; padding: 0.55rem 1rem;
-    background: var(--header-bg); border-bottom: 1px solid rgba(255,255,255,0.12);
-    -webkit-overflow-scrolling: touch; scrollbar-width: none; position: sticky; top: 3rem; z-index: 9;
-}
-.pdp-cat-strip::-webkit-scrollbar { display: none; }
-.pdp-cat-chip {
-    flex-shrink: 0; padding: 0.3rem 0.8rem; border-radius: 9999px;
-    background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.2);
-    color: rgba(255,255,255,0.85); font-size: 0.76rem; font-weight: 600;
-    cursor: pointer; transition: all 0.2s; white-space: nowrap;
-}
-.pdp-cat-chip:hover { background: rgba(255,255,255,0.25); color: white; }
-.pdp-cat-chip.active { background: white; color: #065f46; border-color: white; font-weight: 700; }
 
 /* FBT section (full row, proper product cards) */
 .pdp-fbt {
@@ -3048,42 +3032,12 @@ window.openModalById = function(id) {
                  onerror="this.style.display='none'">`).join('')}
            </div>` : '';
 
-    // Build category chips from live catalog
-    const allCategories = [...new Set((window.appState.catalogData||[]).map(p => p.type).filter(Boolean))];
-    const categoryMeta = {
-        leaf:      { emoji: '🍃', label: 'Leaves'      },
-        fruit:     { emoji: '🍎', label: 'Fruits'      },
-        wild_fruit:{ emoji: '🫐', label: 'Wild Fruits' },
-        seed:      { emoji: '🌱', label: 'Seeds'       },
-        vegetable: { emoji: '🥦', label: 'Vegetables'  },
-        dry_fruit: { emoji: '🥜', label: 'Dry Fruits'  },
-        flower:    { emoji: '🌸', label: 'Flowers'     },
-        powder:    { emoji: '🌿', label: 'Powders'     },
-        herb:      { emoji: '🌾', label: 'Herbs'       },
-        root:      { emoji: '🪨', label: 'Roots'       },
-        bark:      { emoji: '🪵', label: 'Barks'       },
-        oil:       { emoji: '💧', label: 'Oils'        },
-    };
-    const catChipsHTML = [
-        '<button class="pdp-cat-chip active" data-type="all" onclick="pdpFilterCategory(\'all\',this)">🌿 All</button>',
-        ...allCategories.map(t => {
-            const m = categoryMeta[t] || { emoji: '🌿', label: t.replace('_',' ').replace(/\b\w/g, c => c.toUpperCase()) };
-            return '<button class="pdp-cat-chip" data-type="' + t + '" onclick="pdpFilterCategory(\'' + t + '\',this)">' + m.emoji + ' ' + m.label + '</button>';
-        })
-    ].join('');
-
     document.getElementById('itemModalContent').innerHTML = `
     <!-- Back bar -->
     <div class="pdp-back-bar">
         <button class="pdp-back-btn" onclick="closeItemModal()" aria-label="Back to catalog">
             <i class="fas fa-arrow-left"></i> Back
         </button>
-        <span class="pdp-back-title">${escapeHTML(item.name)}</span>
-    </div>
-
-    <!-- Category filter strip -->
-    <div class="pdp-cat-strip" id="pdpCatStrip">${catChipsHTML}</div>
-
     <!-- Image gallery -->
     <div class="pdp-img-wrap" id="pdpGallery_${item.id}">
         <div class="pdp-img-track" id="pdpTrack_${item.id}">${slidesHTML}</div>
@@ -3245,39 +3199,6 @@ function _initPdpSwipe(itemId, total) {
     });
     wrap.addEventListener('mouseleave', () => { mouseDown = false; });
 }
-
-// ===== PDP CATEGORY FILTER =====
-window.pdpFilterCategory = function(type, btn) {
-    // Update active chip
-    const strip = document.getElementById('pdpCatStrip');
-    if (strip) {
-        strip.querySelectorAll('.pdp-cat-chip').forEach(c => c.classList.remove('active'));
-        if (btn) btn.classList.add('active');
-        // Scroll clicked chip into view
-        if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
-    // Find first product in that category and open it
-    const catalog = window.appState.catalogData || [];
-    let match;
-    if (type === 'all') {
-        // "All" just goes to the first product in catalog
-        match = catalog[0];
-    } else {
-        match = catalog.find(p => p.type === type);
-    }
-    if (match) {
-        window.openModalById(match.id);
-        // After re-opening, re-highlight the correct chip
-        setTimeout(() => {
-            const newStrip = document.getElementById('pdpCatStrip');
-            if (newStrip) {
-                newStrip.querySelectorAll('.pdp-cat-chip').forEach(c => {
-                    c.classList.toggle('active', c.dataset.type === type);
-                });
-            }
-        }, 50);
-    }
-};
 
 window.closeItemModal = function() {
     document.getElementById('itemModal').classList.add('hidden');
