@@ -274,7 +274,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     box-shadow: var(--shadow);
 }
 .product-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(5,150,105,0.18); }
-.card-img-wrap { position: relative; height: 6.375rem; overflow: hidden; }
+.card-img-wrap { position: relative; height: 7.5rem; overflow: hidden; }
 @media(min-width:640px){ .card-img-wrap { height: 9.5rem; } }
 @media(min-width:768px){ .card-img-wrap { height: 13rem; } }
 .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
@@ -556,10 +556,10 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 /* Slider track */
 .pdp-img-track {
     display: flex; transition: transform 0.38s cubic-bezier(0.4,0,0.2,1);
-    height: 260px;
+    height: 442px;
 }
-@media(min-width:640px){ .pdp-img-track { height: 360px; } }
-@media(min-width:900px){ .pdp-img-track { height: 420px; } }
+@media(min-width:640px){ .pdp-img-track { height: 494px; } }
+@media(min-width:900px){ .pdp-img-track { height: 546px; } }
 
 .pdp-img-slide {
     flex: 0 0 100%; min-width: 100%; position: relative;
@@ -633,28 +633,16 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 .pdp-fav-btn:hover { transform: scale(1.12); background: white; }
 
 /* Content area */
-.pdp-body {
-    padding: 1rem 0.85rem 1rem;
-    display: flex; flex-direction: column; gap: 0.85rem;
-}
-@media(min-width:640px){ .pdp-body { padding: 1.25rem 1.25rem 1.25rem; gap: 1rem; } }
-@media(min-width:900px){
-    .pdp-body { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; align-items: start; padding: 1.5rem; }
-}
+.pdp-body { padding: 1.5rem 1rem 1rem; }
+@media(min-width:640px){ .pdp-body { padding: 2rem 1.5rem 1.5rem; } }
+@media(min-width:900px){ .pdp-body { display: grid; grid-template-columns: 1fr 340px; gap: 2.5rem; align-items: start; } }
 
-/* product info card */
-.pdp-info-card {
-    background: var(--bg-card); border: 1px solid var(--border-color);
-    border-radius: 1.25rem; padding: 1rem 1.1rem; box-shadow: var(--shadow);
-}
-@media(min-width:640px){ .pdp-info-card { padding: 1.25rem 1.35rem; } }
-
-.pdp-main { min-width: 0; display: flex; flex-direction: column; gap: 0.75rem; }
-.pdp-sidebar { display: flex; flex-direction: column; gap: 0.75rem; }
+.pdp-main { min-width: 0; }
+.pdp-sidebar { }
 
 .pdp-name {
-    font-family: 'Poppins', sans-serif; font-size: clamp(1.15rem,4vw,1.75rem);
-    font-weight: 800; color: #059669; line-height: 1.2; margin-bottom: 0.2rem;
+    font-family: 'Poppins', sans-serif; font-size: clamp(1.4rem,4vw,2rem);
+    font-weight: 800; color: #059669; line-height: 1.2; margin-bottom: 0.25rem;
 }
 .pdp-scientific {
     font-size: 0.85rem; font-style: italic; color: var(--text-muted); margin-bottom: 0.75rem;
@@ -664,17 +652,17 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 .pdp-rating .count { font-size: 0.78rem; color: var(--text-muted); }
 
 .pdp-price-row {
-    display: flex; align-items: flex-end; gap: 0.65rem; margin-bottom: 0;
-    padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);
+    display: flex; align-items: flex-end; gap: 0.75rem; margin-bottom: 1.25rem;
+    padding-bottom: 1.25rem; border-bottom: 1px solid var(--border-color);
 }
 .pdp-price { font-size: 2rem; font-weight: 800; color: #065f46; }
 .pdp-unit { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; padding-bottom: 0.3rem; }
 
 /* Qty selector */
 .pdp-qty-row {
-    display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0;
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;
     background: var(--bg-card); border: 1px solid var(--border-color);
-    border-radius: 1rem; padding: 0.65rem 0.85rem; flex-wrap: wrap;
+    border-radius: 1rem; padding: 0.75rem 1rem;
 }
 .pdp-qty-label { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); }
 .pdp-qty-btn {
@@ -691,7 +679,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 
 /* CTA buttons */
 .pdp-cta-group {
-    display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 0;
+    display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;
 }
 .pdp-cta-add {
     width: 100%; padding: 1rem 1.5rem; border-radius: 1rem; border: none;
@@ -728,7 +716,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 /* Info sections */
 .pdp-section {
     background: var(--bg-card); border: 1px solid var(--border-color);
-    border-radius: 1rem; padding: 0.85rem 1rem; margin-bottom: 0;
+    border-radius: 1rem; padding: 1.1rem 1.25rem; margin-bottom: 1rem;
 }
 .pdp-section-title {
     font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
@@ -745,7 +733,7 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 /* EDD */
 .pdp-edd {
     background: var(--bg-card); border: 1px solid var(--border-color);
-    border-radius: 1rem; padding: 0.85rem 1rem; margin-bottom: 0;
+    border-radius: 1rem; padding: 1rem 1.25rem; margin-bottom: 1rem;
     display: flex; align-items: flex-start; gap: 0.65rem;
 }
 .pdp-edd-icon { color: #059669; font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
@@ -767,6 +755,22 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 .pdp-edd-check:hover { background: #047857; }
 .pdp-edd-result { font-size: 0.8rem; margin-top: 0.4rem; color: var(--text-muted); }
 
+/* ===== PDP CATEGORY STRIP ===== */
+.pdp-cat-strip {
+    display: flex; gap: 0.4rem; overflow-x: auto; padding: 0.55rem 1rem;
+    background: var(--header-bg); border-bottom: 1px solid rgba(255,255,255,0.12);
+    -webkit-overflow-scrolling: touch; scrollbar-width: none; position: sticky; top: 3rem; z-index: 9;
+}
+.pdp-cat-strip::-webkit-scrollbar { display: none; }
+.pdp-cat-chip {
+    flex-shrink: 0; padding: 0.3rem 0.8rem; border-radius: 9999px;
+    background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.85); font-size: 0.76rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.pdp-cat-chip:hover { background: rgba(255,255,255,0.25); color: white; }
+.pdp-cat-chip.active { background: white; color: #065f46; border-color: white; font-weight: 700; }
+
 /* FBT section (full row, proper product cards) */
 .pdp-fbt {
     margin-top: 2rem; padding-top: 1.5rem;
@@ -786,19 +790,19 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
     background: var(--bg-card); border: 1px solid var(--border-color);
     border-radius: 1rem; overflow: hidden; cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-    box-shadow: var(--shadow); display: flex; flex-direction: column;
+    box-shadow: var(--shadow);
 }
 .pdp-fbt-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(5,150,105,0.18); }
 .pdp-fbt-card-img { position: relative; height: 7.5rem; overflow: hidden; }
 @media(min-width:640px){ .pdp-fbt-card-img { height: 10rem; } }
 .pdp-fbt-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
 .pdp-fbt-card:hover .pdp-fbt-card-img img { transform: scale(1.07); }
-.pdp-fbt-card-body { padding: 0.65rem; flex: 1; display: flex; flex-direction: column; }
-.pdp-fbt-card-name { font-size: 0.78rem; font-weight: 700; color: #059669; line-height: 1.3; margin-bottom: 0.2rem; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.pdp-fbt-card-body { padding: 0.65rem; }
+.pdp-fbt-card-name { font-size: 0.8rem; font-weight: 700; color: #059669; line-height: 1.3; margin-bottom: 0.2rem; }
 .pdp-fbt-card-price { font-size: 0.85rem; font-weight: 800; color: #065f46; }
 .pdp-fbt-card-unit { font-size: 0.6rem; font-weight: 500; color: var(--text-muted); }
 .pdp-fbt-add-btn {
-    width: 100%; margin-top: auto; padding-top: 0.4rem; padding-bottom: 0.4rem; border-radius: 0.65rem;
+    width: 100%; margin-top: 0.4rem; padding: 0.45rem; border-radius: 0.65rem;
     background: #d1fae5; color: #065f46; font-weight: 700; font-size: 0.72rem;
     border: none; cursor: pointer; transition: all 0.2s;
     display: flex; align-items: center; justify-content: center; gap: 0.3rem;
@@ -3044,12 +3048,42 @@ window.openModalById = function(id) {
                  onerror="this.style.display='none'">`).join('')}
            </div>` : '';
 
+    // Build category chips from live catalog
+    const allCategories = [...new Set((window.appState.catalogData||[]).map(p => p.type).filter(Boolean))];
+    const categoryMeta = {
+        leaf:      { emoji: '🍃', label: 'Leaves'      },
+        fruit:     { emoji: '🍎', label: 'Fruits'      },
+        wild_fruit:{ emoji: '🫐', label: 'Wild Fruits' },
+        seed:      { emoji: '🌱', label: 'Seeds'       },
+        vegetable: { emoji: '🥦', label: 'Vegetables'  },
+        dry_fruit: { emoji: '🥜', label: 'Dry Fruits'  },
+        flower:    { emoji: '🌸', label: 'Flowers'     },
+        powder:    { emoji: '🌿', label: 'Powders'     },
+        herb:      { emoji: '🌾', label: 'Herbs'       },
+        root:      { emoji: '🪨', label: 'Roots'       },
+        bark:      { emoji: '🪵', label: 'Barks'       },
+        oil:       { emoji: '💧', label: 'Oils'        },
+    };
+    const catChipsHTML = [
+        '<button class="pdp-cat-chip active" data-type="all" onclick="pdpFilterCategory(\'all\',this)">🌿 All</button>',
+        ...allCategories.map(t => {
+            const m = categoryMeta[t] || { emoji: '🌿', label: t.replace('_',' ').replace(/\b\w/g, c => c.toUpperCase()) };
+            return '<button class="pdp-cat-chip" data-type="' + t + '" onclick="pdpFilterCategory(\'' + t + '\',this)">' + m.emoji + ' ' + m.label + '</button>';
+        })
+    ].join('');
+
     document.getElementById('itemModalContent').innerHTML = `
     <!-- Back bar -->
     <div class="pdp-back-bar">
         <button class="pdp-back-btn" onclick="closeItemModal()" aria-label="Back to catalog">
             <i class="fas fa-arrow-left"></i> Back
         </button>
+        <span class="pdp-back-title">${escapeHTML(item.name)}</span>
+    </div>
+
+    <!-- Category filter strip -->
+    <div class="pdp-cat-strip" id="pdpCatStrip">${catChipsHTML}</div>
+
     <!-- Image gallery -->
     <div class="pdp-img-wrap" id="pdpGallery_${item.id}">
         <div class="pdp-img-track" id="pdpTrack_${item.id}">${slidesHTML}</div>
@@ -3064,55 +3098,50 @@ window.openModalById = function(id) {
 
     <!-- Body -->
     <div class="pdp-body">
-
         <!-- Main column -->
         <div class="pdp-main">
+            <h1 class="pdp-name">${escapeHTML(item.name)}</h1>
+            ${item.scientific ? `<p class="pdp-scientific">${escapeHTML(item.scientific)}</p>` : ''}
+            ${starData ? `<div class="pdp-rating">
+                <span class="stars">${starsStr}</span>
+                <span class="count">${starData.r} · ${starData.count} reviews</span>
+            </div>` : ''}
 
-            <!-- Name / Price card -->
-            <div class="pdp-info-card">
-                <h1 class="pdp-name">${escapeHTML(item.name)}</h1>
-                ${item.scientific ? `<p class="pdp-scientific">${escapeHTML(item.scientific)}</p>` : ''}
-                ${starData ? `<div class="pdp-rating">
-                    <span class="stars">${starsStr}</span>
-                    <span class="count">${starData.r} · ${starData.count} reviews</span>
-                </div>` : ''}
-                <div class="pdp-price-row">
-                    <span class="pdp-price">₹${(item.price||0).toFixed(item.quantityType==='g'?2:0)}</span>
-                    <span class="pdp-unit">per ${item.quantityType||'unit'}</span>
-                    ${isOutOfStock ? '<span style="font-size:0.78rem;font-weight:700;color:#ef4444;padding:0.2rem 0.65rem;background:#fee2e2;border-radius:9999px;">Out of Stock</span>' : ''}
-                </div>
+            <div class="pdp-price-row">
+                <span class="pdp-price">₹${(item.price||0).toFixed(item.quantityType==='g'?2:0)}</span>
+                <span class="pdp-unit">per ${item.quantityType||'unit'}</span>
+                ${isOutOfStock ? '<span style="font-size:0.8rem;font-weight:700;color:#ef4444;padding:0.25rem 0.75rem;background:#fee2e2;border-radius:9999px;">Out of Stock</span>' : ''}
             </div>
 
-            <!-- Description card -->
+            <!-- Description -->
             <div class="pdp-section">
                 <div class="pdp-section-title"><i class="fas fa-leaf"></i> Description</div>
                 <p>${escapeHTML(item.description || 'Pure natural product. No additives or preservatives.')}</p>
             </div>
 
-            <!-- Benefits card -->
+            <!-- Benefits -->
             ${usesItems ? `<div class="pdp-section">
                 <div class="pdp-section-title"><i class="fas fa-heart"></i> Key Benefits</div>
                 <ul class="pdp-uses-list">${usesItems}</ul>
             </div>` : ''}
 
-            <!-- Qty + CTAs card -->
-            <div class="pdp-info-card">
-                ${!isOutOfStock ? `<div class="pdp-qty-row">
-                    <span class="pdp-qty-label">Qty:</span>
-                    <button class="pdp-qty-btn pdp-qty-minus" onclick="modalQtyChange('${item.id}',-1)">−</button>
-                    <span class="pdp-qty-val" id="modalQtyVal_${item.id}">${item.minQty||1} ${item.quantityType||'unit'}</span>
-                    <button class="pdp-qty-btn pdp-qty-plus" onclick="modalQtyChange('${item.id}',1)">+</button>
-                    <span class="pdp-qty-subtotal" id="modalSubtotal_${item.id}">₹${((item.price||0)*(item.minQty||1)).toFixed(0)}</span>
-                </div>` : ''}
-                <div class="pdp-cta-group" style="margin-top:${isOutOfStock?'0':'0.75rem'}">${ctaHTML}</div>
-            </div>
+            <!-- Qty picker (only if in stock) -->
+            ${!isOutOfStock ? `
+            <div class="pdp-qty-row">
+                <span class="pdp-qty-label">Qty:</span>
+                <button class="pdp-qty-btn pdp-qty-minus" onclick="modalQtyChange('${item.id}',-1)">−</button>
+                <span class="pdp-qty-val" id="modalQtyVal_${item.id}">${item.minQty||1} ${item.quantityType||'unit'}</span>
+                <button class="pdp-qty-btn pdp-qty-plus" onclick="modalQtyChange('${item.id}',1)">+</button>
+                <span class="pdp-qty-subtotal" id="modalSubtotal_${item.id}">₹${((item.price||0)*(item.minQty||1)).toFixed(0)}</span>
+            </div>` : ''}
 
+            <!-- CTAs -->
+            <div class="pdp-cta-group">${ctaHTML}</div>
         </div>
 
-        <!-- Sidebar -->
+        <!-- Sidebar (sticky on desktop) -->
         <div class="pdp-sidebar">
-
-            <!-- EDD card -->
+            <!-- EDD -->
             <div class="pdp-edd">
                 <div class="pdp-edd-icon"><i class="fas fa-shipping-fast"></i></div>
                 <div class="pdp-edd-content">
@@ -3127,20 +3156,19 @@ window.openModalById = function(id) {
                 </div>
             </div>
 
-            <!-- Trust card -->
+            <!-- Trust pills -->
             <div class="pdp-section">
                 <div class="pdp-section-title"><i class="fas fa-shield-alt"></i> Why Nature's Heal</div>
-                <div style="display:flex;flex-direction:column;gap:0.5rem">
-                    <div style="display:flex;align-items:center;gap:0.55rem;font-size:0.8rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> 100% Pure — No additives or fillers</div>
-                    <div style="display:flex;align-items:center;gap:0.55rem;font-size:0.8rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> Free delivery on first order & above ₹499</div>
-                    <div style="display:flex;align-items:center;gap:0.55rem;font-size:0.8rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> Cash on Delivery available (orders ₹499+)</div>
-                    <div style="display:flex;align-items:center;gap:0.55rem;font-size:0.8rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> Same-day dispatch (orders before 2 PM)</div>
+                <div style="display:flex;flex-direction:column;gap:0.55rem">
+                    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> 100% Pure — No additives or fillers</div>
+                    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> Free delivery on first order & above ₹499</div>
+                    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> Cash on Delivery available (orders ₹499+)</div>
+                    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> Same-day dispatch (orders before 2 PM)</div>
                 </div>
             </div>
-
         </div>
 
-        <!-- Customers Also Buy — full width -->
+        <!-- FBT row — spans full width on desktop -->
         ${fbtHTML}
     </div>`;
 
@@ -3217,6 +3245,39 @@ function _initPdpSwipe(itemId, total) {
     });
     wrap.addEventListener('mouseleave', () => { mouseDown = false; });
 }
+
+// ===== PDP CATEGORY FILTER =====
+window.pdpFilterCategory = function(type, btn) {
+    // Update active chip
+    const strip = document.getElementById('pdpCatStrip');
+    if (strip) {
+        strip.querySelectorAll('.pdp-cat-chip').forEach(c => c.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        // Scroll clicked chip into view
+        if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+    // Find first product in that category and open it
+    const catalog = window.appState.catalogData || [];
+    let match;
+    if (type === 'all') {
+        // "All" just goes to the first product in catalog
+        match = catalog[0];
+    } else {
+        match = catalog.find(p => p.type === type);
+    }
+    if (match) {
+        window.openModalById(match.id);
+        // After re-opening, re-highlight the correct chip
+        setTimeout(() => {
+            const newStrip = document.getElementById('pdpCatStrip');
+            if (newStrip) {
+                newStrip.querySelectorAll('.pdp-cat-chip').forEach(c => {
+                    c.classList.toggle('active', c.dataset.type === type);
+                });
+            }
+        }, 50);
+    }
+};
 
 window.closeItemModal = function() {
     document.getElementById('itemModal').classList.add('hidden');
