@@ -2,10 +2,7 @@
 //  firebase.js — Firebase SDK init (type="module" — keep as ES module)
 // =============================================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import {
-import {
-
     getFirestore, collection, addDoc, serverTimestamp,
     getDocs, query, where, doc, updateDoc, orderBy
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
