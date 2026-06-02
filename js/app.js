@@ -59,7 +59,7 @@ async function loadCatalogFromFirestore(forceRefresh = false) {
         window.appState.catalogData = parsed;
         window.appState.catalogCache = parsed;
         window.appState.catalogLastFetch = Date.now();
-        renderItems(getFilteredData());
+        if (typeof _sf !== 'undefined') sfApply(); else renderItems(getFilteredData());
     } catch(e) {
         clearTimeout(timeoutId);
         console.error("loadCatalogFromFirestore error:", e);
@@ -70,6 +70,181 @@ async function loadCatalogFromFirestore(forceRefresh = false) {
     }
 }
 window.loadProductsFromFirestore = loadCatalogFromFirestore;
+
+const CONCERN_KEYWORDS = {
+    immunity: ['immunity','immune','cold','fever','vitamin','antioxidant','infection','flu','viral','antiviral','antibacterial','antibiotic','resist','tulsi','giloy','amla','neem','turmeric'],
+    digestion: ['digest','gut','stomach','bowel','constipation','bloat','gas','acidity','liver','bile','detox','laxative','curry','ginger','ajwain','jeera','fennel','triphala'],
+    skin: ['skin','glow','acne','pimple','complexion','eczema','rash','wound','heal','aloe','neem','turmeric','sandalwood','kumkum','face','anti-ageing','collagen'],
+    diabetes: ['diabetes','sugar','blood sugar','glucose','insulin','glycemic','bitter','karela','fenugreek','methi','jamun','cinnamon','gurmar'],
+    hair: ['hair','scalp','dandruff','alopecia','growth','shining','strengthen','bhringraj','amla','curry leaves','hibiscus','neem','coconut'],
+    weight: ['weight','fat','obesity','metabolism','slimming','appetite','calorie','detox','green tea','garcinia','triphala','guggul','fennel'],
+    heart: ['heart','cholesterol','blood pressure','cardiac','artery','circulation','omega','garlic','arjuna','amla','brahmi','turmeric'],
+    stress: ['stress','anxiety','sleep','calm','relax','mood','mental','adaptogen','ashwagandha','brahmi','shankhpushpi','tulsi','lavender','chamomile']
+};
+
+window._activeConcern = null;
+window._activeHealthFilter = 'all';
+window._priceMin = null;
+window._priceMax = null;
+
+window.filterByConcern = function(concern, el) {
+    if (window._activeConcern === concern) {
+        // Toggle off
+        window._activeConcern = null;
+        document.querySelectorAll('.concern-card').forEach(c => c.classList.remove('active'));
+        document.getElementById('concernClearWrap').innerHTML = '';
+    } else {
+        window._activeConcern = concern;
+        document.querySelectorAll('.concern-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        const label = el.querySelector('.concern-label').textContent;
+        document.getElementById('concernClearWrap').innerHTML = `
+            <span class="concern-active-badge">${label}
+                <button onclick="filterByConcern('${concern}', document.querySelector('.concern-card.active'))">✕</button>
+            </span>`;
+    }
+    renderItems(getFilteredData());
+};
+
+window.filterByHealth = function(type, el) {
+    window._activeHealthFilter = type;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    updateFilterClearBtn();
+    renderItems(getFilteredData());
+};
+
+window.applyPriceFilter = function() {
+    const minEl = document.getElementById('priceMin');
+    const maxEl = document.getElementById('priceMax');
+    window._priceMin = minEl.value !== '' ? parseFloat(minEl.value) : null;
+    window._priceMax = maxEl.value !== '' ? parseFloat(maxEl.value) : null;
+    updateFilterClearBtn();
+    renderItems(getFilteredData());
+};
+
+function updateFilterClearBtn() {
+    const btn = document.getElementById('filterClearBtn');
+    const hasFilters = window._activeHealthFilter !== 'all' || window._priceMin !== null || window._priceMax !== null;
+    if (btn) btn.style.display = hasFilters ? 'block' : 'none';
+}
+
+window.clearAllFilters = function() {
+    window._activeHealthFilter = 'all';
+    window._priceMin = null;
+    window._priceMax = null;
+    window._activeConcern = null;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    const allChip = document.querySelector('.filter-chip[data-health="all"]');
+    if (allChip) allChip.classList.add('active');
+    document.querySelectorAll('.concern-card').forEach(c => c.classList.remove('active'));
+    document.getElementById('concernClearWrap').innerHTML = '';
+    const minEl = document.getElementById('priceMin'); if (minEl) minEl.value = '';
+    const maxEl = document.getElementById('priceMax'); if (maxEl) maxEl.value = '';
+    updateFilterClearBtn();
+    renderItems(getFilteredData());
+};
+
+// ===== SMART SEARCH SUGGESTIONS =====
+const sugBox = () => document.getElementById('searchSuggestions');
+
+function showSuggestions(term) {
+    const box = sugBox();
+    if (!box) return;
+    if (!term || term.length < 2) { box.style.display = 'none'; return; }
+    const lower = term.toLowerCase();
+    const catalog = window.appState?.catalogData || [];
+    const matches = catalog.filter(p =>
+        (p.name || '').toLowerCase().includes(lower) ||
+        (p.scientific || '').toLowerCase().includes(lower) ||
+        (p.uses || '').toLowerCase().includes(lower) ||
+        (p.description || '').toLowerCase().includes(lower)
+    ).slice(0, 7);
+
+    if (!matches.length) {
+        box.innerHTML = `<div class="search-suggestions-empty">No matches found</div>`;
+        box.style.display = 'block';
+        return;
+    }
+    box.innerHTML = matches.map(p => `
+        <div class="search-suggestion-item" onclick="selectSuggestion(${JSON.stringify(p.name)})">
+            <i class="fas fa-seedling sug-icon"></i>
+            <span>${escapeHTML(p.name)}</span>
+            ${p.scientific ? `<em style="font-size:0.63rem;color:var(--text-muted);font-style:italic">${escapeHTML(p.scientific)}</em>` : ''}
+            <span class="sug-type">${String(p.type||'').replace('_',' ')}</span>
+        </div>`).join('');
+    box.style.display = 'block';
+}
+
+window.selectSuggestion = function(name) {
+    const input = document.getElementById('searchInput');
+    if (input) input.value = name;
+    sugBox().style.display = 'none';
+    renderItems(getFilteredData());
+};
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrap')) sugBox() && (sugBox().style.display = 'none');
+});
+
+// ===== FREQUENTLY BOUGHT TOGETHER =====
+function getFrequentlyBoughtTogether(itemId, catalog, count = 3) {
+    // Client-side affinity: same type category, different item, sorted by simulated affinity score
+    const current = catalog.find(p => p.id == itemId);
+    if (!current || !catalog.length) return [];
+    return catalog
+        .filter(p => p.id != itemId && p.stock !== '0')
+        .map(p => ({
+            ...p,
+            score: (p.type === current.type ? 3 : 0) +
+                   (p.uses && current.uses && p.uses.split(',').some(u => (current.uses || '').toLowerCase().includes(u.trim().toLowerCase())) ? 5 : 0) +
+                   Math.random() * 2
+        }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, count);
+}
+
+// ===== ESTIMATED DELIVERY DATE =====
+const EDD_ZONES = {
+    // Hyderabad districts: 1–2 days
+    '500': 1, '501': 1, '502': 1, '503': 1, '504': 2, '505': 2,
+    // Telangana: 2–3 days
+    '506': 2, '507': 2, '508': 2, '509': 2, '510': 3, '511': 3, '512': 3, '513': 3,
+    // AP: 3–5 days
+    '515': 4, '516': 4, '517': 4, '518': 4, '519': 5, '520': 3, '521': 3, '522': 3, '523': 3, '524': 3, '525': 3,
+};
+
+function calcEDD(pincode) {
+    if (!pincode || pincode.length !== 6) return null;
+    const prefix3 = pincode.slice(0, 3);
+    const days = EDD_ZONES[prefix3] || null;
+    if (!days) return null;
+    const d = new Date();
+    d.setDate(d.getDate() + days + (new Date().getHours() >= 14 ? 1 : 0)); // cutoff 2pm
+    return { days, date: d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' }) };
+}
+
+window.checkEDD = function(pincode, resultElId) {
+    const edd = calcEDD(pincode);
+    const el = document.getElementById(resultElId);
+    if (!el) return;
+    if (!edd) {
+        el.innerHTML = `<span style="color:var(--text-muted);font-size:0.7rem">Delivery available on request</span>`;
+    } else {
+        el.innerHTML = `<span style="color:#34d399"><i class="fas fa-truck" style="margin-right:0.3rem"></i>Delivery by <strong style="color:white">${edd.date}</strong> (${edd.days}–${edd.days+1} days)</span>`;
+    }
+};
+
+window.checkShippingEDD = function(pincode) {
+    if (pincode.length !== 6) { document.getElementById('eddResult').innerHTML = ''; return; }
+    const edd = calcEDD(pincode);
+    const el = document.getElementById('eddResult');
+    if (!el) return;
+    el.innerHTML = edd
+        ? `<i class="fas fa-truck" style="margin-right:0.25rem"></i>By ${edd.date}`
+        : `<span style="color:var(--text-muted)">Check availability</span>`;
+};
+
 
 // Helper: infer quantityType from product type when not set
 function inferQuantityType(type) {
@@ -740,7 +915,7 @@ document.getElementById('searchInput').oninput = (e) => {
     clearTimeout(searchDebounce);
     const term = e.target.value;
     searchDebounce = setTimeout(() => {
-        renderItems(getFilteredData());
+        if (typeof _sf !== 'undefined') sfApply(); else renderItems(getFilteredData());
         showSuggestions(term);
     }, 220);
 };
@@ -1261,7 +1436,9 @@ window.onload = function() {
         document.getElementById('themeIcon').className = 'fas fa-sun';
     }
     // Restore filter
-    filterItems(localStorage.getItem('selectedFilter') || 'all');
+    const _savedFilter = localStorage.getItem('selectedFilter') || 'all';
+    _sf.category = _savedFilter;
+    document.querySelectorAll('.sf-chip[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === _savedFilter));
     // Show skeletons immediately so first-visit feels fast, then load
     showCatalogSkeleton();
     loadCatalogFromFirestore();
@@ -1287,3 +1464,188 @@ window.onload = function() {
         if (!_isScrolling && !document.hidden) loadCatalogFromFirestore(true);
     }, 60000);
 };
+// ===================================================================
+//  SIDEBAR FILTER FUNCTIONS  (Amazon-style left panel)
+// ===================================================================
+
+// ── Sidebar open/close (mobile) ────────────────────────────────────
+window.openSidebar = function() {
+    document.getElementById('filterSidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+};
+window.closeSidebar = function() {
+    document.getElementById('filterSidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+};
+
+// ── Sidebar state ───────────────────────────────────────────────────
+const _sf = {
+    category: 'all',
+    concern:  null,
+    avail:    'all',
+    sort:     'default',
+};
+
+// ── Apply all sidebar filters + re-render ──────────────────────────
+function sfApply() {
+    const data = getSidebarFiltered();
+    renderItems(data);
+    updateActiveFilterPills();
+    // Show/hide clear button
+    const anyActive = _sf.category !== 'all' || _sf.concern || _sf.avail !== 'all'
+                      || window._priceMin !== null || window._priceMax !== null;
+    document.getElementById('sfClearBtn').classList.toggle('visible', anyActive);
+}
+
+function getSidebarFiltered() {
+    const catalog = window.appState.catalogData || [];
+    const term = (document.getElementById('searchInput')?.value || '').toLowerCase();
+    const pMin = window._priceMin;
+    const pMax = window._priceMax;
+    const concernKw = _sf.concern ? (CONCERN_KEYWORDS[_sf.concern] || []) : null;
+
+    let data = catalog.filter(item => {
+        // Category
+        const matchCat = _sf.category === 'all' || item.type === _sf.category ||
+            (_sf.category === 'favorites' && (window.appState.favorites||[]).map(String).includes(String(item.id)));
+        // Health concern
+        const matchConcern = !concernKw || concernKw.some(kw => {
+            const hay = ((item.name||'') + ' ' + (item.uses||'') + ' ' + (item.description||'')).toLowerCase();
+            return hay.includes(kw);
+        });
+        // Availability
+        const isOOS = item.stock === '0' || item.stock === 'out';
+        const isBest = item.bestseller === '1' || item.bestseller === 'true';
+        const matchAvail = _sf.avail === 'all'
+            || (_sf.avail === 'instock' && !isOOS)
+            || (_sf.avail === 'bestseller' && isBest);
+        // Search
+        const matchSearch = !term || (
+            (item.name||'').toLowerCase().includes(term) ||
+            (item.uses||'').toLowerCase().includes(term) ||
+            (item.description||'').toLowerCase().includes(term)
+        );
+        // Price
+        const matchPrice = (pMin === null || item.price >= pMin) && (pMax === null || item.price <= pMax);
+
+        return matchCat && matchConcern && matchAvail && matchSearch && matchPrice;
+    });
+
+    // Sort
+    if (_sf.sort === 'price_asc')   data = [...data].sort((a,b) => a.price - b.price);
+    if (_sf.sort === 'price_desc')  data = [...data].sort((a,b) => b.price - a.price);
+    if (_sf.sort === 'name_asc')    data = [...data].sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    if (_sf.sort === 'bestseller')  data = [...data].sort((a,b) => {
+        const ba = a.bestseller === '1' || a.bestseller === 'true' ? 0 : 1;
+        const bb = b.bestseller === '1' || b.bestseller === 'true' ? 0 : 1;
+        return ba - bb;
+    });
+
+    return data;
+}
+
+// ── Individual filter handlers ─────────────────────────────────────
+window.sfFilter = function(val, btn) {
+    _sf.category = val;
+    // Sync old nav-links too
+    localStorage.setItem('selectedFilter', val);
+    document.querySelectorAll('.sf-chip[data-filter]').forEach(b =>
+        b.classList.toggle('active', b.dataset.filter === val));
+    document.querySelectorAll('.nav-links button[data-filter]').forEach(b =>
+        b.classList.toggle('active', b.dataset.filter === val));
+    sfApply();
+};
+
+window.sfConcern = function(val, btn) {
+    if (_sf.concern === val) {
+        _sf.concern = null;
+        document.querySelectorAll('.sf-concern-item').forEach(b => b.classList.remove('active'));
+    } else {
+        _sf.concern = val;
+        document.querySelectorAll('.sf-concern-item').forEach(b =>
+            b.classList.toggle('active', b.dataset.concern === val));
+    }
+    sfApply();
+};
+
+window.sfAvail = function(val, btn) {
+    _sf.avail = val;
+    document.querySelectorAll('.sf-chip[data-avail]').forEach(b =>
+        b.classList.toggle('active', b.dataset.avail === val));
+    sfApply();
+};
+
+window.sfClearAll = function() {
+    _sf.category = 'all'; _sf.concern = null; _sf.avail = 'all'; _sf.sort = 'default';
+    window._priceMin = null; window._priceMax = null;
+    document.querySelectorAll('.sf-chip[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all'));
+    document.querySelectorAll('.sf-chip[data-avail]').forEach(b => b.classList.toggle('active', b.dataset.avail === 'all'));
+    document.querySelectorAll('.sf-concern-item').forEach(b => b.classList.remove('active'));
+    const pMin = document.getElementById('priceMin'); if (pMin) pMin.value = '';
+    const pMax = document.getElementById('priceMax'); if (pMax) pMax.value = '';
+    const sortSel = document.getElementById('sortSelect'); if (sortSel) sortSel.value = 'default';
+    sfApply();
+};
+
+window.applySortOrder = function() {
+    const sel = document.getElementById('sortSelect');
+    _sf.sort = sel ? sel.value : 'default';
+    sfApply();
+};
+
+// ── Active filter pills (results bar) ─────────────────────────────
+function updateActiveFilterPills() {
+    const el = document.getElementById('activeFilterPills');
+    if (!el) return;
+    const pills = [];
+    if (_sf.category !== 'all') {
+        const labels = {leaf:'Leaves',fruit:'Fruits',wild_fruit:'Wild Fruits',seed:'Seeds',
+                        vegetable:'Veg',dry_fruit:'Dry Fruits',flower:'Flowers',favorites:'Saved'};
+        pills.push({ label: labels[_sf.category] || _sf.category, remove: () => sfFilter('all') });
+    }
+    if (_sf.concern) {
+        pills.push({ label: _sf.concern.charAt(0).toUpperCase() + _sf.concern.slice(1), remove: () => sfConcern(_sf.concern) });
+    }
+    if (_sf.avail !== 'all') {
+        const al = {instock:'In Stock',bestseller:'Bestsellers'};
+        pills.push({ label: al[_sf.avail] || _sf.avail, remove: () => sfAvail('all') });
+    }
+    if (window._priceMin !== null) pills.push({ label: '₹'+window._priceMin+'+', remove: () => { window._priceMin=null; const el=document.getElementById('priceMin');if(el)el.value=''; sfApply(); }});
+    if (window._priceMax !== null) pills.push({ label: '≤₹'+window._priceMax, remove: () => { window._priceMax=null; const el=document.getElementById('priceMax');if(el)el.value=''; sfApply(); }});
+
+    el.innerHTML = pills.map((p,i) =>
+        `<span class="af-pill">${escapeHTML(p.label)}<button onclick="(${p.remove.toString()})()">✕</button></span>`
+    ).join('');
+}
+
+// ── Override getFilteredData so existing catalog code uses sidebar state ──
+// (sfApply already calls renderItems directly; this keeps existing code compatible)
+window._sfApply = sfApply;
+
+// Override old filterItems to sync with sidebar
+const _origFilterItems = window.filterItems;
+window.filterItems = function(type) {
+    if (type === 'orders') { openOrders(); return; }
+    sfFilter(type);
+};
+
+// Override old filterByConcern to sync with sidebar  
+window.filterByConcern = function(concern, el) {
+    sfConcern(concern);
+    // scroll to grid
+    document.getElementById('gridContainer')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+// ── Override applyPriceFilter to use sfApply ──────────────────────
+window.applyPriceFilter = function() {
+    const minEl = document.getElementById('priceMin');
+    const maxEl = document.getElementById('priceMax');
+    window._priceMin = minEl && minEl.value !== '' ? parseFloat(minEl.value) : null;
+    window._priceMax = maxEl && maxEl.value !== '' ? parseFloat(maxEl.value) : null;
+    sfApply();
+};
+
+// ── On catalog load, use sfApply instead of old renderItems ───────
+const _origLoadCatalog = window.loadProductsFromFirestore;
