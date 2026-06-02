@@ -1217,6 +1217,42 @@ window.addComboToCart = function(keywords) {
     }
 };
 
+
+// Render dynamic combos on main page from Firestore
+function renderDynamicCombos(combos) {
+    const grid = document.querySelector('.combo-grid');
+    if (!grid || !combos || !combos.length) return;
+    const active = combos.filter(c => !c._deleted);
+    if (!active.length) return;
+    grid.innerHTML = active.map(c => {
+        const kwArr = c.keywords || [];
+        const kwJson = JSON.stringify(kwArr).replace(/"/g, '&quot;');
+        const saveLabel = c.save > 0 ? `<span class="combo-save">Save ${c.save}%</span>` : '';
+        return `<div class="combo-card" onclick="addComboToCart(${JSON.stringify(kwArr).replace(/"/g,'&quot;')})">
+            <div class="combo-emojis">${escapeHTML(c.emojis||'🎁')}</div>
+            <div class="combo-info">
+                <div class="combo-name">${escapeHTML(c.name)}</div>
+                <div class="combo-desc">${escapeHTML(c.desc||'')}</div>
+                <div class="combo-pricing">
+                    <span class="combo-price">₹${c.price}</span>
+                    ${c.original && c.original > c.price ? `<span class="combo-original">₹${c.original}</span>` : ''}
+                    ${saveLabel}
+                </div>
+            </div>
+            <button class="combo-add-btn" onclick="event.stopPropagation();addComboToCart(${JSON.stringify(kwArr).replace(/"/g,'&quot;')})">+ Cart</button>
+        </div>`;
+    }).join('');
+}
+
+// Load combos from Firestore on page init
+async function loadCombosFromFirestore() {
+    try {
+        const snap = await window.fbGetDocs(window.fbCollection(window.db, "combos"));
+        const combos = snap.docs.map(d => ({ firestoreId: d.id, ...d.data() })).filter(c => !c._deleted);
+        if (combos.length) renderDynamicCombos(combos);
+    } catch(e) { /* Keep static combos if Firestore fails */ }
+}
+
 // ===== INIT =====
 window.onload = function() {
     // Theme
