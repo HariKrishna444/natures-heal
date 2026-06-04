@@ -109,7 +109,7 @@ const safeURL = url => {
 };
 const sanitize = str => str.replace(/[<>`"'%;()&+]/g, "").trim();
 
-function showToast(msg, isError = false) {
+window.showToast = function showToast(msg, isError = false) {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.style.background = isError ? '#ef4444' : '#10b981';
@@ -214,4 +214,3 @@ function waitForFirebase(timeoutMs = 8000) {
         }, 50);
     });
 }
-

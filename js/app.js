@@ -568,7 +568,8 @@ window.openModalById = function(id) {
                 const ps = getStarRating(p);
                 const stStr = ps ? '★'.repeat(Math.floor(ps.r)) : '';
                 const pOOS = p.stock === '0' || p.stock === 'out';
-                return `<div class="az-rec-card" onclick="openModalById(${JSON.stringify(String(p.id))});document.getElementById('itemModal').scrollTop=0" role="button" tabindex="0">
+                const _pid = String(p.id).replace(/'/g, "\'");
+                return `<div class="az-rec-card" onclick="window.openModalById('${_pid}');document.getElementById('itemModal').scrollTop=0" role="button" tabindex="0">
                     <div class="az-rec-img">
                         <img src="${safeURL(p.image)}" alt="${escapeHTML(p.name)}" loading="lazy" onerror="this.parentElement.style.background='#d1fae5'">
                         ${p.bestseller==='1'||p.bestseller==='true' ? '<span class="az-rec-badge">Best Seller</span>' : ''}
@@ -579,7 +580,7 @@ window.openModalById = function(id) {
                         ${ps ? `<div class="az-rec-stars">${stStr} <span>${ps.r}</span></div>` : ''}
                         <div class="az-rec-price">₹${(p.price||0).toFixed(0)}<span class="az-rec-unit"> /${p.quantityType||'unit'}</span></div>
                         ${!pOOS
-                            ? `<button class="az-rec-add" onclick="event.stopPropagation();addToCartSimple(${JSON.stringify(String(p.id))});showToast('✅ Added to cart')">
+                            ? `<button class="az-rec-add" onclick="event.stopPropagation();window.addToCartSimple('${_pid}');window.showToast('&#x2705; Added to cart')">
                                    <i class="fas fa-cart-plus"></i> Add to Cart
                                </button>`
                             : `<span class="az-rec-oos">Out of Stock</span>`}
@@ -605,7 +606,8 @@ window.openModalById = function(id) {
                 const ps = getStarRating(p);
                 const stStr = ps ? '★'.repeat(Math.floor(ps.r)) : '';
                 const pOOS = p.stock === '0' || p.stock === 'out';
-                return `<div class="az-rec-card" onclick="openModalById(${JSON.stringify(String(p.id))});document.getElementById('itemModal').scrollTop=0" role="button" tabindex="0">
+                const _pid = String(p.id).replace(/'/g, "\'");
+                return `<div class="az-rec-card" onclick="window.openModalById('${_pid}');document.getElementById('itemModal').scrollTop=0" role="button" tabindex="0">
                     <div class="az-rec-img">
                         <img src="${safeURL(p.image)}" alt="${escapeHTML(p.name)}" loading="lazy" onerror="this.parentElement.style.background='#d1fae5'">
                         ${p.bestseller==='1'||p.bestseller==='true' ? '<span class="az-rec-badge">Best Seller</span>' : ''}
@@ -616,7 +618,7 @@ window.openModalById = function(id) {
                         ${ps ? `<div class="az-rec-stars">${stStr} <span>${ps.r}</span></div>` : ''}
                         <div class="az-rec-price">₹${(p.price||0).toFixed(0)}<span class="az-rec-unit"> /${p.quantityType||'unit'}</span></div>
                         ${!pOOS
-                            ? `<button class="az-rec-add" onclick="event.stopPropagation();addToCartSimple(${JSON.stringify(String(p.id))});showToast('✅ Added to cart')">
+                            ? `<button class="az-rec-add" onclick="event.stopPropagation();window.addToCartSimple('${_pid}');window.showToast('&#x2705; Added to cart')">
                                    <i class="fas fa-cart-plus"></i> Add to Cart
                                </button>`
                             : `<span class="az-rec-oos">Out of Stock</span>`}
