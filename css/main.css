@@ -399,4 +399,5 @@ main { max-width: none; margin: 0; padding: 1.25rem 1rem 3rem; }
 }
 @media(min-width:768px) {
     .sidebar-close-btn { display: none !important; }
+
 }

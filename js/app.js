@@ -86,25 +86,7 @@ window._activeConcern = null;
 window._activeHealthFilter = 'all';
 window._priceMin = null;
 window._priceMax = null;
-
-window.filterByConcern = function(concern, el) {
-    if (window._activeConcern === concern) {
-        // Toggle off
-        window._activeConcern = null;
-        document.querySelectorAll('.concern-card').forEach(c => c.classList.remove('active'));
-        document.getElementById('concernClearWrap').innerHTML = '';
-    } else {
-        window._activeConcern = concern;
-        document.querySelectorAll('.concern-card').forEach(c => c.classList.remove('active'));
-        el.classList.add('active');
-        const label = el.querySelector('.concern-label').textContent;
-        document.getElementById('concernClearWrap').innerHTML = `
-            <span class="concern-active-badge">${label}
-                <button onclick="filterByConcern('${concern}', document.querySelector('.concern-card.active'))">✕</button>
-            </span>`;
-    }
-    renderItems(getFilteredData());
-};
+;
 
 window.filterByHealth = function(type, el) {
     window._activeHealthFilter = type;
@@ -113,15 +95,7 @@ window.filterByHealth = function(type, el) {
     updateFilterClearBtn();
     renderItems(getFilteredData());
 };
-
-window.applyPriceFilter = function() {
-    const minEl = document.getElementById('priceMin');
-    const maxEl = document.getElementById('priceMax');
-    window._priceMin = minEl.value !== '' ? parseFloat(minEl.value) : null;
-    window._priceMax = maxEl.value !== '' ? parseFloat(maxEl.value) : null;
-    updateFilterClearBtn();
-    renderItems(getFilteredData());
-};
+;
 
 function updateFilterClearBtn() {
     const btn = document.getElementById('filterClearBtn');
@@ -888,18 +862,7 @@ window.toggleFav = function(e, id) {
 };
 
 // ===== FILTER & SEARCH =====
-window.filterItems = function(type) {
-    if (type === 'orders') { openOrders(); return; }
-    localStorage.setItem('selectedFilter', type);
-    document.querySelectorAll('.nav-links button[data-filter]').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.filter === type);
-    });
-    // Sync mobile chips
-    document.querySelectorAll('.mf-chip[data-filter]').forEach(chip => {
-        chip.classList.toggle('active', chip.dataset.filter === type);
-    });
-    renderItems(getFilteredData());
-};
+;
 
 window.handleMobileFilterChip = function(val, el) {
     if (val === 'orders') { openOrders(); return; }

@@ -449,83 +449,23 @@ window.adminAddProduct = async function() {
     }
 };
 
-// ===== HEALTH CONCERN KEYWORDS MAP =====
-const CONCERN_KEYWORDS = {
-    immunity: ['immunity','immune','cold','fever','vitamin','antioxidant','infection','flu','viral','antiviral','antibacterial','antibiotic','resist','tulsi','giloy','amla','neem','turmeric'],
-    digestion: ['digest','gut','stomach','bowel','constipation','bloat','gas','acidity','liver','bile','detox','laxative','curry','ginger','ajwain','jeera','fennel','triphala'],
-    skin: ['skin','glow','acne','pimple','complexion','eczema','rash','wound','heal','aloe','neem','turmeric','sandalwood','kumkum','face','anti-ageing','collagen'],
-    diabetes: ['diabetes','sugar','blood sugar','glucose','insulin','glycemic','bitter','karela','fenugreek','methi','jamun','cinnamon','gurmar'],
-    hair: ['hair','scalp','dandruff','alopecia','growth','shining','strengthen','bhringraj','amla','curry leaves','hibiscus','neem','coconut'],
-    weight: ['weight','fat','obesity','metabolism','slimming','appetite','calorie','detox','green tea','garcinia','triphala','guggul','fennel'],
-    heart: ['heart','cholesterol','blood pressure','cardiac','artery','circulation','omega','garlic','arjuna','amla','brahmi','turmeric'],
-    stress: ['stress','anxiety','sleep','calm','relax','mood','mental','adaptogen','ashwagandha','brahmi','shankhpushpi','tulsi','lavender','chamomile']
-};
 
 window._activeConcern = null;
 window._activeHealthFilter = 'all';
 window._priceMin = null;
 window._priceMax = null;
-
-window.filterByConcern = function(concern, el) {
-    if (window._activeConcern === concern) {
-        // Toggle off
-        window._activeConcern = null;
-        document.querySelectorAll('.concern-card').forEach(c => c.classList.remove('active'));
-        document.getElementById('concernClearWrap').innerHTML = '';
-    } else {
-        window._activeConcern = concern;
-        document.querySelectorAll('.concern-card').forEach(c => c.classList.remove('active'));
-        el.classList.add('active');
-        const label = el.querySelector('.concern-label').textContent;
-        document.getElementById('concernClearWrap').innerHTML = `
-            <span class="concern-active-badge">${label}
-                <button onclick="filterByConcern('${concern}', document.querySelector('.concern-card.active'))">✕</button>
-            </span>`;
-    }
-    renderItems(getFilteredData());
-};
-
-window.filterByHealth = function(type, el) {
-    window._activeHealthFilter = type;
-    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-    updateFilterClearBtn();
-    renderItems(getFilteredData());
-};
-
-window.applyPriceFilter = function() {
-    const minEl = document.getElementById('priceMin');
-    const maxEl = document.getElementById('priceMax');
-    window._priceMin = minEl.value !== '' ? parseFloat(minEl.value) : null;
-    window._priceMax = maxEl.value !== '' ? parseFloat(maxEl.value) : null;
-    updateFilterClearBtn();
-    renderItems(getFilteredData());
-};
+;
+;
+;
 
 function updateFilterClearBtn() {
     const btn = document.getElementById('filterClearBtn');
     const hasFilters = window._activeHealthFilter !== 'all' || window._priceMin !== null || window._priceMax !== null;
     if (btn) btn.style.display = hasFilters ? 'block' : 'none';
 }
-
-window.clearAllFilters = function() {
-    window._activeHealthFilter = 'all';
-    window._priceMin = null;
-    window._priceMax = null;
-    window._activeConcern = null;
-    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-    const allChip = document.querySelector('.filter-chip[data-health="all"]');
-    if (allChip) allChip.classList.add('active');
-    document.querySelectorAll('.concern-card').forEach(c => c.classList.remove('active'));
-    document.getElementById('concernClearWrap').innerHTML = '';
-    const minEl = document.getElementById('priceMin'); if (minEl) minEl.value = '';
-    const maxEl = document.getElementById('priceMax'); if (maxEl) maxEl.value = '';
-    updateFilterClearBtn();
-    renderItems(getFilteredData());
-};
+;
 
 // ===== SMART SEARCH SUGGESTIONS =====
-const sugBox = () => document.getElementById('searchSuggestions');
 
 function showSuggestions(term) {
     const box = sugBox();
@@ -554,13 +494,7 @@ function showSuggestions(term) {
         </div>`).join('');
     box.style.display = 'block';
 }
-
-window.selectSuggestion = function(name) {
-    const input = document.getElementById('searchInput');
-    if (input) input.value = name;
-    sugBox().style.display = 'none';
-    renderItems(getFilteredData());
-};
+;
 
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.search-wrap')) sugBox() && (sugBox().style.display = 'none');
@@ -584,14 +518,6 @@ function getFrequentlyBoughtTogether(itemId, catalog, count = 3) {
 }
 
 // ===== ESTIMATED DELIVERY DATE =====
-const EDD_ZONES = {
-    // Hyderabad districts: 1–2 days
-    '500': 1, '501': 1, '502': 1, '503': 1, '504': 2, '505': 2,
-    // Telangana: 2–3 days
-    '506': 2, '507': 2, '508': 2, '509': 2, '510': 3, '511': 3, '512': 3, '513': 3,
-    // AP: 3–5 days
-    '515': 4, '516': 4, '517': 4, '518': 4, '519': 5, '520': 3, '521': 3, '522': 3, '523': 3, '524': 3, '525': 3,
-};
 
 function calcEDD(pincode) {
     if (!pincode || pincode.length !== 6) return null;
@@ -602,27 +528,8 @@ function calcEDD(pincode) {
     d.setDate(d.getDate() + days + (new Date().getHours() >= 14 ? 1 : 0)); // cutoff 2pm
     return { days, date: d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' }) };
 }
-
-window.checkEDD = function(pincode, resultElId) {
-    const edd = calcEDD(pincode);
-    const el = document.getElementById(resultElId);
-    if (!el) return;
-    if (!edd) {
-        el.innerHTML = `<span style="color:var(--text-muted);font-size:0.7rem">Delivery available on request</span>`;
-    } else {
-        el.innerHTML = `<span style="color:#34d399"><i class="fas fa-truck" style="margin-right:0.3rem"></i>Delivery by <strong style="color:white">${edd.date}</strong> (${edd.days}–${edd.days+1} days)</span>`;
-    }
-};
-
-window.checkShippingEDD = function(pincode) {
-    if (pincode.length !== 6) { document.getElementById('eddResult').innerHTML = ''; return; }
-    const edd = calcEDD(pincode);
-    const el = document.getElementById('eddResult');
-    if (!el) return;
-    el.innerHTML = edd
-        ? `<i class="fas fa-truck" style="margin-right:0.25rem"></i>By ${edd.date}`
-        : `<span style="color:var(--text-muted)">Check availability</span>`;
-};
+;
+;
 
 // ===== OTP RESEND TIMER =====
 let _otpTimer = null;
@@ -1361,4 +1268,3 @@ async function loadAdminAnalytics() {
         <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:${Math.round(rev/maxDay*100)}%"></div></div>
     </div>`).join('')}`;
 }
-

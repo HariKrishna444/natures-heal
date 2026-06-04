@@ -1,0 +1,21 @@
+{
+  "name": "natures-heal-electron",
+  "version": "1.0.0",
+  "description": "NaturesHeal Desktop App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^42.3.1",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.naturesheal.app",
+    "productName": "NaturesHeal",
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
