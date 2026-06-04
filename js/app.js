@@ -1602,6 +1602,7 @@ window.filterByConcern = function(concern, el) {
 };
 
 // ── Override applyPriceFilter to use sfApply ──────────────────────
+// ── Override applyPriceFilter to use sfApply ──────────────────────
 window.applyPriceFilter = function() {
     const minEl = document.getElementById('priceMin');
     const maxEl = document.getElementById('priceMax');
