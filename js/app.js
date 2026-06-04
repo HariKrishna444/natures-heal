@@ -633,7 +633,7 @@ window.openModalById = function(id) {
         <nav class="az-breadcrumb">
             <span onclick="closeItemModal()" style="cursor:pointer">Home</span>
             <i class="fas fa-chevron-right"></i>
-            <span onclick="closeItemModal();sfFilter('${item.type||'all'}')" style="cursor:pointer">${String(item.type||'All').replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
+            <span onclick="closeItemModal();sfFilter(this.dataset.type)" data-type="${item.type||'all'}" style="cursor:pointer">${String(item.type||'All').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
             <i class="fas fa-chevron-right"></i>
             <span class="az-breadcrumb-current">${escapeHTML(item.name)}</span>
         </nav>

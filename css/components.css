@@ -221,7 +221,6 @@
 }
 
 /* ===== ITEM DETAIL MODAL ===== */
-#itemModal { z-index: 120; }
 .item-modal-box {
     background: #064e3b; border-radius: 1.5rem; width: 100%;
     max-width: 560px; max-height: 90vh; overflow-y: auto;
@@ -256,13 +255,14 @@
 .rating-count { font-size: 0.75rem; color: rgba(255,255,255,0.6); }
 
 /* ===== FULL-PAGE PRODUCT DETAIL VIEW ===== */
+/* .product-page is now #itemModal — keeping class for backward compat */
 .product-page {
-    position: fixed; inset: 0; z-index: 120;
-    background: var(--bg-body); overflow-y: auto;
-    animation: pageFadeIn 0.25s ease-out;
+    position: fixed; inset: 0; z-index: 180;
+    background: var(--bg-main, #f8fdf9); overflow-y: auto;
 }
+.product-page.hidden { display: none !important; }
 @keyframes pageFadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-.product-page-inner { max-width: 900px; margin: 0 auto; padding-bottom: 5rem; }
+.product-page-inner { width: 100%; }
 
 /* Back bar */
 .pdp-back-bar {
@@ -1148,11 +1148,20 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
 
 /* ── Modal shell ── */
 #itemModal {
-    position: fixed; inset: 0; z-index: 120;
-    background: var(--bg-main);
-    overflow-y: auto; overflow-x: hidden;
+    position: fixed;
+    inset: 0;
+    z-index: 180;                         /* above header:40, cart:100, auth:130, admin:140, policy:150, notify:160 */
+    background: var(--bg-main, #f8fdf9);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: block;
     scrollbar-width: thin;
     scrollbar-color: #d1fae5 transparent;
+    animation: pdpSlideIn 0.22s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes pdpSlideIn {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0);    }
 }
 #itemModal.hidden { display: none !important; }
 #itemModalContent { max-width: 1400px; margin: 0 auto; padding: 0 0 4rem; }
@@ -1160,11 +1169,14 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
 /* ── Top bar ── */
 .az-topbar {
     display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.65rem 1.25rem;
+    padding: 0.6rem 1.25rem;
     background: var(--bg-card);
     border-bottom: 1px solid var(--border-color);
-    position: sticky; top: 0; z-index: 10;
-    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;                     /* sticky inside #itemModal scroll container */
+    z-index: 10;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 .az-back-btn {
     display: inline-flex; align-items: center; gap: 0.4rem;
@@ -1195,68 +1207,86 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
 .az-product-wrap {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0;
-    padding: 1.25rem 1rem;
+    gap: 1.25rem;
+    padding: 1.25rem 1rem 1rem;
+    align-items: start;
 }
-@media(min-width: 768px) {
+@media(min-width: 640px) {
+    .az-product-wrap {
+        grid-template-columns: 360px 1fr;
+        gap: 1.75rem;
+        padding: 1.5rem 1.5rem;
+    }
+}
+@media(min-width: 900px) {
     .az-product-wrap {
         grid-template-columns: 420px 1fr;
         gap: 2rem;
-        padding: 1.5rem 1.5rem;
-        align-items: start;
+        padding: 1.75rem 2rem;
     }
 }
-@media(min-width: 1100px) {
+@media(min-width: 1200px) {
     .az-product-wrap {
-        grid-template-columns: 480px 1fr;
+        grid-template-columns: 500px 1fr;
         gap: 2.5rem;
-        padding: 1.75rem 2rem;
+        padding: 2rem 2.5rem;
     }
 }
 
 /* ── Image column ── */
 .az-img-col {
     display: flex;
-    gap: 0.6rem;
-    position: sticky; top: 56px;
+    flex-direction: row;
+    gap: 0.75rem;
+    position: sticky;
+    top: 52px;                      /* stick just below topbar */
+    align-self: flex-start;
 }
 
-/* Thumbnail strip — left side of image (desktop) */
+/* Thumbnail strip — left vertical strip */
 .az-thumb-strip {
-    display: none;
+    display: flex;
     flex-direction: column;
-    gap: 0.45rem;
-    width: 64px;
+    gap: 0.5rem;
+    width: 68px;
     flex-shrink: 0;
-    max-height: 480px;
+    max-height: 500px;
     overflow-y: auto;
     scrollbar-width: none;
 }
 .az-thumb-strip::-webkit-scrollbar { display: none; }
-@media(min-width: 768px) { .az-thumb-strip { display: flex; } }
 
 .az-thumb {
-    width: 64px; height: 64px;
+    width: 68px; height: 68px;
     border-radius: 0.5rem;
     border: 2px solid var(--border-color);
-    overflow: hidden; cursor: pointer; padding: 0; background: white;
+    overflow: hidden; cursor: pointer; padding: 2px;
+    background: white;
     transition: all 0.15s;
     flex-shrink: 0;
+    box-sizing: border-box;
 }
-.az-thumb img { width: 100%; height: 100%; object-fit: contain; }
-.az-thumb:hover { border-color: #059669; }
-.az-thumb.active { border-color: #059669; border-width: 2.5px; }
+.az-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.az-thumb:hover  { border-color: #059669; }
+.az-thumb.active { border-color: #059669; border-width: 2.5px; box-shadow: 0 0 0 3px #d1fae5; }
 
 /* Main viewer */
 .az-main-viewer {
     position: relative;
     flex: 1;
+    min-width: 0;
     border-radius: 0.75rem;
     overflow: hidden;
     background: white;
     border: 1px solid var(--border-color);
     aspect-ratio: 1 / 1;
-    max-height: 480px;
+    max-height: 500px;
+}
+
+/* Hide thumb strip on mobile — show dots instead */
+@media(max-width: 600px) {
+    .az-thumb-strip { display: none; }
+    .az-img-col { flex-direction: column; }
 }
 .az-track {
     display: flex;
@@ -1314,8 +1344,9 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
 
 /* ── Info column ── */
 .az-info-col {
-    padding-top: 0.25rem;
+    padding-top: 0;
     display: flex; flex-direction: column; gap: 0;
+    min-width: 0;
 }
 .az-product-name {
     font-size: clamp(1.2rem, 3vw, 1.65rem);
@@ -1479,9 +1510,9 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
 
 /* Rec section */
 .az-rec-section {
-    border-top: 6px solid #f0fdf4;
-    padding-top: 1.5rem;
-    margin-top: 1.5rem;
+    border-top: 8px solid var(--border-color);
+    padding-top: 1.75rem;
+    margin-top: 0;
 }
 .az-rec-header { margin-bottom: 1rem; }
 .az-rec-title {
