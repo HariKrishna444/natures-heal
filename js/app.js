@@ -575,6 +575,7 @@ window.openModalById = function(id) {
                     </div>
                     <div class="az-rec-body">
                         <div class="az-rec-name">${escapeHTML(p.name)}</div>
+                        ${p.description ? `<div class="az-rec-desc">${escapeHTML(p.description)}</div>` : '<div class="az-rec-desc"></div>'}
                         ${ps ? `<div class="az-rec-stars">${stStr} <span>${ps.r}</span></div>` : ''}
                         <div class="az-rec-price">₹${(p.price||0).toFixed(0)}<span class="az-rec-unit"> /${p.quantityType||'unit'}</span></div>
                         ${!pOOS
@@ -611,6 +612,7 @@ window.openModalById = function(id) {
                     </div>
                     <div class="az-rec-body">
                         <div class="az-rec-name">${escapeHTML(p.name)}</div>
+                        ${p.description ? `<div class="az-rec-desc">${escapeHTML(p.description)}</div>` : '<div class="az-rec-desc"></div>'}
                         ${ps ? `<div class="az-rec-stars">${stStr} <span>${ps.r}</span></div>` : ''}
                         <div class="az-rec-price">₹${(p.price||0).toFixed(0)}<span class="az-rec-unit"> /${p.quantityType||'unit'}</span></div>
                         ${!pOOS
