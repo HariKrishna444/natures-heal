@@ -479,234 +479,271 @@ function renderItems(items) {
     });
 }
 
-// ===== ITEM DETAIL — FULL-PAGE VIEW =====
+// ===== ITEM DETAIL — AMAZON-STYLE FULL-PAGE VIEW =====
 window.openModalById = function(id) {
     const item = window.appState.catalogData.find(i => String(i.id) === String(id));
     if (!item) return;
-    const isOutOfStock = item.stock === '0' || item.stock === 'out';
-    const isBestseller = item.bestseller === '1' || item.bestseller === 'true';
-    const limitedOffer = item.limited_offer === 'true' || item.limited_offer === '1';
-    const starData = getStarRating(item);
-    const starsStr = starData ? '★'.repeat(Math.floor(starData.r)) + (starData.r % 1 ? '☆' : '') : '';
-    const isFav = AppStore.get('favorites').map(String).includes(String(item.id));
-    const waMsg = `Hi! I want to order *${item.name}* from Nature's Heal. Please share the details!`;
-    const fbt = getFrequentlyBoughtTogether(item.id, window.appState.catalogData, 4);
 
-    // --- Build gallery images ---
-    // Primary image from Firestore; extras from item.images array or item.image2/3/4 fields
-    const mainImg = safeURL(item.image);
+    const isOOS       = item.stock === '0' || item.stock === 'out';
+    const isBestseller= item.bestseller === '1' || item.bestseller === 'true';
+    const isLimited   = item.limited_offer === 'true' || item.limited_offer === '1';
+    const starData    = getStarRating(item);
+    const isFav       = AppStore.get('favorites').map(String).includes(String(item.id));
+    const waMsg       = `Hi! I want to order *${item.name}* from Nature's Heal.`;
+    const fbt         = getFrequentlyBoughtTogether(item.id, window.appState.catalogData, 8);
+
+    // Gallery
+    const mainImg  = safeURL(item.image);
     const extraImgs = [];
-    if (Array.isArray(item.images)) {
-        item.images.forEach(u => { const s = safeURL(u); if (s && s !== mainImg) extraImgs.push(s); });
-    }
-    ['image2','image3','image4'].forEach(k => {
-        if (item[k]) { const s = safeURL(item[k]); if (s && s !== mainImg && !extraImgs.includes(s)) extraImgs.push(s); }
-    });
-    const galleryImgs = [mainImg, ...extraImgs].filter(Boolean);
+    if (Array.isArray(item.images)) item.images.forEach(u => { const s=safeURL(u); if(s&&s!==mainImg) extraImgs.push(s); });
+    ['image2','image3','image4'].forEach(k => { if(item[k]){const s=safeURL(item[k]); if(s&&s!==mainImg&&!extraImgs.includes(s)) extraImgs.push(s);} });
+    const gallery = [mainImg, ...extraImgs].filter(Boolean);
 
-    const badgesHTML = [
-        isBestseller ? `<span class="pdp-img-badge bestseller">🏆 Best Seller</span>` : '',
-        limitedOffer && !isOutOfStock ? `<span class="pdp-img-badge limited">🔥 Limited Offer</span>` : '',
-        isOutOfStock ? `<span class="pdp-img-badge oos">Out of Stock</span>` : '',
-        !isBestseller && !limitedOffer && !isOutOfStock ? `<span class="pdp-img-badge">${String(item.type||'botanical').replace('_',' ')}</span>` : '',
-    ].filter(Boolean).join('');
+    const thumbsHTML = gallery.map((src,i) => `
+        <button class="az-thumb ${i===0?'active':''}" onclick="pdpGoTo(${i},'${item.id}')" aria-label="Image ${i+1}">
+            <img src="${src}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
+        </button>`).join('');
 
-    const usesItems = (item.uses || '').split(',').filter(u => u.trim())
-        .map(u => `<li>${escapeHTML(u.trim())}</li>`).join('');
-
-    const fbtHTML = fbt.length ? `
-    <div class="pdp-fbt">
-        <div class="pdp-fbt-title">🛒 Customers Also Buy</div>
-        <div class="pdp-fbt-row">
-            ${fbt.map(p => `
-            <div class="pdp-fbt-card" onclick="openModalById(${JSON.stringify(String(p.id))});document.getElementById('itemModal').scrollTop=0;" role="button" tabindex="0" aria-label="View ${escapeHTML(p.name)}">
-                <div class="pdp-fbt-card-img">
-                    <img src="${safeURL(p.image)}" alt="${escapeHTML(p.name)}" loading="lazy"
-                        onerror="this.parentElement.style.background='#d1fae5'">
-                </div>
-                <div class="pdp-fbt-card-body">
-                    <div class="pdp-fbt-card-name">${escapeHTML(p.name)}</div>
-                    <div class="pdp-fbt-card-price">₹${(p.price||0).toFixed(p.quantityType==='g'?2:0)}<span class="pdp-fbt-card-unit"> /${p.quantityType||'unit'}</span></div>
-                    ${p.description ? `<div class="pdp-fbt-card-desc">${escapeHTML(p.description)}</div>` : ''}
-                    <button class="pdp-fbt-add-btn" onclick="event.stopPropagation();addToCartSimple(${JSON.stringify(String(p.id))});showToast('&#x2705; Added to cart')">
-                        <i class="fas fa-cart-plus"></i> Add to Cart
-                    </button>
-                </div>
-            </div>`).join('')}
-        </div>
-    </div>` : '';
-
-    const ctaHTML = isOutOfStock
-        ? `<button class="pdp-notify-btn" onclick="notifyMe('${escapeHTML(item.name).replace(/'/g,"\\'")}')">
-                <i class="fas fa-bell"></i> Notify Me When Available
-           </button>
-           <button class="pdp-preorder-btn" onclick="preOrderWhatsApp('${escapeHTML(item.name).replace(/'/g,"\\'")}')">
-                <i class="fab fa-whatsapp"></i> Pre-Order via WhatsApp
-           </button>`
-        : `<button class="pdp-cta-add" onclick="addToCartFromModal('${item.id}');openCartSidebar();">
-                <i class="fas fa-shopping-cart"></i> Add to Cart
-           </button>
-           <a class="pdp-cta-wa" href="https://wa.me/918919011159?text=${encodeURIComponent(waMsg)}" target="_blank" rel="noopener noreferrer">
-                <i class="fab fa-whatsapp"></i> Order on WhatsApp
-           </a>`;
-
-    // Gallery HTML
-    const slidesHTML = galleryImgs.map((src, i) => `
-        <div class="pdp-img-slide">
-            <img src="${src}" alt="${escapeHTML(item.name)} — image ${i+1}" loading="${i===0?'eager':'lazy'}">
+    const slidesHTML = gallery.map((src,i) => `
+        <div class="az-slide">
+            <img src="${src}" alt="${escapeHTML(item.name)} image ${i+1}" loading="${i===0?'eager':'lazy'}">
         </div>`).join('');
 
-    const dotsHTML = galleryImgs.length > 1
-        ? `<div class="pdp-img-dots" id="pdpDots_${item.id}">
-            ${galleryImgs.map((_,i) => `<button class="pdp-img-dot${i===0?' active':''}" onclick="pdpGoTo(${i},'${item.id}')" aria-label="Image ${i+1}"></button>`).join('')}
-           </div>` : '';
+    const dotsHTML = gallery.length > 1 ? gallery.map((_,i) =>
+        `<button class="az-dot ${i===0?'active':''}" onclick="pdpGoTo(${i},'${item.id}')"></button>`
+    ).join('') : '';
 
-    const arrowsHTML = galleryImgs.length > 1
-        ? `<button class="pdp-img-arrow prev hidden-arrow" id="pdpPrev_${item.id}" onclick="pdpNav(-1,'${item.id}')" aria-label="Previous image">
-                <i class="fas fa-chevron-left"></i>
+    // Badges
+    const badges = [];
+    if (isBestseller) badges.push(`<span class="az-badge az-badge--best">🏆 Best Seller</span>`);
+    if (isLimited && !isOOS) badges.push(`<span class="az-badge az-badge--hot">🔥 Limited Offer</span>`);
+    if (isOOS)       badges.push(`<span class="az-badge az-badge--oos">Out of Stock</span>`);
+
+    // Stars
+    const starsHTML = starData ? (() => {
+        const full = Math.floor(starData.r);
+        const half = starData.r % 1 >= 0.5 ? 1 : 0;
+        const empty = 5 - full - half;
+        return '<span class="az-stars">' +
+            '★'.repeat(full) + (half?'½':'') + '☆'.repeat(empty) +
+            `</span><span class="az-review-count">${starData.r} · ${starData.count} reviews</span>`;
+    })() : '';
+
+    // Uses list
+    const usesList = (item.uses||'').split(',').filter(u=>u.trim())
+        .map(u => `<li><i class="fas fa-check"></i> ${escapeHTML(u.trim())}</li>`).join('');
+
+    // CTA
+    const ctaHTML = isOOS
+        ? `<button class="az-btn az-btn--notify" onclick="notifyMe('${escapeHTML(item.name).replace(/'/g,"\\'")}')">
+               <i class="fas fa-bell"></i> Notify Me
            </button>
-           <button class="pdp-img-arrow next" id="pdpNext_${item.id}" onclick="pdpNav(1,'${item.id}')" aria-label="Next image">
-                <i class="fas fa-chevron-right"></i>
-           </button>` : '';
+           <a class="az-btn az-btn--wa" href="https://wa.me/918919011159?text=${encodeURIComponent(waMsg)}" target="_blank" rel="noopener">
+               <i class="fab fa-whatsapp"></i> Pre-Order via WhatsApp
+           </a>`
+        : `<div class="az-qty-row">
+               <label class="az-qty-label">Qty</label>
+               <button class="az-qty-minus" onclick="modalQtyChange('${item.id}',-1)">−</button>
+               <span class="az-qty-val" id="modalQtyVal_${item.id}">${item.minQty||1} ${item.quantityType||'unit'}</span>
+               <button class="az-qty-plus" onclick="modalQtyChange('${item.id}',1)">+</button>
+               <span class="az-qty-sub" id="modalSubtotal_${item.id}">₹${((item.price||0)*(item.minQty||1)).toFixed(0)}</span>
+           </div>
+           <div class="az-cta-row">
+               <button class="az-btn az-btn--cart" onclick="addToCartFromModal('${item.id}');openCartSidebar()">
+                   <i class="fas fa-cart-plus"></i> Add to Cart
+               </button>
+               <a class="az-btn az-btn--wa" href="https://wa.me/918919011159?text=${encodeURIComponent(waMsg)}" target="_blank" rel="noopener">
+                   <i class="fab fa-whatsapp"></i> WhatsApp Order
+               </a>
+           </div>`;
 
-    const thumbsHTML = galleryImgs.length > 1
-        ? `<div class="pdp-img-thumbs" id="pdpThumbs_${item.id}">
-            ${galleryImgs.map((src, i) => `
-            <img class="pdp-img-thumb${i===0?' active':''}" src="${src}" alt="Thumbnail ${i+1}"
-                 onclick="pdpGoTo(${i},'${item.id}')" loading="lazy"
-                 onerror="this.style.display='none'">`).join('')}
-           </div>` : '';
+    // Frequently bought — horizontal scrollable cards
+    const fbtHTML = fbt.length ? `
+    <section class="az-rec-section">
+        <div class="az-rec-header">
+            <h2 class="az-rec-title"><i class="fas fa-boxes"></i> Customers Also Bought</h2>
+        </div>
+        <div class="az-rec-grid" id="azRecGrid">
+            ${fbt.map(p => {
+                const ps = getStarRating(p);
+                const stStr = ps ? '★'.repeat(Math.floor(ps.r)) : '';
+                const pOOS = p.stock === '0' || p.stock === 'out';
+                return `<div class="az-rec-card" onclick="openModalById(${JSON.stringify(String(p.id))});document.getElementById('itemModal').scrollTop=0" role="button" tabindex="0">
+                    <div class="az-rec-img">
+                        <img src="${safeURL(p.image)}" alt="${escapeHTML(p.name)}" loading="lazy" onerror="this.parentElement.style.background='#d1fae5'">
+                        ${p.bestseller==='1'||p.bestseller==='true' ? '<span class="az-rec-badge">Best Seller</span>' : ''}
+                    </div>
+                    <div class="az-rec-body">
+                        <div class="az-rec-name">${escapeHTML(p.name)}</div>
+                        ${ps ? `<div class="az-rec-stars">${stStr} <span>${ps.r}</span></div>` : ''}
+                        <div class="az-rec-price">₹${(p.price||0).toFixed(0)}<span class="az-rec-unit"> /${p.quantityType||'unit'}</span></div>
+                        ${!pOOS
+                            ? `<button class="az-rec-add" onclick="event.stopPropagation();addToCartSimple(${JSON.stringify(String(p.id))});showToast('✅ Added to cart')">
+                                   <i class="fas fa-cart-plus"></i> Add to Cart
+                               </button>`
+                            : `<span class="az-rec-oos">Out of Stock</span>`}
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>
+    </section>` : '';
 
-    // Build category chips from live catalog
-    const allCategories = [...new Set((window.appState.catalogData||[]).map(p => p.type).filter(Boolean))];
-    const categoryMeta = {
-        leaf:      { emoji: '🍃', label: 'Leaves'      },
-        fruit:     { emoji: '🍎', label: 'Fruits'      },
-        wild_fruit:{ emoji: '🫐', label: 'Wild Fruits' },
-        seed:      { emoji: '🌱', label: 'Seeds'       },
-        vegetable: { emoji: '🥦', label: 'Vegetables'  },
-        dry_fruit: { emoji: '🥜', label: 'Dry Fruits'  },
-        flower:    { emoji: '🌸', label: 'Flowers'     },
-        powder:    { emoji: '🌿', label: 'Powders'     },
-        herb:      { emoji: '🌾', label: 'Herbs'       },
-        root:      { emoji: '🪨', label: 'Roots'       },
-        bark:      { emoji: '🪵', label: 'Barks'       },
-        oil:       { emoji: '💧', label: 'Oils'        },
-    };
-    const catChipsHTML = [
-        '<button class="pdp-cat-chip active" data-type="all" onclick="pdpFilterCategory(\'all\',this)">🌿 All</button>',
-        ...allCategories.map(t => {
-            const m = categoryMeta[t] || { emoji: '🌿', label: t.replace('_',' ').replace(/\b\w/g, c => c.toUpperCase()) };
-            return '<button class="pdp-cat-chip" data-type="' + t + '" onclick="pdpFilterCategory(\'' + t + '\',this)">' + m.emoji + ' ' + m.label + '</button>';
-        })
-    ].join('');
+    // Recommended (same category, different from current)
+    const relatedCatLabel = String(item.type||'').replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()) || "Nature\'s Heal";
+    const related = (window.appState.catalogData||[])
+        .filter(p => String(p.id) !== String(id) && p.type === item.type && !fbt.find(f => String(f.id)===String(p.id)))
+        .sort(() => Math.random()-0.5).slice(0, 8);
+
+    const relatedHTML = related.length ? `
+    <section class="az-rec-section">
+        <div class="az-rec-header">
+            <h2 class="az-rec-title"><i class="fas fa-seedling"></i> More from ${relatedCatLabel}</h2>
+        </div>
+        <div class="az-rec-grid">
+            ${related.map(p => {
+                const ps = getStarRating(p);
+                const stStr = ps ? '★'.repeat(Math.floor(ps.r)) : '';
+                const pOOS = p.stock === '0' || p.stock === 'out';
+                return `<div class="az-rec-card" onclick="openModalById(${JSON.stringify(String(p.id))});document.getElementById('itemModal').scrollTop=0" role="button" tabindex="0">
+                    <div class="az-rec-img">
+                        <img src="${safeURL(p.image)}" alt="${escapeHTML(p.name)}" loading="lazy" onerror="this.parentElement.style.background='#d1fae5'">
+                        ${p.bestseller==='1'||p.bestseller==='true' ? '<span class="az-rec-badge">Best Seller</span>' : ''}
+                    </div>
+                    <div class="az-rec-body">
+                        <div class="az-rec-name">${escapeHTML(p.name)}</div>
+                        ${ps ? `<div class="az-rec-stars">${stStr} <span>${ps.r}</span></div>` : ''}
+                        <div class="az-rec-price">₹${(p.price||0).toFixed(0)}<span class="az-rec-unit"> /${p.quantityType||'unit'}</span></div>
+                        ${!pOOS
+                            ? `<button class="az-rec-add" onclick="event.stopPropagation();addToCartSimple(${JSON.stringify(String(p.id))});showToast('✅ Added to cart')">
+                                   <i class="fas fa-cart-plus"></i> Add to Cart
+                               </button>`
+                            : `<span class="az-rec-oos">Out of Stock</span>`}
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>
+    </section>` : '';
 
     document.getElementById('itemModalContent').innerHTML = `
-    <!-- Back bar -->
-    <div class="pdp-back-bar">
-        <button class="pdp-back-btn" onclick="closeItemModal()" aria-label="Back to catalog">
-            <i class="fas fa-arrow-left"></i> Back
+    <!-- ── TOP BAR ── -->
+    <div class="az-topbar">
+        <button class="az-back-btn" onclick="closeItemModal()">
+            <i class="fas fa-arrow-left"></i> Back to catalog
         </button>
-        <span class="pdp-back-title">${escapeHTML(item.name)}</span>
-    </div>
-
-    <!-- Image gallery -->
-    <div class="pdp-img-wrap" id="pdpGallery_${item.id}">
-        <div class="pdp-img-track" id="pdpTrack_${item.id}">${slidesHTML}</div>
-        ${arrowsHTML}
-        ${dotsHTML}
-        <div class="pdp-img-badges">${badgesHTML}</div>
-        <button class="pdp-fav-btn" id="pdpFavBtn_${item.id}" onclick="toggleFav(event,'${item.id}')" aria-label="${isFav?'Remove from wishlist':'Add to wishlist'}">
+        <nav class="az-breadcrumb">
+            <span onclick="closeItemModal()" style="cursor:pointer">Home</span>
+            <i class="fas fa-chevron-right"></i>
+            <span onclick="closeItemModal();sfFilter('${item.type||'all'}')" style="cursor:pointer">${String(item.type||'All').replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase())}</span>
+            <i class="fas fa-chevron-right"></i>
+            <span class="az-breadcrumb-current">${escapeHTML(item.name)}</span>
+        </nav>
+        <button class="az-fav-topbar" onclick="toggleFav(event,'${item.id}')" title="${isFav?'Remove from wishlist':'Save to wishlist'}">
             <i class="${isFav?'fas':'far'} fa-heart" style="color:${isFav?'#f43f5e':'#94a3b8'}"></i>
         </button>
     </div>
-    ${thumbsHTML}
 
-    <!-- Body -->
-    <div class="pdp-body">
-        <!-- Main column -->
-        <div class="pdp-main">
-            <h1 class="pdp-name">${escapeHTML(item.name)}</h1>
-            ${item.scientific ? `<p class="pdp-scientific">${escapeHTML(item.scientific)}</p>` : ''}
-            ${starData ? `<div class="pdp-rating">
-                <span class="stars">${starsStr}</span>
-                <span class="count">${starData.r} · ${starData.count} reviews</span>
+    <!-- ── MAIN PRODUCT AREA ── -->
+    <div class="az-product-wrap">
+
+        <!-- LEFT: Image column -->
+        <div class="az-img-col">
+            <!-- Thumb strip -->
+            <div class="az-thumb-strip" id="azThumbs_${item.id}">${thumbsHTML}</div>
+            <!-- Main viewer -->
+            <div class="az-main-viewer">
+                <div class="az-track" id="pdpTrack_${item.id}">${slidesHTML}</div>
+                ${gallery.length>1 ? `
+                <button class="az-arr az-arr--prev hidden-arrow" id="pdpPrev_${item.id}" onclick="pdpNav(-1,'${item.id}')"><i class="fas fa-chevron-left"></i></button>
+                <button class="az-arr az-arr--next" id="pdpNext_${item.id}" onclick="pdpNav(1,'${item.id}')"><i class="fas fa-chevron-right"></i></button>` : ''}
+                <div class="az-dot-strip" id="pdpDots_${item.id}">${dotsHTML}</div>
+                <div class="az-gallery-badges">${badges.join('')}</div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Info column -->
+        <div class="az-info-col">
+            <!-- Name + scientific -->
+            <h1 class="az-product-name">${escapeHTML(item.name)}</h1>
+            ${item.scientific ? `<p class="az-scientific">Scientific name: <em>${escapeHTML(item.scientific)}</em></p>` : ''}
+
+            <!-- Rating row -->
+            ${starsHTML ? `<div class="az-rating-row">${starsHTML}</div>` : ''}
+
+            <div class="az-divider"></div>
+
+            <!-- Price block -->
+            <div class="az-price-block">
+                <span class="az-price-label">Price:</span>
+                <span class="az-price-main">₹${(item.price||0).toFixed(item.quantityType==='g'?2:0)}</span>
+                <span class="az-price-unit">per ${item.quantityType||'unit'}</span>
+                ${isOOS ? '<span class="az-oos-chip">Out of Stock</span>' : ''}
+            </div>
+
+            <!-- Free delivery note -->
+            ${!isOOS ? `<div class="az-delivery-note">
+                <i class="fas fa-truck"></i>
+                <span>FREE delivery on orders above ₹499 &nbsp;·&nbsp; Same-day dispatch before 2 PM</span>
             </div>` : ''}
 
-            <div class="pdp-price-row">
-                <span class="pdp-price">₹${(item.price||0).toFixed(item.quantityType==='g'?2:0)}</span>
-                <span class="pdp-unit">per ${item.quantityType||'unit'}</span>
-                ${isOutOfStock ? '<span style="font-size:0.8rem;font-weight:700;color:#ef4444;padding:0.25rem 0.75rem;background:#fee2e2;border-radius:9999px;">Out of Stock</span>' : ''}
+            <div class="az-divider"></div>
+
+            <!-- CTA -->
+            <div class="az-cta-wrap">${ctaHTML}</div>
+
+            <div class="az-divider"></div>
+
+            <!-- EDD -->
+            <div class="az-edd">
+                <i class="fas fa-map-marker-alt" style="color:#059669"></i>
+                <div>
+                    <div class="az-edd-label">Check delivery date</div>
+                    <div class="az-edd-row">
+                        <input class="az-edd-input" id="eddPinInput_${item.id}" type="tel" maxlength="6" inputmode="numeric" placeholder="Enter pincode"
+                            oninput="if(this.value.length===6) checkEDD(this.value,'pdpEddResult_${item.id}')">
+                        <button class="az-edd-btn" onclick="checkEDD(document.getElementById('eddPinInput_${item.id}').value,'pdpEddResult_${item.id}')">Check</button>
+                    </div>
+                    <div id="pdpEddResult_${item.id}" class="az-edd-result"></div>
+                </div>
             </div>
 
             <!-- Description -->
-            <div class="pdp-section">
-                <div class="pdp-section-title"><i class="fas fa-leaf"></i> Description</div>
-                <p>${escapeHTML(item.description || 'Pure natural product. No additives or preservatives.')}</p>
-            </div>
+            ${item.description ? `<div class="az-info-section">
+                <div class="az-info-title">About this product</div>
+                <p class="az-info-text">${escapeHTML(item.description)}</p>
+            </div>` : ''}
 
             <!-- Benefits -->
-            ${usesItems ? `<div class="pdp-section">
-                <div class="pdp-section-title"><i class="fas fa-heart"></i> Key Benefits</div>
-                <ul class="pdp-uses-list">${usesItems}</ul>
+            ${usesList ? `<div class="az-info-section">
+                <div class="az-info-title">Key Benefits</div>
+                <ul class="az-uses-list">${usesList}</ul>
             </div>` : ''}
 
-            <!-- Qty picker (only if in stock) -->
-            ${!isOutOfStock ? `
-            <div class="pdp-qty-row">
-                <span class="pdp-qty-label">Qty:</span>
-                <button class="pdp-qty-btn pdp-qty-minus" onclick="modalQtyChange('${item.id}',-1)">−</button>
-                <span class="pdp-qty-val" id="modalQtyVal_${item.id}">${item.minQty||1} ${item.quantityType||'unit'}</span>
-                <button class="pdp-qty-btn pdp-qty-plus" onclick="modalQtyChange('${item.id}',1)">+</button>
-                <span class="pdp-qty-subtotal" id="modalSubtotal_${item.id}">₹${((item.price||0)*(item.minQty||1)).toFixed(0)}</span>
-            </div>` : ''}
-
-            <!-- CTAs -->
-            <div class="pdp-cta-group">${ctaHTML}</div>
-        </div>
-
-        <!-- Sidebar (sticky on desktop) -->
-        <div class="pdp-sidebar">
-            <!-- EDD -->
-            <div class="pdp-edd">
-                <div class="pdp-edd-icon"><i class="fas fa-shipping-fast"></i></div>
-                <div class="pdp-edd-content">
-                    <div class="pdp-edd-label">Check Delivery Date</div>
-                    <div class="pdp-edd-inputs">
-                        <input class="pdp-edd-pin" id="eddPinInput_${item.id}" type="tel" maxlength="6" inputmode="numeric"
-                            placeholder="6-digit pincode"
-                            oninput="if(this.value.length===6)checkEDD(this.value,'pdpEddResult_${item.id}')">
-                        <button class="pdp-edd-check" onclick="checkEDD(document.getElementById('eddPinInput_${item.id}').value,'pdpEddResult_${item.id}')">Check</button>
-                    </div>
-                    <div id="pdpEddResult_${item.id}" class="pdp-edd-result"></div>
-                </div>
-            </div>
-
-            <!-- Trust pills -->
-            <div class="pdp-section">
-                <div class="pdp-section-title"><i class="fas fa-shield-alt"></i> Why Nature's Heal</div>
-                <div style="display:flex;flex-direction:column;gap:0.55rem">
-                    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> 100% Pure — No additives or fillers</div>
-                    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> Free delivery on first order & above ₹499</div>
-                    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> Cash on Delivery available (orders ₹499+)</div>
-                    <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)"><i class="fas fa-check-circle" style="color:#059669;flex-shrink:0"></i> Same-day dispatch (orders before 2 PM)</div>
-                </div>
+            <!-- Trust badges -->
+            <div class="az-trust-grid">
+                <div class="az-trust-item"><i class="fas fa-leaf"></i><span>100% Pure</span></div>
+                <div class="az-trust-item"><i class="fas fa-truck"></i><span>Fast Delivery</span></div>
+                <div class="az-trust-item"><i class="fas fa-hand-holding-usd"></i><span>COD Available</span></div>
+                <div class="az-trust-item"><i class="fas fa-undo"></i><span>Easy Returns</span></div>
             </div>
         </div>
+    </div>
 
-        <!-- FBT row — spans full width on desktop -->
+    <!-- ── RECOMMENDATIONS ── -->
+    <div class="az-recs-wrap">
         ${fbtHTML}
-    </div>`;
+        ${relatedHTML}
+    </div>
+    `;
 
     document.getElementById('itemModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     document.getElementById('itemModal').scrollTop = 0;
     updateMetaForProduct(item);
 
-    // Init gallery state & touch/swipe
-    window._pdpGallery = { idx: 0, total: galleryImgs.length, itemId: String(item.id) };
-    _initPdpSwipe(item.id, galleryImgs.length);
+    window._pdpGallery = { idx: 0, total: gallery.length, itemId: String(item.id) };
+    _initPdpSwipe(item.id, gallery.length);
 };
+
 
 // ===== GALLERY HELPERS =====
 window.pdpGoTo = function(idx, itemId) {
@@ -727,8 +764,9 @@ function _pdpUpdateGallery(itemId) {
     const g = window._pdpGallery;
     if (!g) return;
     const track = document.getElementById('pdpTrack_' + itemId);
-    const dots = document.querySelectorAll('#pdpDots_' + itemId + ' .pdp-img-dot');
-    const thumbs = document.querySelectorAll('#pdpThumbs_' + itemId + ' .pdp-img-thumb');
+    // Support both old (.pdp-img-dot) and new (.az-dot) selectors
+    const dots   = document.querySelectorAll('#pdpDots_'  + itemId + ' .az-dot, #pdpDots_'  + itemId + ' .pdp-img-dot');
+    const thumbs = document.querySelectorAll('#azThumbs_' + itemId + ' .az-thumb, #pdpThumbs_' + itemId + ' .pdp-img-thumb');
     const prevBtn = document.getElementById('pdpPrev_' + itemId);
     const nextBtn = document.getElementById('pdpNext_' + itemId);
     if (track) track.style.transform = `translateX(-${g.idx * 100}%)`;
@@ -1601,7 +1639,6 @@ window.filterByConcern = function(concern, el) {
     document.getElementById('gridContainer')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
-// ── Override applyPriceFilter to use sfApply ──────────────────────
 // ── Override applyPriceFilter to use sfApply ──────────────────────
 window.applyPriceFilter = function() {
     const minEl = document.getElementById('priceMin');
