@@ -372,7 +372,11 @@ function buildProductCard(item, idx) {
     }
     imgWrap.appendChild(el('div', 'card-bestseller', { html: '🏆 Best Seller' }));
     imgWrap.appendChild(el('div', 'stock-badge', { text: 'Out of Stock' }));
-    const urgTag = el('div', 'urgency-tag'); urgTag.innerHTML = '<i class="fas fa-fire"></i> Only <strong>' + item.stock + '</strong> left!'; imgWrap.appendChild(urgTag);
+    if (isUrgent) {
+        const urgTag = el('div', 'urgency-tag');
+        urgTag.innerHTML = '<i class="fas fa-fire"></i> Only <strong>' + item.stock + '</strong> left!';
+        imgWrap.appendChild(urgTag);
+    }
 
     const actions = el('div', 'card-actions');
     const favBtn = el('button', 'card-action-btn', { title: 'Wishlist', 'aria-label': isFav ? 'Remove from wishlist' : 'Add to wishlist' });
