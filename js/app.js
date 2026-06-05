@@ -344,7 +344,7 @@ function buildProductCard(item, idx) {
     const inCart      = AppStore.get('cart').some(c => c.id == item.id);
     const isOutOfStock = item.stock === '0' || item.stock === 'out';
     const isBestseller = item.bestseller === '1' || item.bestseller === 'true';
-    const isUrgent    = item.stock && parseInt(item.stock) <= 10 && parseInt(item.stock) > 0;
+    const isUrgent    = item.stock && /^\d+$/.test(String(item.stock)) && parseInt(item.stock) <= 9 && parseInt(item.stock) > 0;
     const limitedOffer = item.limited_offer === 'true' || item.limited_offer === '1';
     const starData    = getStarRating(item);
 
@@ -490,7 +490,7 @@ function renderItems(items) {
 }
 
 // ===== ITEM DETAIL — AMAZON-STYLE FULL-PAGE VIEW =====
-window.openModalById = function(id) {
+window.openModalById = function(id, pushHistory = true) {
     const item = window.appState.catalogData.find(i => String(i.id) === String(id));
     if (!item) return;
 
@@ -641,7 +641,7 @@ window.openModalById = function(id) {
     document.getElementById('itemModalContent').innerHTML = `
     <!-- ── TOP BAR ── -->
     <div class="az-topbar">
-        <button class="az-back-btn" onclick="closeItemModal()">
+        <button class="az-back-btn" id="pdpBackBtn" onclick="pdpGoBack()">
             <i class="fas fa-arrow-left"></i> Back to catalog
         </button>
         <nav class="az-breadcrumb">
@@ -691,7 +691,7 @@ window.openModalById = function(id) {
                 <span class="az-price-main">₹${(item.price||0).toFixed(item.quantityType==='g'?2:0)}</span>
                 <span class="az-price-unit">per ${item.quantityType||'unit'}</span>
                 ${isOOS ? '<span class="az-oos-chip">Out of Stock</span>' : ''}
-                ${!isOOS && item.stock && parseInt(item.stock) <= 10 && parseInt(item.stock) > 0
+                ${!isOOS && item.stock && /^\d+$/.test(String(item.stock)) && parseInt(item.stock) <= 9 && parseInt(item.stock) > 0
                     ? `<span class="az-low-stock-chip"><i class="fas fa-fire"></i> Only ${item.stock} left!</span>`
                     : ''}
             </div>
@@ -766,6 +766,24 @@ window.openModalById = function(id) {
     </div>
     `;
 
+    // History stack — push so Back returns to previous product
+    if (!window._pdpHistory) window._pdpHistory = [];
+    if (pushHistory && window._pdpHistory[window._pdpHistory.length - 1] !== String(id)) {
+        window._pdpHistory.push(String(id));
+    }
+    // Update back button label
+    const backBtn = document.querySelector('.az-back-btn');
+    if (backBtn) {
+        if (window._pdpHistory.length > 1) {
+            const prevId = window._pdpHistory[window._pdpHistory.length - 2];
+            const prevItem = window.appState.catalogData.find(i => String(i.id) === prevId);
+            backBtn.innerHTML = prevItem
+                ? `<i class="fas fa-arrow-left"></i> ${prevItem.name}`
+                : `<i class="fas fa-arrow-left"></i> Back`;
+        } else {
+            backBtn.innerHTML = `<i class="fas fa-arrow-left"></i> Back to catalog`;
+        }
+    }
     document.getElementById('itemModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     document.getElementById('itemModal').scrollTop = 0;
@@ -877,7 +895,22 @@ window.pdpFilterCategory = function(type, btn) {
 window.closeItemModal = function() {
     document.getElementById('itemModal').classList.add('hidden');
     document.body.style.overflow = '';
+    window._pdpHistory = [];   // clear stack on full close
     resetMeta();
+};
+
+// Go back to previous product in history stack
+window.pdpGoBack = function() {
+    if (!window._pdpHistory || window._pdpHistory.length <= 1) {
+        closeItemModal();
+        return;
+    }
+    // Pop current, show previous
+    window._pdpHistory.pop();
+    const prevId = window._pdpHistory[window._pdpHistory.length - 1];
+    window._pdpHistory.pop();   // openModalById will re-push it
+    document.getElementById('itemModal').scrollTop = 0;
+    window.openModalById(prevId, true);
 };
 
 // Modal quantity state — keyed by string ID to handle Firestore string IDs
