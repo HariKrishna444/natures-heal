@@ -344,7 +344,7 @@ function buildProductCard(item, idx) {
     const inCart      = AppStore.get('cart').some(c => c.id == item.id);
     const isOutOfStock = item.stock === '0' || item.stock === 'out';
     const isBestseller = item.bestseller === '1' || item.bestseller === 'true';
-    const isUrgent    = item.stock && parseInt(item.stock) <= 5 && parseInt(item.stock) > 0;
+    const isUrgent    = item.stock && parseInt(item.stock) <= 10 && parseInt(item.stock) > 0;
     const limitedOffer = item.limited_offer === 'true' || item.limited_offer === '1';
     const starData    = getStarRating(item);
 
@@ -372,7 +372,7 @@ function buildProductCard(item, idx) {
     }
     imgWrap.appendChild(el('div', 'card-bestseller', { html: '🏆 Best Seller' }));
     imgWrap.appendChild(el('div', 'stock-badge', { text: 'Out of Stock' }));
-    imgWrap.appendChild(el('div', 'urgency-tag', { text: 'Only ' + item.stock + ' left!' }));
+    const urgTag = el('div', 'urgency-tag'); urgTag.innerHTML = '<i class="fas fa-fire"></i> Only <strong>' + item.stock + '</strong> left!'; imgWrap.appendChild(urgTag);
 
     const actions = el('div', 'card-actions');
     const favBtn = el('button', 'card-action-btn', { title: 'Wishlist', 'aria-label': isFav ? 'Remove from wishlist' : 'Add to wishlist' });
@@ -397,6 +397,16 @@ function buildProductCard(item, idx) {
     const body = el('div', 'card-body');
     body.appendChild(el('div', 'card-name', { text: item.name || '' }));
     body.appendChild(el('div', 'card-scientific', { text: item.scientific || '' }));
+    // Social proof signal — show when popularity data exists
+    if (item.bought_count && parseInt(item.bought_count) > 0) {
+        const proof = el('div', 'card-social-proof');
+        proof.innerHTML = '<i class="fas fa-users"></i> ' + parseInt(item.bought_count).toLocaleString('en-IN') + '+ bought this month';
+        body.appendChild(proof);
+    } else if (isBestseller) {
+        const proof = el('div', 'card-social-proof');
+        proof.innerHTML = '<i class="fas fa-fire"></i> Popular choice';
+        body.appendChild(proof);
+    }
     body.appendChild(el('div', 'card-desc', { text: item.description || '' }));
 
     const footer = el('div', 'card-footer');
@@ -681,6 +691,9 @@ window.openModalById = function(id) {
                 <span class="az-price-main">₹${(item.price||0).toFixed(item.quantityType==='g'?2:0)}</span>
                 <span class="az-price-unit">per ${item.quantityType||'unit'}</span>
                 ${isOOS ? '<span class="az-oos-chip">Out of Stock</span>' : ''}
+                ${!isOOS && item.stock && parseInt(item.stock) <= 10 && parseInt(item.stock) > 0
+                    ? `<span class="az-low-stock-chip"><i class="fas fa-fire"></i> Only ${item.stock} left!</span>`
+                    : ''}
             </div>
 
             <!-- Free delivery note -->
@@ -728,6 +741,20 @@ window.openModalById = function(id) {
                 <div class="az-trust-item"><i class="fas fa-truck"></i><span>Fast Delivery</span></div>
                 <div class="az-trust-item"><i class="fas fa-hand-holding-usd"></i><span>COD Available</span></div>
                 <div class="az-trust-item"><i class="fas fa-undo"></i><span>Easy Returns</span></div>
+                <div class="az-trust-item"><i class="fas fa-certificate"></i><span>FSSAI Licensed</span></div>
+                <div class="az-trust-item"><i class="fas fa-map-marker-alt"></i><span>Farm Sourced, Telangana</span></div>
+            </div>
+
+            <!-- Medical disclaimer (required for herbal/wellness products) -->
+            <div class="az-disclaimer">
+                <i class="fas fa-exclamation-triangle az-disclaimer-icon"></i>
+                <div>
+                    <strong>Important:</strong> This product is a food-grade herbal supplement for general wellness only.
+                    It is <strong>not a medicine</strong> and is not intended to diagnose, treat, cure, or prevent any disease.
+                    Results may vary. Consult a healthcare professional before use if you are pregnant, breastfeeding,
+                    or have a medical condition.
+                    <button onclick="openPolicy('disclaimer')" class="az-disclaimer-link">Full Disclaimer →</button>
+                </div>
             </div>
         </div>
     </div>

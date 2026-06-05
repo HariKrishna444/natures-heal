@@ -92,6 +92,23 @@ function updateCartBadge() {
 }
 
 function updatePlaceOrderButton() {
+    // Update cart subtotal display
+    const cart = AppStore.get('cart');
+    const catalog = window.appState?.catalogData || [];
+    const subtotal = cart.reduce((sum, c) => {
+        const prod = catalog.find(p => String(p.id) === String(c.id));
+        return sum + (prod ? prod.price * c.qty : 0);
+    }, 0);
+    const delivery = subtotal === 0 ? 0 : subtotal >= 499 ? 0 : 49;
+    const subEl = document.getElementById('cartSubtotalLine');
+    if (subEl) {
+        subEl.innerHTML = subtotal > 0
+            ? `<span>Subtotal</span><span>₹${subtotal.toFixed(0)}</span>
+               <span>Delivery</span><span>${delivery === 0 ? '<span style="color:#059669;font-weight:700">FREE</span>' : '₹' + delivery}</span>
+               <hr style="grid-column:1/-1;border:none;border-top:1px solid var(--border-color);margin:0.25rem 0">
+               <span style="font-weight:800">Total</span><span style="font-weight:800;color:#059669">₹${(subtotal + delivery).toFixed(0)}</span>`
+            : '';
+    }
     const btn = document.getElementById('placeOrderBtn');
     if (!btn) return;
     const has = window.appState.cart.length > 0;
@@ -389,7 +406,22 @@ window.submitOrder = async function(event) {
                 return `• ${i.name} × ${i.qty} ${i.quantityType || 'unit'} = ₹${(i.price * i.qty).toFixed(0)}${imgLine}`;
             }).join('\n');
             const deliveryNote = verifiedFirst ? '🎉 FREE (First Order!)' : (verifiedDelivery === 0 ? 'FREE (Above ₹499)' : `₹${verifiedDelivery}`);
-            const waMsg = `🌿 *New Order — Nature's Heal*\n\nName: ${safeName}\nPhone: ${phone}\nEmail: ${email}\n\n*Items:*\n${itemLines}\n\nSubtotal: ₹${verifiedSubtotal}\nDelivery: ${deliveryNote}\n*Grand Total: ₹${verifiedTotal}*\nAddress: ${safeAddress}\n\nPayment: Cash on Delivery\n\n_Order placed via naturesheal.web.app_`;
+            const orderId = savedOrder.orderId || ('NH' + Date.now().toString(36).toUpperCase());
+            const waMsg = `🌿 *Order Confirmed — Nature's Heal*\n\n`
+                + `🆔 *Order ID:* ${orderId}\n`
+                + `👤 *Name:* ${safeName}\n`
+                + `📞 *Phone:* ${phone}\n`
+                + `📧 *Email:* ${email}\n\n`
+                + `📦 *Items:*\n${itemLines}\n\n`
+                + `💰 Subtotal: ₹${verifiedSubtotal}\n`
+                + `🚚 Delivery: ${deliveryNote}\n`
+                + `✅ *Grand Total: ₹${verifiedTotal}*\n\n`
+                + `📍 *Address:* ${safeAddress}\n\n`
+                + `💳 Payment: Cash on Delivery\n`
+                + `📅 Placed: ${new Date().toLocaleString('en-IN')}\n\n`
+                + `_Save this message as your order receipt._\n`
+                + `_We will confirm & dispatch within 2 hours on business days._\n`
+                + `_Track your order: wa.me/918919011159_`;
             setTimeout(() => {
                 window.open(`https://wa.me/${918919011159}?text=${encodeURIComponent(waMsg)}`, '_blank');
             }, 800);

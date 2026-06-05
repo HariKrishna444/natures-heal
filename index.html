@@ -174,6 +174,7 @@
         <button class="cart-close" onclick="closeCart()" aria-label="Close cart"><i class="fas fa-times" aria-hidden="true"></i></button>
     </div>
     <div class="cart-items" id="cartItemsList"></div>
+    <div class="cart-subtotal-block" id="cartSubtotalLine"></div>
     <div class="cart-footer">
         <div class="cart-total-row">
             <span class="cart-total-label">Total Amount:</span>
@@ -512,12 +513,70 @@
             </div>
         </div>
 
+        <!-- Compliance strip -->
+        <div class="footer-compliance">
+            <div class="compliance-badges">
+                <div class="compliance-badge">
+                    <i class="fas fa-certificate"></i>
+                    <div>
+                        <div class="cb-label">FSSAI Licensed</div>
+                        <div class="cb-value">Lic. No. 10025999000XXX</div>
+                    </div>
+                </div>
+                <div class="compliance-badge">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <div class="cb-label">Sourced From</div>
+                        <div class="cb-value">Telangana &amp; AP Farms</div>
+                    </div>
+                </div>
+                <div class="compliance-badge">
+                    <i class="fas fa-leaf"></i>
+                    <div>
+                        <div class="cb-label">Naturally Grown</div>
+                        <div class="cb-value">No Pesticides · No Fillers</div>
+                    </div>
+                </div>
+                <div class="compliance-badge">
+                    <i class="fas fa-undo-alt"></i>
+                    <div>
+                        <div class="cb-label">Easy Returns</div>
+                        <div class="cb-value">48-hr return window</div>
+                    </div>
+                </div>
+                <div class="compliance-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <div>
+                        <div class="cb-label">Secure Payments</div>
+                        <div class="cb-value">Razorpay · UPI · COD</div>
+                    </div>
+                </div>
+            </div>
+            <p class="footer-medical-disclaimer">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Medical Disclaimer:</strong> All products are food-grade herbal supplements for general wellness only. 
+                They are <strong>not medicines</strong> and are not intended to diagnose, treat, cure, or prevent any disease. 
+                Consult a qualified healthcare professional before use if you have a medical condition, are pregnant, 
+                breastfeeding, or on medication. Individual results may vary.
+                <button onclick="openPolicy('disclaimer')" class="disclaimer-link">Full Disclaimer →</button>
+            </p>
+        </div>
+
         <!-- Bottom bar -->
         <div class="footer-bottom">
             <div class="footer-copy" id="adminFooterTrigger"
                 onclick="handleAdminTrigger()"
                 ontouchend="event.preventDefault(); handleAdminTrigger();"
-                title="Tap 5× to open admin">© 2026 Nature's Heal · All rights reserved</div>
+                title="Tap 5× to open admin">© 2026 Nature's Heal · All rights reserved · FSSAI Lic. 10025999000XXX</div>
+            <div class="footer-legal-links">
+                <button onclick="openPolicy('privacy')">Privacy</button>
+                <span>·</span>
+                <button onclick="openPolicy('terms')">Terms</button>
+                <span>·</span>
+                <button onclick="openPolicy('refund')">Returns</button>
+                <span>·</span>
+                <button onclick="openPolicy('disclaimer')">Disclaimer</button>
+            </div>
         </div>
     </div>
 </footer>

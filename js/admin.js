@@ -912,7 +912,7 @@ const POLICIES = {
 <p>WhatsApp us at <strong>+91 89190 11159</strong> or email harikrishnarock444@gmail.com. We respond within a few hours on business days.</p>`
     },
     disclaimer: {
-        title: '⚠️ Disclaimer',
+        title: '⚠️ Medical & Legal Disclaimer',
         content: `
 <h3>Health & Medical Disclaimer</h3>
 <p>All products sold by Nature's Heal are <strong>food-grade herbal products</strong> intended for general wellness and nutritional supplementation only. They are <strong>not medicines</strong> and are not intended to diagnose, treat, cure, or prevent any disease or medical condition.</p>
