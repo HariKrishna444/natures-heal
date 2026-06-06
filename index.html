@@ -264,6 +264,10 @@
   <!-- LEFT FILTER SIDEBAR -->
   <aside id="filterSidebar" role="complementary" aria-label="Product filters">
     <div class="sidebar-inner">
+        <button class="sf-ai-advisor-btn" onclick="openHerbAdvisor()">
+            <i class="fas fa-magic"></i> AI Herb Advisor
+            <span class="sf-ai-badge">NEW</span>
+        </button>
 
       <!-- Sidebar close (mobile) -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
@@ -731,6 +735,9 @@
 <div id="adminPanel" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Admin dashboard"></div>
 
 <!-- ========== AI CHATBOT ========== -->
+<button class="sub-fab" onclick="openSubscription()" title="Monthly Herb Box">
+    <i class="fas fa-sync-alt"></i>
+</button>
 <button id="chatFab" onclick="toggleChat()" title="Ask Herbal AI">
     <i class="fas fa-leaf"></i>
     <span class="chat-pulse"></span>
@@ -782,6 +789,160 @@
 </div>
 
 
+
+<!-- ═══════ AI HERB ADVISOR MODAL ═══════ -->
+<div id="herbAdvisorModal" class="modal-overlay hidden" style="align-items:flex-start;padding-top:0;z-index:190">
+  <div class="ha-shell">
+
+    <!-- Header -->
+    <div class="ha-header">
+      <div class="ha-header-left">
+        <div class="ha-logo">🌿</div>
+        <div>
+          <div class="ha-title">AI Herb Advisor</div>
+          <div class="ha-subtitle">Powered by Claude · Personalized herbal guidance</div>
+        </div>
+      </div>
+      <button class="ha-close" onclick="closeHerbAdvisor()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <!-- Body -->
+    <div class="ha-body">
+
+      <!-- Step 1: Symptom Picker -->
+      <div class="ha-step" id="haStep1">
+        <div class="ha-step-title"><span class="ha-step-num">1</span> What are you looking to improve?</div>
+        <div class="ha-step-sub">Select all that apply — our AI will personalise your recommendations.</div>
+        <div class="ha-symptom-grid" id="haSymptomGrid">
+          <button class="ha-sym" data-sym="Immunity & frequent illness" onclick="haToggleSym(this)">🛡️ Immunity</button>
+          <button class="ha-sym" data-sym="Digestive issues & gut health" onclick="haToggleSym(this)">🫁 Digestion</button>
+          <button class="ha-sym" data-sym="Hair fall & scalp health" onclick="haToggleSym(this)">💆 Hair fall</button>
+          <button class="ha-sym" data-sym="Skin glow & acne" onclick="haToggleSym(this)">✨ Skin glow</button>
+          <button class="ha-sym" data-sym="Stress anxiety & poor sleep" onclick="haToggleSym(this)">🧘 Stress & sleep</button>
+          <button class="ha-sym" data-sym="High blood sugar & diabetes support" onclick="haToggleSym(this)">🩸 Blood sugar</button>
+          <button class="ha-sym" data-sym="Weight management & metabolism" onclick="haToggleSym(this)">⚖️ Weight</button>
+          <button class="ha-sym" data-sym="Heart health & cholesterol" onclick="haToggleSym(this)">❤️ Heart health</button>
+          <button class="ha-sym" data-sym="Joint pain & inflammation" onclick="haToggleSym(this)">🦴 Joint pain</button>
+          <button class="ha-sym" data-sym="Energy fatigue & vitality" onclick="haToggleSym(this)">⚡ Energy</button>
+          <button class="ha-sym" data-sym="Eye health & vision support" onclick="haToggleSym(this)">👁️ Eye health</button>
+          <button class="ha-sym" data-sym="Liver detox & cleansing" onclick="haToggleSym(this)">🫀 Liver detox</button>
+        </div>
+
+        <!-- Age & custom input -->
+        <div class="ha-extras">
+          <div class="ha-extra-field">
+            <label class="ha-label">Age group</label>
+            <select class="ha-select" id="haAge">
+              <option value="">Select age</option>
+              <option>Under 18</option><option>18–30</option>
+              <option>31–45</option><option>46–60</option><option>60+</option>
+            </select>
+          </div>
+          <div class="ha-extra-field" style="flex:2">
+            <label class="ha-label">Anything else? (optional)</label>
+            <input class="ha-input" id="haCustom" type="text" placeholder="e.g. thyroid, PCOS, post-workout recovery…">
+          </div>
+        </div>
+
+        <button class="ha-btn-primary" onclick="haGetRecommendations()">
+          <i class="fas fa-magic"></i> Get My Herbal Recommendations
+        </button>
+        <p class="ha-disclaimer-note">⚕️ Herbal supplements only. Not medical advice. Consult your doctor for serious conditions.</p>
+      </div>
+
+      <!-- Step 2: AI Results -->
+      <div class="ha-step hidden" id="haStep2">
+        <button class="ha-back-link" onclick="haShowStep1()"><i class="fas fa-arrow-left"></i> Change symptoms</button>
+        <div class="ha-loading hidden" id="haLoading">
+          <div class="ha-spinner"></div>
+          <p>Vaidya AI is analysing your health profile…</p>
+        </div>
+        <div id="haResults"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ CUSTOMER DASHBOARD MODAL ═══════ -->
+<div id="customerDashboard" class="modal-overlay hidden" style="z-index:190;align-items:flex-start;padding-top:0">
+  <div class="cd-shell">
+    <div class="cd-header">
+      <div class="cd-header-left">
+        <div class="cd-avatar" id="cdAvatar">👤</div>
+        <div>
+          <div class="cd-name" id="cdName">My Account</div>
+          <div class="cd-email" id="cdEmail"></div>
+        </div>
+      </div>
+      <button class="cd-close" onclick="closeDashboard()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="cd-tabs">
+      <button class="cd-tab active" onclick="cdSwitch('orders',this)"><i class="fas fa-box"></i> Orders</button>
+      <button class="cd-tab" onclick="cdSwitch('health',this)"><i class="fas fa-heartbeat"></i> Health Profile</button>
+      <button class="cd-tab" onclick="cdSwitch('wishlist',this)"><i class="fas fa-heart"></i> Wishlist</button>
+      <button class="cd-tab" onclick="cdSwitch('subscription',this)"><i class="fas fa-sync"></i> Subscription</button>
+    </div>
+    <div class="cd-body" id="cdBody">
+      <div class="cd-loading"><div class="ha-spinner"></div><p>Loading…</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SUBSCRIPTION MODAL ═══════ -->
+<div id="subscriptionModal" class="modal-overlay hidden" style="z-index:195">
+  <div class="sub-shell">
+    <div class="sub-header">
+      <span>🌿 Monthly Herb Box Subscription</span>
+      <button onclick="closeSubscription()" class="ha-close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="sub-body" id="subBody">
+      <p class="sub-tagline">Receive curated herbal products every month — fresh from the farm to your door.</p>
+      <div class="sub-plans">
+        <div class="sub-plan" onclick="selectSubPlan(this,'basic',499)">
+          <div class="sub-plan-name">🌱 Basic Box</div>
+          <div class="sub-plan-price">₹499<span>/month</span></div>
+          <ul><li>3–4 herb products</li><li>Health tip card</li><li>Free delivery</li></ul>
+          <div class="sub-plan-badge">Most Popular</div>
+        </div>
+        <div class="sub-plan" onclick="selectSubPlan(this,'wellness',899)">
+          <div class="sub-plan-name">🌿 Wellness Box</div>
+          <div class="sub-plan-price">₹899<span>/month</span></div>
+          <ul><li>6–8 herb products</li><li>Personalised picks</li><li>AI herb report</li><li>Free delivery</li></ul>
+        </div>
+        <div class="sub-plan" onclick="selectSubPlan(this,'premium',1499)">
+          <div class="sub-plan-name">🏆 Premium Box</div>
+          <div class="sub-plan-price">₹1499<span>/month</span></div>
+          <ul><li>10–12 rare herbs</li><li>Monthly consultation</li><li>AI health report</li><li>Priority dispatch</li></ul>
+        </div>
+      </div>
+      <div class="sub-form hidden" id="subForm">
+        <div class="sub-form-row">
+          <input class="ha-input" id="subName" placeholder="Your name" type="text">
+          <input class="ha-input" id="subPhone" placeholder="WhatsApp number" type="tel">
+        </div>
+        <input class="ha-input" id="subAddress" placeholder="Delivery address" type="text" style="margin-top:0.5rem">
+        <button class="ha-btn-primary" style="margin-top:1rem" onclick="startSubscription()">
+          <i class="fas fa-check-circle"></i> Subscribe Now
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ NOTIFICATION PERMISSION PROMPT ═══════ -->
+<div id="notifPrompt" class="notif-prompt hidden">
+  <div class="notif-prompt-inner">
+    <i class="fas fa-bell notif-prompt-icon"></i>
+    <div>
+      <div class="notif-prompt-title">Stay updated 🌿</div>
+      <div class="notif-prompt-sub">Get order updates, restock alerts & health tips</div>
+    </div>
+    <button class="notif-allow-btn" onclick="enableNotifications()">Allow</button>
+    <button class="notif-dismiss-btn" onclick="dismissNotifPrompt()"><i class="fas fa-times"></i></button>
+  </div>
+</div>
+
 <!-- ========== SCRIPTS ========== -->
 <!-- Razorpay -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -794,5 +955,6 @@
 <script src="js/cart.js"></script>
 <script src="js/app.js"></script>
 <script src="js/admin.js"></script>
+<script src="js/features.js"></script>
 </body>
 </html>

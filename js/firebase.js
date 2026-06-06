@@ -4,7 +4,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import {
     getFirestore, collection, addDoc, serverTimestamp,
-    getDocs, query, where, doc, updateDoc, orderBy
+    getDocs, query, where, doc, updateDoc, orderBy,
+    deleteDoc, setDoc, limit
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import {
     getAuth, GoogleAuthProvider, signInWithPopup, signOut,
@@ -37,9 +38,18 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // Expose to global
-window.db = db;
+window.db          = db;
 window.fbCollection = collection;
-window.fbAddDoc = addDoc;
+window.fbAddDoc     = addDoc;
+window.fbQuery      = query;
+window.fbWhere      = where;
+window.fbOrderBy    = orderBy;
+window.fbDoc        = doc;
+window.fbUpdateDoc  = updateDoc;
+window.fbDeleteDoc  = deleteDoc;
+window.fbSetDoc     = setDoc;
+window.fbLimit      = limit;
+window.fbServerTimestamp = serverTimestamp;
 window.fbServerTimestamp = serverTimestamp;
 window.fbGetDocs = getDocs;
 window.fbQuery = query;

@@ -102,6 +102,7 @@ function buildAdminHTML() {
             <button class="admin-tab" onclick="switchAdminTab('products')">🌿 Products</button>
             <button class="admin-tab" onclick="switchAdminTab('combos')">🎁 Combos</button>
             <button class="admin-tab" onclick="switchAdminTab('analytics')">📊 Analytics</button>
+            <button class="admin-tab" onclick="switchAdminTab('inventory')">📦 Inventory</button>
             <button class="admin-tab" onclick="switchAdminTab('add')">➕ Add Product</button>
         </div>
         <div class="admin-content">
@@ -131,6 +132,7 @@ function buildAdminHTML() {
             </div>
             <div id="adminAnalyticsTab" style="display:none">
                 <div id="adminAnalyticsContent"><p style="color:var(--text-muted);font-size:0.875rem">Loading analytics...</p></div>
+                <div id="adminInventoryContent" class="hidden"></div>
             </div>
             <div id="adminAddTab" style="display:none">
                 <div class="add-product-form">
@@ -221,7 +223,7 @@ window.closeAdminPanel = function() {
 };
 
 function switchAdminTab(tab) {
-    const tabs = ['orders','products','combos','analytics','add'];
+    const tabs = ['orders','products','combos','analytics','inventory','add'];
     tabs.forEach(t => {
         const el = document.getElementById('admin' + t.charAt(0).toUpperCase() + t.slice(1) + 'Tab');
         if (el) el.style.display = t === tab ? 'block' : 'none';
@@ -231,6 +233,11 @@ function switchAdminTab(tab) {
     });
     if (tab === 'products') loadAdminProducts();
     if (tab === 'analytics') loadAdminAnalytics();
+    if (tab === 'inventory') {
+        document.getElementById('adminInventoryContent').classList.remove('hidden');
+        window.loadInventoryPanel?.();
+    }
+    if (tab === 'inventory') loadAdminInventory();
     if (tab === 'combos') loadAdminCombos();
 }
 window.switchAdminTab = switchAdminTab;
@@ -1181,90 +1188,269 @@ async function sendOrderConfirmationEmail(orderData, orderId) {
 async function loadAdminAnalytics() {
     const el = document.getElementById('adminAnalyticsContent');
     if (!el) return;
-    el.innerHTML = `<div style="display:flex;align-items:center;gap:0.5rem;color:var(--text-muted);font-size:0.875rem;padding:1rem 0"><i class="fas fa-spinner fa-spin" style="color:#4f46e5"></i> Crunching numbers...</div>`;
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:0.5rem;color:var(--text-muted);padding:2rem;justify-content:center"><i class="fas fa-spinner fa-spin" style="color:#059669;font-size:1.25rem"></i>&nbsp; Crunching numbers…</div>`;
 
     const orders = await loadAllOrders();
-    if (!orders.length) { el.innerHTML = `<p style="color:var(--text-muted)">No order data yet.</p>`; return; }
+    if (!orders.length) { el.innerHTML = `<div class="analytics-empty"><i class="fas fa-chart-bar"></i><p>No order data yet. Place some orders first.</p></div>`; return; }
 
-    const totalRevenue = orders.reduce((s,o) => s + (parseFloat(o.total) || 0), 0);
-    const delivered = orders.filter(o => o.status === 'delivered').length;
-    const pending = orders.filter(o => o.status === 'pending').length;
-    const cancelled = orders.filter(o => o.status === 'cancelled').length;
-    const codOrders = orders.filter(o => o.payment?.method === 'COD').length;
-    const onlineOrders = orders.length - codOrders;
-    const avgOrder = totalRevenue / orders.length;
+    const totalRevenue  = orders.reduce((s,o) => s + (parseFloat(o.total)||0), 0);
+    const delivered     = orders.filter(o => o.status === 'delivered').length;
+    const pending       = orders.filter(o => !o.status || o.status === 'pending' || o.status === 'placed').length;
+    const cancelled     = orders.filter(o => o.status === 'cancelled').length;
+    const codOrders     = orders.filter(o => o.payment?.method === 'COD').length;
+    const onlineOrders  = orders.length - codOrders;
+    const avgOrder      = totalRevenue / orders.length;
 
-    // Top products
-    const productSales = {};
-    orders.forEach(o => {
-        (o.items || []).forEach(item => {
-            const key = item.name;
-            if (!productSales[key]) productSales[key] = { name: key, qty: 0, revenue: 0, count: 0 };
-            productSales[key].qty += (item.qty || 0);
-            productSales[key].revenue += (item.price * item.qty || 0);
-            productSales[key].count++;
-        });
-    });
-    const topProducts = Object.values(productSales).sort((a,b) => b.revenue - a.revenue).slice(0, 5);
-    const maxRev = topProducts[0]?.revenue || 1;
-
-    // Revenue by day (last 7 days)
-    const today = Date.now();
-    const dayRevenue = {};
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date(today - i * 86400000);
-        dayRevenue[d.toLocaleDateString('en-IN', {day:'numeric',month:'short'})] = 0;
+    // Monthly revenue (last 6 months)
+    const monthRevenue = {};
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+        monthRevenue[d.toLocaleDateString('en-IN',{month:'short',year:'2-digit'})] = 0;
     }
+
+    // Daily revenue (last 30 days)
+    const dayRevenue = {};
+    for (let i = 29; i >= 0; i--) {
+        const d = new Date(Date.now() - i*86400000);
+        dayRevenue[d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})] = 0;
+    }
+
+    // Top products + city heatmap + customer repeat analysis
+    const productSales = {}, cityOrders = {}, customerOrders = {};
     orders.forEach(o => {
-        if (!o.created_at?.seconds) return;
-        const d = new Date(o.created_at.seconds * 1000);
-        const label = d.toLocaleDateString('en-IN', {day:'numeric',month:'short'});
-        if (label in dayRevenue) dayRevenue[label] += parseFloat(o.total) || 0;
+        const ts = o.createdAt?.seconds ? o.createdAt.seconds*1000 : (o.created_at?.seconds ? o.created_at.seconds*1000 : Date.now());
+        const d  = new Date(ts);
+        const dayLabel   = d.toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+        const monthLabel = d.toLocaleDateString('en-IN',{month:'short',year:'2-digit'});
+        if (dayLabel   in dayRevenue)   dayRevenue[dayLabel]   += parseFloat(o.total)||0;
+        if (monthLabel in monthRevenue) monthRevenue[monthLabel] += parseFloat(o.total)||0;
+
+        (o.items||[]).forEach(item => {
+            const k = item.name;
+            if (!productSales[k]) productSales[k] = { name:k, qty:0, revenue:0, count:0 };
+            productSales[k].qty     += (item.qty||0);
+            productSales[k].revenue += ((item.price||0)*(item.qty||1));
+            productSales[k].count++;
+        });
+
+        const city = (o.address||'').split(',').slice(-2,-1)[0]?.trim() || 'Unknown';
+        cityOrders[city] = (cityOrders[city]||0) + 1;
+
+        const uid = o.uid || o.phone;
+        if (uid) customerOrders[uid] = (customerOrders[uid]||0) + 1;
     });
-    const maxDay = Math.max(...Object.values(dayRevenue), 1);
+
+    const topProducts  = Object.values(productSales).sort((a,b)=>b.revenue-a.revenue).slice(0,8);
+    const topCities    = Object.entries(cityOrders).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const maxRev       = topProducts[0]?.revenue || 1;
+    const maxDay       = Math.max(...Object.values(dayRevenue),1);
+    const maxMonth     = Math.max(...Object.values(monthRevenue),1);
+    const repeatCount  = Object.values(customerOrders).filter(c=>c>1).length;
+    const repeatRate   = Math.round(repeatCount / Object.keys(customerOrders).length * 100) || 0;
 
     el.innerHTML = `
-    <div class="analytics-grid">
-        <div class="analytics-card">
-            <span class="analytics-value">₹${totalRevenue.toFixed(0)}</span>
-            <div class="analytics-label">Total Revenue</div>
-            <div class="analytics-sub">Avg ₹${avgOrder.toFixed(0)}/order</div>
+    <!-- ── KPI Cards ── -->
+    <div class="analytics-kpi-grid">
+        <div class="analytics-kpi">
+            <div class="analytics-kpi-icon" style="background:#d1fae5;color:#059669"><i class="fas fa-rupee-sign"></i></div>
+            <div class="analytics-kpi-val">₹${totalRevenue>=1000?(totalRevenue/1000).toFixed(1)+'K':totalRevenue.toFixed(0)}</div>
+            <div class="analytics-kpi-label">Total Revenue</div>
+            <div class="analytics-kpi-sub">Avg ₹${avgOrder.toFixed(0)}/order</div>
         </div>
-        <div class="analytics-card">
-            <span class="analytics-value">${orders.length}</span>
-            <div class="analytics-label">Total Orders</div>
-            <div class="analytics-sub">${delivered} delivered</div>
+        <div class="analytics-kpi">
+            <div class="analytics-kpi-icon" style="background:#fef3c7;color:#d97706"><i class="fas fa-box"></i></div>
+            <div class="analytics-kpi-val">${orders.length}</div>
+            <div class="analytics-kpi-label">Total Orders</div>
+            <div class="analytics-kpi-sub">${delivered} delivered</div>
         </div>
-        <div class="analytics-card">
-            <span class="analytics-value">${pending}</span>
-            <div class="analytics-label">Pending</div>
-            <div class="analytics-sub">${cancelled} cancelled</div>
+        <div class="analytics-kpi">
+            <div class="analytics-kpi-icon" style="background:#dbeafe;color:#3b82f6"><i class="fas fa-users"></i></div>
+            <div class="analytics-kpi-val">${Object.keys(customerOrders).length}</div>
+            <div class="analytics-kpi-label">Unique Customers</div>
+            <div class="analytics-kpi-sub">${repeatRate}% repeat buyers</div>
         </div>
-        <div class="analytics-card">
-            <span class="analytics-value">${Math.round(codOrders/orders.length*100)}%</span>
-            <div class="analytics-label">COD Rate</div>
-            <div class="analytics-sub">${onlineOrders} online paid</div>
+        <div class="analytics-kpi">
+            <div class="analytics-kpi-icon" style="background:#fce7f3;color:#db2777"><i class="fas fa-clock"></i></div>
+            <div class="analytics-kpi-val">${pending}</div>
+            <div class="analytics-kpi-label">Pending Orders</div>
+            <div class="analytics-kpi-sub">${cancelled} cancelled</div>
+        </div>
+        <div class="analytics-kpi">
+            <div class="analytics-kpi-icon" style="background:#ede9fe;color:#7c3aed"><i class="fas fa-credit-card"></i></div>
+            <div class="analytics-kpi-val">${Math.round(onlineOrders/orders.length*100)}%</div>
+            <div class="analytics-kpi-label">Online Payments</div>
+            <div class="analytics-kpi-sub">${codOrders} COD orders</div>
+        </div>
+        <div class="analytics-kpi">
+            <div class="analytics-kpi-icon" style="background:#fef9c3;color:#ca8a04"><i class="fas fa-redo"></i></div>
+            <div class="analytics-kpi-val">${repeatRate}%</div>
+            <div class="analytics-kpi-label">Repeat Rate</div>
+            <div class="analytics-kpi-sub">${repeatCount} repeat customers</div>
         </div>
     </div>
 
-    <div class="analytics-section-title"><i class="fas fa-fire" style="color:#f59e0b"></i> Top Products by Revenue</div>
-    ${topProducts.map((p, i) => `
-    <div class="top-product-row">
-        <span class="top-product-rank">${i+1}</span>
-        <div style="flex:1;min-width:0">
-            <div style="font-weight:700;font-size:0.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(p.name)}</div>
-            <div class="top-product-bar" style="width:${Math.round(p.revenue/maxRev*100)}%;margin-top:0.25rem"></div>
+    <!-- ── Revenue Chart — 30 Days ── -->
+    <div class="analytics-chart-card">
+        <div class="analytics-chart-title"><i class="fas fa-chart-line" style="color:#059669"></i> Revenue — Last 30 Days</div>
+        <div class="analytics-bar-chart">
+            ${Object.entries(dayRevenue).map(([day,rev],i) => `
+            <div class="analytics-bar-col" title="${day}: ₹${rev.toFixed(0)}">
+                <div class="analytics-bar-fill" style="height:${Math.round(rev/maxDay*100)}%;background:${rev>0?'#059669':'#e5e7eb'}"></div>
+                ${i%5===0?`<div class="analytics-bar-label">${day}</div>`:''}
+            </div>`).join('')}
         </div>
-        <div style="text-align:right;flex-shrink:0;margin-left:0.5rem">
-            <div style="font-weight:800;font-size:0.82rem;color:#059669">₹${p.revenue.toFixed(0)}</div>
-            <div style="font-size:0.65rem;color:var(--text-muted)">${p.count} orders</div>
-        </div>
-    </div>`).join('')}
+    </div>
 
-    <div class="analytics-section-title" style="margin-top:1.25rem"><i class="fas fa-chart-bar" style="color:#4f46e5"></i> Revenue — Last 7 Days</div>
-    ${Object.entries(dayRevenue).map(([day, rev]) => `
-    <div class="revenue-bar-wrap">
-        <div class="revenue-bar-label"><span>${day}</span><span>₹${rev.toFixed(0)}</span></div>
-        <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:${Math.round(rev/maxDay*100)}%"></div></div>
-    </div>`).join('')}`;
+    <!-- ── Monthly Revenue ── -->
+    <div class="analytics-chart-card">
+        <div class="analytics-chart-title"><i class="fas fa-calendar-alt" style="color:#7c3aed"></i> Monthly Revenue</div>
+        ${Object.entries(monthRevenue).map(([m,rev]) => `
+        <div class="revenue-bar-wrap">
+            <div class="revenue-bar-label"><span>${m}</span><span style="font-weight:700;color:#059669">₹${rev.toFixed(0)}</span></div>
+            <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:${Math.round(rev/maxMonth*100)}%"></div></div>
+        </div>`).join('')}
+    </div>
+
+    <!-- ── Top Products ── -->
+    <div class="analytics-chart-card">
+        <div class="analytics-chart-title"><i class="fas fa-fire" style="color:#f59e0b"></i> Top Products by Revenue</div>
+        ${topProducts.map((p,i) => `
+        <div class="top-product-row">
+            <span class="top-product-rank">${i+1}</span>
+            <div style="flex:1;min-width:0">
+                <div style="font-weight:700;font-size:0.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHTML(p.name)}</div>
+                <div class="top-product-bar" style="width:${Math.round(p.revenue/maxRev*100)}%;margin-top:0.25rem"></div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;margin-left:0.5rem">
+                <div style="font-weight:800;font-size:0.82rem;color:#059669">₹${p.revenue.toFixed(0)}</div>
+                <div style="font-size:0.65rem;color:var(--text-muted)">${p.qty} units · ${p.count} orders</div>
+            </div>
+        </div>`).join('')}
+    </div>
+
+    <!-- ── City Heatmap ── -->
+    ${topCities.length>1 ? `
+    <div class="analytics-chart-card">
+        <div class="analytics-chart-title"><i class="fas fa-map-marker-alt" style="color:#ef4444"></i> Orders by City</div>
+        ${topCities.map(([city,count]) => `
+        <div class="revenue-bar-wrap">
+            <div class="revenue-bar-label"><span>${city}</span><span>${count} orders</span></div>
+            <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:${Math.round(count/(topCities[0][1]||1)*100)}%;background:#ef4444"></div></div>
+        </div>`).join('')}
+    </div>` : ''}`;
 }
+
+
+// ===== ADMIN: INVENTORY MANAGEMENT =====
+async function loadAdminInventory() {
+    const el = document.getElementById('adminInventoryContent');
+    if (!el) return;
+    el.innerHTML = `<div style="text-align:center;padding:2rem;color:var(--text-muted)"><i class="fas fa-spinner fa-spin" style="font-size:1.25rem"></i></div>`;
+
+    const catalog = window.appState?.catalogData || [];
+    if (!catalog.length) { el.innerHTML = `<p style="color:var(--text-muted);padding:1rem">No products found.</p>`; return; }
+
+    const lowStock  = catalog.filter(p => /^\d+$/.test(String(p.stock||'')) && parseInt(p.stock) <= 9 && parseInt(p.stock) > 0);
+    const outStock  = catalog.filter(p => p.stock === '0' || p.stock === 'out');
+    const inStock   = catalog.filter(p => !lowStock.includes(p) && !outStock.includes(p));
+
+    el.innerHTML = `
+    <div class="inv-summary">
+        <div class="inv-kpi" style="border-left:4px solid #059669">
+            <div class="inv-kpi-val" style="color:#059669">${inStock.length}</div>
+            <div class="inv-kpi-label">In Stock</div>
+        </div>
+        <div class="inv-kpi" style="border-left:4px solid #f59e0b">
+            <div class="inv-kpi-val" style="color:#f59e0b">${lowStock.length}</div>
+            <div class="inv-kpi-label">Low Stock (≤9)</div>
+        </div>
+        <div class="inv-kpi" style="border-left:4px solid #ef4444">
+            <div class="inv-kpi-val" style="color:#ef4444">${outStock.length}</div>
+            <div class="inv-kpi-label">Out of Stock</div>
+        </div>
+        <div class="inv-kpi" style="border-left:4px solid #6366f1">
+            <div class="inv-kpi-val">${catalog.length}</div>
+            <div class="inv-kpi-label">Total Products</div>
+        </div>
+    </div>
+
+    ${lowStock.length > 0 ? `
+    <div class="inv-section-title" style="color:#f59e0b"><i class="fas fa-exclamation-triangle"></i> Low Stock Alerts</div>
+    <div class="inv-table">
+        <div class="inv-table-header">
+            <span>Product</span><span>Type</span><span>Stock</span><span>Price</span><span>Action</span>
+        </div>
+        ${lowStock.map(p => `
+        <div class="inv-table-row inv-row--low">
+            <span class="inv-product-name">${escapeHTML(p.name)}</span>
+            <span class="inv-type-badge">${p.type||'—'}</span>
+            <span class="inv-stock-val inv-stock--low">⚠️ ${p.stock}</span>
+            <span>₹${p.price||'—'}</span>
+            <button class="inv-edit-btn" onclick="adminEditProduct('${p.id}')">Edit</button>
+        </div>`).join('')}
+    </div>` : ''}
+
+    ${outStock.length > 0 ? `
+    <div class="inv-section-title" style="color:#ef4444;margin-top:1rem"><i class="fas fa-times-circle"></i> Out of Stock</div>
+    <div class="inv-table">
+        <div class="inv-table-header">
+            <span>Product</span><span>Type</span><span>Stock</span><span>Price</span><span>Action</span>
+        </div>
+        ${outStock.map(p => `
+        <div class="inv-table-row inv-row--oos">
+            <span class="inv-product-name">${escapeHTML(p.name)}</span>
+            <span class="inv-type-badge">${p.type||'—'}</span>
+            <span class="inv-stock-val inv-stock--oos">❌ Out</span>
+            <span>₹${p.price||'—'}</span>
+            <button class="inv-edit-btn" onclick="adminEditProduct('${p.id}')">Restock</button>
+        </div>`).join('')}
+    </div>` : ''}
+
+    <div class="inv-section-title" style="margin-top:1rem"><i class="fas fa-boxes"></i> All Products</div>
+    <div class="inv-search-row">
+        <input class="inv-search" type="text" placeholder="Search products…" oninput="_filterInvTable(this.value)">
+        <select class="inv-filter-sel" onchange="_filterInvByType(this.value)">
+            <option value="">All Types</option>
+            ${[...new Set(catalog.map(p=>p.type).filter(Boolean))].map(t => `<option value="${t}">${t}</option>`).join('')}
+        </select>
+    </div>
+    <div class="inv-table" id="invAllTable">
+        <div class="inv-table-header">
+            <span>Product</span><span>Type</span><span>Stock</span><span>Price</span><span>Action</span>
+        </div>
+        ${catalog.map(p => `
+        <div class="inv-table-row" data-name="${escapeHTML((p.name||'').toLowerCase())}" data-type="${p.type||''}">
+            <span class="inv-product-name">${escapeHTML(p.name)}</span>
+            <span class="inv-type-badge">${p.type||'—'}</span>
+            <span class="inv-stock-val ${p.stock==='0'||p.stock==='out'?'inv-stock--oos':/^\d+$/.test(String(p.stock||''))&&parseInt(p.stock)<=9?'inv-stock--low':'inv-stock--ok'}">
+                ${p.stock==='0'||p.stock==='out'?'❌ Out':/^\d+$/.test(String(p.stock||''))&&parseInt(p.stock)<=9?'⚠️ '+p.stock:'✅ OK'}
+            </span>
+            <span>₹${p.price||'—'}</span>
+            <button class="inv-edit-btn" onclick="adminEditProduct('${p.id}')">Edit</button>
+        </div>`).join('')}
+    </div>`;
+}
+
+window.loadAdminInventory = loadAdminInventory;
+
+window._filterInvTable = function(q) {
+    document.querySelectorAll('#invAllTable .inv-table-row').forEach(row => {
+        row.style.display = row.dataset.name?.includes(q.toLowerCase()) ? '' : 'none';
+    });
+};
+window._filterInvByType = function(type) {
+    document.querySelectorAll('#invAllTable .inv-table-row').forEach(row => {
+        row.style.display = !type || row.dataset.type === type ? '' : 'none';
+    });
+};
+window.adminEditProduct = function(id) {
+    switchAdminTab('products');
+    // Auto-scroll to product row
+    setTimeout(() => {
+        const row = document.querySelector(`[data-product-id="${id}"]`);
+        row?.scrollIntoView({ behavior:'smooth', block:'center' });
+        row?.classList.add('highlight-row');
+        setTimeout(() => row?.classList.remove('highlight-row'), 2000);
+    }, 500);
+};
