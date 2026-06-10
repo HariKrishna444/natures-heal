@@ -1185,6 +1185,23 @@ async function sendOrderConfirmationEmail(orderData, orderId) {
 }
 
 
+// ===== LOAD ALL ORDERS (used by analytics + orders tab) =====
+window.loadAllOrders = async function() {
+    try {
+        const snap = await window.fbGetDocs(window.fbCollection(window.db, 'orders'));
+        const orders = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => {
+            const at = a.created_at?.seconds || a.createdAt?.seconds || 0;
+            const bt = b.created_at?.seconds || b.createdAt?.seconds || 0;
+            return bt - at;
+        });
+        window._allOrders = orders;   // cache for features.js charts
+        return orders;
+    } catch(e) {
+        console.error('loadAllOrders error:', e);
+        return [];
+    }
+};
+
 async function loadAdminAnalytics() {
     const el = document.getElementById('adminAnalyticsContent');
     if (!el) return;
@@ -1453,4 +1470,69 @@ window.adminEditProduct = function(id) {
         row?.classList.add('highlight-row');
         setTimeout(() => row?.classList.remove('highlight-row'), 2000);
     }, 500);
+};
+
+
+// ===== ADMIN COMBOS =====
+async function loadAdminCombos() {
+    const list = document.getElementById('adminCombosList');
+    if (!list) return;
+    list.innerHTML = '<div style="color:var(--text-muted);font-size:0.875rem;padding:0.5rem 0">Loading combos...</div>';
+    try {
+        const snap = await window.fbGetDocs(window.fbCollection(window.db, "combos"));
+        const combos = snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+        window._combosCache = combos;
+        if (!combos.length) {
+            list.innerHTML = '<p style="color:var(--text-muted);font-size:0.875rem">No combos yet. Add one below.</p>';
+        } else {
+            list.innerHTML = combos.map(c => `
+            <div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem;border:1px solid var(--border-color);border-radius:0.75rem;margin-bottom:0.6rem;background:var(--bg-card)">
+                <span style="font-size:1.5rem">${escapeHTML(c.emojis||'🎁')}</span>
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:700;font-size:0.85rem;color:#059669">${escapeHTML(c.name)}</div>
+                    <div style="font-size:0.7rem;color:var(--text-muted)">${escapeHTML(c.desc||'')} · Keywords: ${escapeHTML((c.keywords||[]).join(', '))}</div>
+                    <div style="font-size:0.75rem;font-weight:700;color:#059669">₹${c.price} <span style="text-decoration:line-through;color:var(--text-muted);font-weight:400">₹${c.original||''}</span></div>
+                </div>
+                <button onclick="window.adminDeleteCombo('${c.firestoreId}')" style="font-size:0.7rem;padding:0.3rem 0.6rem;border-radius:0.4rem;background:#fee2e2;color:#dc2626;font-weight:700;border:none;cursor:pointer">Delete</button>
+            </div>`).join('');
+        }
+        if (typeof renderDynamicCombos === 'function') renderDynamicCombos(combos);
+    } catch(e) {
+        list.innerHTML = `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:0.75rem;padding:1rem;font-size:0.82rem">
+            <p style="color:#dc2626;font-weight:700;margin-bottom:0.35rem">⚠️ ${e.message.includes('permission')||e.message.includes('Missing') ? 'Firestore Permission Error' : 'Load Error'}</p>
+            <p style="color:var(--text-muted);font-size:0.75rem">${e.message}</p>
+        </div>`;
+    }
+}
+window.loadAdminCombos = loadAdminCombos;
+
+window.adminSaveCombo = async function() {
+    const g = id => document.getElementById(id)?.value?.trim();
+    const name = g('cb_name'), emojis = g('cb_emojis'), desc = g('cb_desc');
+    const price = parseFloat(g('cb_price')), original = parseFloat(g('cb_original'));
+    const kwStr = g('cb_keywords');
+    if (!name || !price || !kwStr) return showToast('Fill name, price and keywords', true);
+    const keywords = kwStr.split(',').map(k => k.trim()).filter(Boolean);
+    const save = original > price ? Math.round(((original-price)/original)*100) : 0;
+    try {
+        await window.fbAddDoc(window.fbCollection(window.db, 'combos'), {
+            name, emojis: emojis||'🎁', desc, price, original: original||price,
+            keywords, save, created_at: window.fbServerTimestamp()
+        });
+        showToast('✅ Combo saved!');
+        ['cb_name','cb_emojis','cb_desc','cb_price','cb_original','cb_keywords']
+            .forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+        loadAdminCombos();
+    } catch(e) {
+        showToast('Save failed: ' + e.message, true);
+    }
+};
+
+window.adminDeleteCombo = async function(firestoreId) {
+    if (!confirm('Delete this combo?')) return;
+    try {
+        await window.fbUpdateDoc(window.fbDoc(window.db, 'combos', firestoreId), { _deleted: true });
+        showToast('Combo deleted');
+        loadAdminCombos();
+    } catch(e) { showToast('Delete failed: ' + e.message, true); }
 };

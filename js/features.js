@@ -594,27 +594,23 @@ window.renderAnalyticsCharts = function(orders) {
     `;
 };
 
-// Hook into existing loadAdminAnalytics
+// Hook into existing loadAdminAnalytics — add enhanced charts after it runs
 const _origLoadAnalytics = window.loadAdminAnalytics;
 window.loadAdminAnalytics = async function() {
     if (_origLoadAnalytics) await _origLoadAnalytics();
-    // After original loads, inject enhanced chart rendering
-    setTimeout(async () => {
-        try {
-            const snap = await window.fbGetDocs(
-                window.fbQuery(window.fbCollection(window.db, 'orders'),
-                    window.fbOrderBy('createdAt', 'desc'))
-            );
-            const orders = snap.docs.map(d => d.data());
-            window.renderAnalyticsCharts(orders);
-        } catch(e) { console.warn('Analytics chart error:', e); }
-    }, 500);
+    // Enhanced charts use window._allOrders set by admin.js loadAllOrders()
+    setTimeout(() => {
+        const orders = window._allOrders || [];
+        if (orders.length) window.renderAnalyticsCharts(orders);
+    }, 800);
 };
 
 // ─────────────────────────────────────────────────────────────
 //  FEATURE 7 — INVENTORY MANAGEMENT (Admin Panel Extension)
 // ─────────────────────────────────────────────────────────────
 window.loadInventoryPanel = async function() {
+    // Delegate to admin.js version if available
+    if (typeof loadAdminInventory === 'function') { loadAdminInventory(); return; }
     const container = document.getElementById('adminInventoryContent');
     if (!container) return;
     container.innerHTML = '<div class="cd-loading"><div class="ha-spinner"></div><p>Loading inventory…</p></div>';
