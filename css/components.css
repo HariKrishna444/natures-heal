@@ -701,12 +701,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
 }
 .footer-col ul li button:hover, .footer-col ul li a:hover { color: white; }
 
-.footer-bottom {
-    border-top: 1px solid rgba(255,255,255,0.08);
-    padding-top: 1.25rem;
-    display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem;
-    text-align: center;
-}
+/* footer-bottom — see compliance section */
 .footer-copy { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.3); cursor: pointer; padding: 0.3rem 0.5rem; display: inline-block; user-select: none; -webkit-user-select: none; border-radius: 0.5rem; transition: color 0.2s; }
 
 /* ===== ADMIN TRIGGER ===== */
@@ -1018,7 +1013,7 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
 
 /* ===== AI CHATBOT ===== */
 #chatFab {
-    position: fixed; bottom: 9.25rem; right: 1.5rem; z-index: 50;
+    position: fixed; bottom: 9.5rem; right: 1.5rem; z-index: 50;
     width: 3.25rem; height: 3.25rem; border-radius: 50%;
     background: linear-gradient(135deg, #059669, #047857);
     color: white; display: flex; align-items: center; justify-content: center;
@@ -1692,12 +1687,15 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
     margin-bottom: 1.25rem;
 }
 .compliance-badge {
-    display: flex; align-items: center; gap: 0.6rem;
+    display: flex; align-items: center; gap: 0.55rem;
     background: rgba(255,255,255,0.07);
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 0.65rem;
-    padding: 0.55rem 0.85rem;
-    min-width: 160px;
+    padding: 0.5rem 0.75rem;
+    flex: 1;
+    min-width: min(160px, 42vw);   /* shrinks on mobile */
+    max-width: 220px;
+    box-sizing: border-box;
 }
 .compliance-badge i {
     font-size: 1.1rem; color: #10b981; flex-shrink: 0;
@@ -1709,16 +1707,25 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
     background: rgba(251,191,36,0.1);
     border: 1px solid rgba(251,191,36,0.25);
     border-radius: 0.65rem;
-    padding: 0.85rem 1rem;
-    font-size: 0.74rem;
+    padding: 0.75rem 0.85rem;
+    font-size: 0.72rem;
     color: rgba(255,255,255,0.75);
     line-height: 1.6;
-    display: flex; align-items: flex-start; gap: 0.6rem;
+    /* Stack on mobile, flex on desktop */
+    display: block;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 .footer-medical-disclaimer i {
-    color: #fbbf24; font-size: 0.9rem; margin-top: 0.15rem; flex-shrink: 0;
+    color: #fbbf24; font-size: 0.85rem; margin-right: 0.35rem;
 }
 .footer-medical-disclaimer strong { color: rgba(255,255,255,0.9); }
+@media(min-width:600px) {
+    .footer-medical-disclaimer {
+        display: flex; align-items: flex-start; gap: 0.6rem;
+    }
+    .footer-medical-disclaimer i { margin-right: 0; flex-shrink: 0; margin-top: 0.15rem; }
+}
 .disclaimer-link {
     background: none; border: none; color: #10b981;
     font-size: 0.74rem; font-weight: 700; cursor: pointer;
@@ -2087,7 +2094,8 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
 
 /* ── Notifications ── */
 .notif-prompt {
-    position: fixed; bottom: 5.5rem; right: 1rem; z-index: 180;
+    position: fixed; bottom: 5.5rem; right: 0.75rem; z-index: 180;
+    max-width: min(340px, calc(100vw - 1.5rem));
     background: var(--bg-card); border: 1px solid var(--border-color);
     border-radius: 0.85rem; padding: 0.85rem 1rem;
     box-shadow: 0 8px 32px rgba(0,0,0,0.15);
@@ -2150,15 +2158,21 @@ footer { background: var(--footer-bg); padding: 3rem 1rem 1.5rem; }
 
 /* ── Subscription FAB ── */
 .sub-fab {
-    position: fixed; bottom: 14rem; right: 1.25rem; z-index: 50;
-    width: 3rem; height: 3rem; border-radius: 50%;
+    position: fixed;
+    bottom: 13rem;   /* tuck just above chat FAB */
+    right: 1.5rem;
+    z-index: 50;
+    width: 2.75rem; height: 2.75rem; border-radius: 50%;
     background: linear-gradient(135deg, #059669, #047857);
     color: white; border: none; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; box-shadow: 0 4px 18px rgba(5,150,105,0.4);
+    font-size: 0.9rem;
+    box-shadow: 0 4px 14px rgba(5,150,105,0.4);
     transition: all 0.2s;
 }
-.sub-fab:hover { transform: scale(1.1); box-shadow: 0 8px 28px rgba(5,150,105,0.5); }
+.sub-fab:hover { transform: scale(1.1); }
+/* On very small phones, hide sub-fab to avoid clutter */
+@media(max-height: 600px) { .sub-fab { display: none; } }
 
 /* ── Admin Analytics Charts ── */
 .ac-chart-section { margin-bottom: 1.5rem; }
