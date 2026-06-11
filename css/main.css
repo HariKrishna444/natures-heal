@@ -194,44 +194,26 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 .item-count { font-size: 0.825rem; color: var(--text-muted); font-weight: 500; }
 .item-count strong { color: #059669; font-weight: 700; }
 
-/* ===== CATALOG GRID — single source of truth =====
- * Mobile: 1 column (full width cards)
- * 480px+: 2 columns
+/* ===== CATALOG GRID =====
+ * Mobile: 2 columns (side by side)
  * 900px+: 3 columns
  * 1200px+: 4 columns
  * 1600px+: 5 columns
- * ================================================= */
+ * ========================= */
 .grid-container {
     display: grid;
-    grid-template-columns: 1fr;          /* mobile: single column, full width */
-    gap: 0.75rem;
-    padding: 0.75rem;
-}
-@media(min-width:480px) {
-    .grid-container {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.85rem;
-        padding: 0.85rem;
-    }
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+    padding: 0.65rem;
 }
 @media(min-width:900px) {
-    .grid-container {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 1rem;
-        padding: 1rem;
-    }
+    .grid-container { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; padding: 1rem; }
 }
 @media(min-width:1200px) {
-    .grid-container {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 1rem;
-    }
+    .grid-container { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
 }
 @media(min-width:1600px) {
-    .grid-container {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 1.1rem;
-    }
+    .grid-container { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.1rem; }
 }
 /* ===================================================
  *  AMAZON-STYLE LAYOUT — Left Sidebar + Content Area
