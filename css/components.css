@@ -21,15 +21,23 @@
 .product-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(5,150,105,0.18); }
 .card-img-wrap {
     position: relative;
-    height: 11rem;         /* was 7.5rem — bigger on mobile */
+    /* Mobile single-col: tall image like a real product card */
+    height: 55vw;
+    max-height: 280px;
     overflow: hidden;
     width: 100%;
-    max-width: 100%;
 }
-@media(min-width:400px){ .card-img-wrap { height: 12rem; } }
-@media(min-width:640px){ .card-img-wrap { height: 13rem; } }
-@media(min-width:768px){ .card-img-wrap { height: 15rem; } }
-@media(min-width:1200px){ .card-img-wrap { height: 17rem; } }
+/* 2-column grid (480px+): viewport-relative keeps both images same height */
+@media(min-width:480px) {
+    .card-img-wrap {
+        height: 30vw;
+        max-height: 240px;
+    }
+}
+/* 3-col+ : fixed height is fine */
+@media(min-width:900px)  { .card-img-wrap { height: 200px; max-height: none; } }
+@media(min-width:1200px) { .card-img-wrap { height: 220px; } }
+@media(min-width:1600px) { .card-img-wrap { height: 240px; } }
 .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
 .product-card:hover .card-img-wrap img { transform: scale(1.08); }
 
@@ -73,18 +81,20 @@
 }
 .show-urgency .urgency-tag { display: block; }
 
-.card-body { padding: 0.6rem 0.65rem 0.65rem; flex: 1; display: flex; flex-direction: column; }
-@media(min-width:640px){ .card-body { padding: 0.85rem; } }
-.card-name { font-size: 0.82rem; font-weight: 700; color: #059669; line-height: 1.3; margin-bottom: 0.2rem; }
-@media(min-width:400px){ .card-name { font-size: 0.86rem; } }
-@media(min-width:640px){ .card-name { font-size: 0.9rem; } }
+.card-body { padding: 0.75rem 0.85rem 0.85rem; flex: 1; display: flex; flex-direction: column; }
+@media(min-width:480px){ .card-body { padding: 0.6rem 0.65rem 0.65rem; } }
+@media(min-width:900px){ .card-body { padding: 0.85rem; } }
+.card-name { font-size: 0.95rem; font-weight: 700; color: #059669; line-height: 1.3; margin-bottom: 0.25rem; }
+@media(min-width:480px){ .card-name { font-size: 0.85rem; } }
+@media(min-width:900px){ .card-name { font-size: 0.9rem; } }
 .card-scientific { font-size: 0.6rem; font-style: italic; color: #059669; margin-bottom: 0.3rem; opacity: 0.7; }
-.card-desc { font-size: 0.68rem; color: var(--text-muted); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-@media(min-width:400px){ .card-desc { font-size: 0.71rem; } }
-@media(min-width:640px){ .card-desc { font-size: 0.75rem; } }
+.card-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+@media(min-width:480px){ .card-desc { font-size: 0.7rem; } }
+@media(min-width:900px){ .card-desc { font-size: 0.75rem; } }
 .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 0.4rem; }
-.card-price { font-size: 0.9rem; font-weight: 800; color: #065f46; }
-@media(min-width:640px){ .card-price { font-size: 1rem; } }
+.card-price { font-size: 1rem; font-weight: 800; color: #065f46; }
+@media(min-width:480px){ .card-price { font-size: 0.9rem; } }
+@media(min-width:900px){ .card-price { font-size: 1rem; } }
 .card-stars { font-size: 0.58rem; color: #f59e0b; }
 
 /* ===== SKELETON ===== */
