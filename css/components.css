@@ -5,15 +5,31 @@
 
 /* ===== PRODUCT CARD ===== */
 .product-card {
-    background: var(--bg-card); border: 1px solid var(--border-color);
-    border-radius: 1.25rem; overflow: hidden; cursor: pointer;
-    transition: all 0.35s cubic-bezier(0.4,0,0.2,1); position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
     box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    width: 100%;           /* fill grid cell fully */
+    height: 100%;          /* equal height cards */
 }
 .product-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(5,150,105,0.18); }
-.card-img-wrap { position: relative; height: 7.5rem; overflow: hidden; }
-@media(min-width:640px){ .card-img-wrap { height: 9.5rem; } }
-@media(min-width:768px){ .card-img-wrap { height: 13rem; } }
+.card-img-wrap {
+    position: relative;
+    height: 11rem;         /* was 7.5rem — bigger on mobile */
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+}
+@media(min-width:400px){ .card-img-wrap { height: 12rem; } }
+@media(min-width:640px){ .card-img-wrap { height: 13rem; } }
+@media(min-width:768px){ .card-img-wrap { height: 15rem; } }
+@media(min-width:1200px){ .card-img-wrap { height: 17rem; } }
 .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
 .product-card:hover .card-img-wrap img { transform: scale(1.08); }
 
@@ -57,15 +73,17 @@
 }
 .show-urgency .urgency-tag { display: block; }
 
-.card-body { padding: 0.65rem; }
+.card-body { padding: 0.6rem 0.65rem 0.65rem; flex: 1; display: flex; flex-direction: column; }
 @media(min-width:640px){ .card-body { padding: 0.85rem; } }
-.card-name { font-size: 0.78rem; font-weight: 700; color: #059669; line-height: 1.3; margin-bottom: 0.2rem; }
+.card-name { font-size: 0.82rem; font-weight: 700; color: #059669; line-height: 1.3; margin-bottom: 0.2rem; }
+@media(min-width:400px){ .card-name { font-size: 0.86rem; } }
 @media(min-width:640px){ .card-name { font-size: 0.9rem; } }
 .card-scientific { font-size: 0.6rem; font-style: italic; color: #059669; margin-bottom: 0.3rem; opacity: 0.7; }
-.card-desc { font-size: 0.65rem; color: var(--text-muted); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.card-desc { font-size: 0.68rem; color: var(--text-muted); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+@media(min-width:400px){ .card-desc { font-size: 0.71rem; } }
 @media(min-width:640px){ .card-desc { font-size: 0.75rem; } }
-.card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; }
-.card-price { font-size: 0.85rem; font-weight: 800; color: #065f46; }
+.card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 0.4rem; }
+.card-price { font-size: 0.9rem; font-weight: 800; color: #065f46; }
 @media(min-width:640px){ .card-price { font-size: 1rem; } }
 .card-stars { font-size: 0.58rem; color: #f59e0b; }
 

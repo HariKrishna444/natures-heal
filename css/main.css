@@ -197,9 +197,12 @@ main { max-width: 1280px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
 /* ===== GRID ===== */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));  /* minmax(0) prevents overflow */
-    gap: 0.65rem;
-    padding: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    padding: 0.6rem;        /* less padding = cards wider */
+}
+@media(min-width:400px) {
+    .grid-container { gap: 0.75rem; padding: 0.75rem; }
 }
 @media(min-width:640px){ .grid-container { grid-template-columns: repeat(2,1fr); gap: 1rem; } }
 @media(min-width:768px){ .grid-container { grid-template-columns: repeat(3,1fr); gap: 1.25rem; } }
@@ -355,13 +358,7 @@ main { max-width: none; margin: 0; padding: 1.25rem 1rem 3rem; }
     padding: 0;
 }
 
-/* Grid: 2 cols mobile → 3 mid → 4 desktop → 5 on very wide */
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-}
-@media(min-width:480px)  { .grid-container { grid-template-columns: repeat(2,1fr); } }
+/* Larger screen breakpoints for catalog grid */
 @media(min-width:900px)  { .grid-container { grid-template-columns: repeat(3,1fr); gap: 1rem; } }
 @media(min-width:1200px) { .grid-container { grid-template-columns: repeat(4,1fr); gap: 1rem; } }
 @media(min-width:1600px) { .grid-container { grid-template-columns: repeat(5,1fr); gap: 1.1rem; } }
