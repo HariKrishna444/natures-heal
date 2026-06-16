@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://naturesheal.web.app/sitemap.xml
+
+# Block admin paths from indexing
+Disallow: /admin
